@@ -16,7 +16,7 @@ authors = [
     {name = "Richard E. Turner", email = "t-rturner@microsoft.com"},
     {name = "Paris Perdikaris", email = "paperdikaris@microsoft.com"},
 ]
-license = {text = "MIT"}
+license = {text = "MIT", file = "LICENCE.txt"}
 readme = "README.md"
 keywords = [
 	"aurora model",
@@ -31,22 +31,19 @@ classifiers = [
 ]
 dynamic = ["version"]
 
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
 ]
 
 [project.optional-dependencies]
 dev = [
-    "numpy",
-    "pytest",
-    "pytest-cov",
-    "coveralls",
-    "pre-commit",
-    "ghp-import",
     "wheel",
     "build",
+    "pytest",
+    "pytest-cov",
     "mypy",
-    "ruff",
+    "ruff==0.4.1",
+    "pre-commit",
 ]
 
 [project.urls]
