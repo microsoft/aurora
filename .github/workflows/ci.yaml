@@ -2,10 +2,9 @@ name: CI
 
 on:
   pull_request:
-
   push:
     branches:
-      - master
+      - main
 
 jobs:
   test:
@@ -29,4 +28,3 @@ jobs:
       - name: Run tests
         run: |
             pytest -v --cov=aurora --cov-report term-missing
-
