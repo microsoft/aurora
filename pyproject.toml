@@ -16,7 +16,7 @@ authors = [
     {name = "Richard E. Turner", email = "t-rturner@microsoft.com"},
     {name = "Paris Perdikaris", email = "paperdikaris@microsoft.com"},
 ]
-license = {text = "MIT", file = "LICENCE.txt"}
+license = {file = "LICENCE.txt"}
 readme = "README.md"
 keywords = [
 	"aurora model",
