@@ -3,7 +3,7 @@ requires = ["hatchling>=1.8.0", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
-name = "aurora"
+name = "microsoft-aurora"
 description = "Implementation of the Aurora model"
 authors = [
     {name = "Cris Bodnar", email = "crisbodnar96@gmail.com"},
