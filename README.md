@@ -1,11 +1,11 @@
 <img src="assets/aurora.jpg" alt="Aurora logo" width="200"/>
 
-# Aurora
+# Aurora: A Foundation Model of the Atmosphere
 
 [![CI](https://github.com/microsoft/Aurora/actions/workflows/ci.yaml/badge.svg)](https://github.com/microsoft/Aurora/actions/workflows/ci.yaml)
 [![Latest documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://microsoft.github.io/aurora)
 
-Implementation of the Aurora model.
+Implementation of the Aurora model for atmospheric forecasting.
 
 [Link to the documentation.](https://microsoft.github.io/aurora)
 
