@@ -51,7 +51,7 @@ dev = [
 repository = "https://github.com/microsoft/aurora"
 
 [tool.hatch.build]
-include = ["aurora*"]
+include = ["aurora*", "LICENSE"]
 
 [tool.hatch.version]
 source = "vcs"
