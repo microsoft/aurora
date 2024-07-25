@@ -42,11 +42,10 @@ FAQ.
 
 ## Developing Locally
 
-Install and setup `pre-commit`:
+First, install the repository in editable mode and setup `pre-commit`:
 
 ```bash
-pip install -e '.[dev]'
-pre-commit install
+make install
 ```
 
 To run the tests and print coverage, run
@@ -63,4 +62,4 @@ To locally build the documentation, run
 make docs
 ```
 
-Afterwards, to view the documentation, open `_build/index.html`.
+To locally view the documentation, open `docs/_build/index.html` in your browser.
