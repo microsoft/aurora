@@ -7,8 +7,23 @@
 
 Implementation of the Aurora model for atmospheric forecasting.
 
+[Link to the paper on arXiv.](https://arxiv.org/abs/2405.13063)
+
 [Link to the documentation.](https://microsoft.github.io/aurora)
 
+Cite us as follows:
+
+```
+@misc{bodnar2024aurora,
+    title = {Aurora: A Foundation Model of the Atmosphere},
+    author = {Cristian Bodnar and Wessel P. Bruinsma and Ana Lucic and Megan Stanley and Johannes Brandstetter and Patrick Garvan and Maik Riechert and Jonathan Weyn and Haiyu Dong and Anna Vaughan and Jayesh K. Gupta and Kit Tambiratnam and Alex Archibald and Elizabeth Heider and Max Welling and Richard E. Turner and Paris Perdikaris},
+    year = {2024},
+    url = {https://arxiv.org/abs/2405.13063},
+    eprint = {2405.13063},
+    archivePrefix = {arXiv},
+    primaryClass = {physics.ao-ph},
+}
+```
 
 ## Getting Started
 
