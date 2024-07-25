@@ -1,4 +1,4 @@
-<img src="https://github.com/microsoft/aurora/raw/assets/aurora.png" alt="Aurora logo" width="200"/>
+<img src="assets/aurora.jpg" alt="Aurora logo" width="200"/>
 
 # Aurora
 
