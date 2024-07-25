@@ -26,7 +26,9 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade build twine
 
-      - name: Build and publish
+      - name: Build
         run: |
           python -m build
-          twine upload dist/*
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@publish-to-pypi/v1
