@@ -44,6 +44,7 @@ dev = [
     "mypy",
     "ruff==0.4.1",
     "pre-commit",
+    "jupyter-book",
 ]
 
 [project.urls]

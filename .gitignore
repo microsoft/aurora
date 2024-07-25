@@ -18,7 +18,9 @@ docs/_build
 docs/_static
 docs/source
 docs/readme.rst
+.coverage
 cover
+htmlcov
 
 # Other
 .DS_Store

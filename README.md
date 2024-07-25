@@ -1,4 +1,4 @@
-<img src="assets/aurora.jpg" alt="Aurora logo" width="200"/>
+<img src="docs/aurora.jpg" alt="Aurora logo" width="200"/>
 
 # Aurora: A Foundation Model of the Atmosphere
 
@@ -35,7 +35,32 @@ pip install microsoft-aurora
 
 Example here.
 
-
 ## FAQ
 
 FAQ.
+
+
+## Developing Locally
+
+Install and setup `pre-commit`:
+
+```bash
+pip install -e '.[dev]'
+pre-commit install
+```
+
+To run the tests and print coverage, run
+
+```bash
+make test
+```
+
+You can then explore the coverage in the browser by opening `htmlcov/index.html`.
+
+To locally build the documentation, run
+
+```bash
+make docs
+```
+
+Afterwards, to view the documentation, open `_build/index.html`.
