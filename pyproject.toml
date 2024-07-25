@@ -12,7 +12,6 @@ authors = [
     {name = "Megan Stanley", email = "meganstanley@microsoft.com"},
     {name = "Patrick Garvan", email = "pgarvan@microsoft.com"},
     {name = "Johannes Brandstetter", email = "brandstetter@ml.jku.at"},
-    {name = "Elizabeth Heider", email = "eheider@microsoft.com"},
     {name = "Richard E. Turner", email = "t-rturner@microsoft.com"},
     {name = "Paris Perdikaris", email = "paperdikaris@microsoft.com"},
 ]
@@ -39,6 +38,7 @@ dependencies = [
 dev = [
     "wheel",
     "build",
+    "ghp-import",
     "pytest",
     "pytest-cov",
     "mypy",
