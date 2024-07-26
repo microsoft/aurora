@@ -54,15 +54,15 @@ This code has not been developed nor tested for non-academic purposes and hence 
 
 ### No guarantees about quality of predictions
 Although Aurora was trained to accurately predict future weather and air pollution,
-Aurora is based on neural networks, which means that there are no strict guarantees that predicts will also be accurate.
-Altering the input to Aurora, providing a sample that was not in the training set,
-or even providing a unlucky sample that was in the training set may result in arbitrarily poor predictions.
+Aurora is based on neural networks, which means that there are no strict guarantees that predicts will always be accurate.
+Altering the inputs to Aurora, providing a sample that was not in the training set,
+or even providing a sample that was in the training set but is simply unlucky may result in arbitrarily poor predictions.
 
 ### Data
 The models included in the code have been trained on a variety of publicly available data.
 A description of all data, including download links, can be found in [Supplementary C of the paper](https://arxiv.org/pdf/2405.13063).
 
-*Note:* The documentation included in this file is for informational purposes only and is not intended to supersede the applicable license terms.
+*Note: The documentation included in this file is for informational purposes only and is not intended to supersede the applicable license terms.*
 
 ## Developing Locally
 
