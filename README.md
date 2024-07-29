@@ -48,9 +48,13 @@ pip install microsoft-aurora
 
 Example here.
 
-## FAQ
 
-FAQ.
+## Trademarks
+
+This project may contain trademarks or logos for projects, products, or services.
+Authorized use of Microsoft trademarks or logos is subject to and must follow [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
+Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
+Any use of third-party trademarks or logos are subject to those third-party's policies.
 
 ## Responsible AI Transparency Documentation
 
@@ -88,7 +92,9 @@ These evaluations are the main topic of [the paper](https://arxiv.org/pdf/2405.1
 
 *Note: The documentation included in this file is for informational purposes only and is not intended to supersede the applicable license terms.*
 
-## Developing Locally
+## FAQ
+
+### How do I setup the repo for local development?
 
 First, install the repository in editable mode and setup `pre-commit`:
 
