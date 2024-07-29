@@ -54,7 +54,7 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## License
 
-See [`LICENSE.txt'](LICENSE.txt).
+See [`LICENSE.txt`](LICENSE.txt).
 
 ## Security
 
