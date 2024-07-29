@@ -35,7 +35,7 @@ Contents:
 - [Contributing](#contributing)
 - [License](#license)
 - [Security](#security)
-- [Responsible AI Transparancy Documentation](#responsible-ai-transparancy-documentation)
+- [Responsible AI Transparency Documentation](#responsible-ai-transparency-documentation)
 - [Trademarks](#trademarks)
 - [FAQ](#faq)
 
