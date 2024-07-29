@@ -28,6 +28,17 @@ Cite us as follows:
 }
 ```
 
+Contents:
+
+- [What is Aurora?](#what-is-aurora)
+- [Getting Started](#getting-started)
+- [Contributing](#contributing)
+- [License](#license)
+- [Security](#security)
+- [Responsible AI Transparancy Documentation](#responsible-ai-transparancy-documentation)
+- [Trademarks](#trademarks)
+- [FAQ](#faq)
+
 ## What is Aurora?
 
 Aurora is a machine learning model that can predict atmospheric variables, such as temperature.
