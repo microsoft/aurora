@@ -28,6 +28,16 @@ Cite us as follows:
 }
 ```
 
+## What is Aurora?
+
+Aurora is a machine learning model that can predict atmospheric variables, such as temperature.
+It is a _foundation model_, which means that it was first generally trained on a lot of data,
+and then can adapted to specialised atmospheric forecasting tasks with relatively little data.
+We provide three such specialised versions:
+one for medium-resolution weather prediction,
+one for high-resolution weather prediction,
+and one for air pollution prediction.
+
 ## Getting Started
 
 Install with `pip`:
@@ -55,15 +65,26 @@ Our goal in publishing this code is
 (2) to support and accelerate further research into foundation model for atmospheric forecasting.
 This code has not been developed nor tested for non-academic purposes and hence should not be used as such.
 
-### No guarantees about quality of predictions
+### Limitations
 Although Aurora was trained to accurately predict future weather and air pollution,
 Aurora is based on neural networks, which means that there are no strict guarantees that predicts will always be accurate.
-Altering the inputs to Aurora, providing a sample that was not in the training set,
+Altering the inputs, providing a sample that was not in the training set,
 or even providing a sample that was in the training set but is simply unlucky may result in arbitrarily poor predictions.
+In addition, even though Aurora was trained on a wide variety of data sets,
+it is possible that Aurora inherits biases present in any one of those data sets.
+A forecasting system like Aurora is only one piece of the puzzle in a weather prediction pipeline,
+and its outputs are not meant to be directly used by people or business to plan their operations.
+A series of additional verification tests are needed before it could become operationally useful.
 
 ### Data
 The models included in the code have been trained on a variety of publicly available data.
 A description of all data, including download links, can be found in [Supplementary C of the paper](https://arxiv.org/pdf/2405.13063).
+
+### Evaluations
+All versions of Aurora were extensively evaluated by evaluating predictions on data not seen during training.
+These evaluations not only compare measures of accuracy, such as the root mean square error and anomaly correlation coefficient,
+but also look at the behaviour in extreme situations, like extreme heat and cold, and rare events, like Storm Ciarán in 2023.
+These evaluations are the main topic of [the paper](https://arxiv.org/pdf/2405.13063).
 
 *Note: The documentation included in this file is for informational purposes only and is not intended to supersede the applicable license terms.*
 
