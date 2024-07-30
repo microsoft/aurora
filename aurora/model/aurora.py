@@ -6,9 +6,9 @@ from functools import partial
 from torch import nn
 
 from aurora.batch import Batch
-from aurora.model.perceiver_decoder import Perceiver3DDecoder
-from aurora.model.perceiver_encoder import Perceiver3DEncoder
-from aurora.model.swin_3d_block import Int3Tuple, Swin3DTransformerBackbone
+from aurora.model.decoder import Perceiver3DDecoder
+from aurora.model.encoder import Perceiver3DEncoder
+from aurora.model.swin3d import Int3Tuple, Swin3DTransformerBackbone
 
 __all__ = ["Aurora"]
 

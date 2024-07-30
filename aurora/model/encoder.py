@@ -14,15 +14,15 @@ from aurora.model.fourier import (
     pos_expansion,
     scale_expansion,
 )
-from aurora.model.groupedpatchembed import LevelPatchEmbed
 from aurora.model.helpers import (
     check_lat_lon_dtype,
     create_var_map,
     get_ids_for_var_map,
     init_weights,
 )
+from aurora.model.patchembed import LevelPatchEmbed
 from aurora.model.perceiver import MLP, PerceiverResampler
-from aurora.model.pos_encode import get_2d_patched_lat_lon_encode
+from aurora.model.posencoding import get_2d_patched_lat_lon_encode
 
 
 class Perceiver3DEncoder(nn.Module):

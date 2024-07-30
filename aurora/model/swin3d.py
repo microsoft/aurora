@@ -20,7 +20,7 @@ from aurora.model.film import AdaptiveLayerNorm
 from aurora.model.fourier import lead_time_expansion
 from aurora.model.helpers import Int3Tuple, init_weights, maybe_adjust_windows
 from aurora.model.lora import LoraMode
-from aurora.model.swin_block import MLP, WindowAttention, get_two_sidded_padding
+from aurora.model.swin2d import MLP, WindowAttention, get_two_sidded_padding
 
 
 def window_partition_3d(x: torch.Tensor, ws: Int3Tuple) -> torch.Tensor:
