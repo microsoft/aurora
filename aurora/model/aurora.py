@@ -3,6 +3,7 @@ Copyright (c) Microsoft Corporation. Licensed under the MIT license.
 """
 
 from datetime import timedelta
+from functools import partial
 
 from torch import nn
 
@@ -18,22 +19,27 @@ VariableList = tuple[str, ...]
 
 
 class Aurora(nn.Module):
+    """The Aurora model.
+
+    Defaults to to the 1.3 B parameter configuration.
+    """
+
     def __init__(
         self,
-        surf_vars: VariableList,
-        static_vars: VariableList,
-        atmos_vars: VariableList,
-        window_size: Int3Tuple,
-        encoder_depths: tuple[int, ...] = (2, 2, 6, 2),
-        encoder_num_heads: tuple[int, ...] = (3, 6, 12, 24),
-        decoder_depths: tuple[int, ...] = (2, 6, 2, 2),
-        decoder_num_heads: tuple[int, ...] = (24, 12, 6, 3),
-        latent_levels: int = 8,
+        surf_vars: VariableList = ("2t", "10u", "10v", "msl"),
+        static_vars: VariableList = ("lsm", "z", "slt"),
+        atmos_vars: VariableList = ("z", "u", "v", "t", "q"),
+        window_size: Int3Tuple = (2, 6, 12),
+        encoder_depths: tuple[int, ...] = (6, 10, 8),
+        encoder_num_heads: tuple[int, ...] = (8, 16, 32),
+        decoder_depths: tuple[int, ...] = (8, 10, 6),
+        decoder_num_heads: tuple[int, ...] = (32, 16, 8),
+        latent_levels: int = 4,
         patch_size: int = 4,
-        embed_dim: int = 1024,
-        num_heads: int = 12,
+        embed_dim: int = 512,
+        num_heads: int = 16,
         mlp_ratio: float = 4.0,
-        drop_path: float = 0.1,
+        drop_path: float = 0.0,
         drop_rate: float = 0.0,
         enc_depth: int = 1,
         dec_depth: int = 1,
@@ -136,3 +142,14 @@ class Aurora(nn.Module):
         pred = pred.unnormalise()
 
         return pred
+
+
+AuroraSmall = partial(
+    Aurora,
+    encoder_depths=(2, 6, 2),
+    encoder_num_heads=(4, 8, 16),
+    decoder_depths=(2, 6, 2),
+    decoder_num_heads=(16, 8, 4),
+    embed_dim=256,
+    num_heads=8,
+)
