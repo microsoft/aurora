@@ -1,5 +1,4 @@
-"""
-Copyright (c) Microsoft Corporation. Licensed under the MIT license.
+"""Copyright (c) Microsoft Corporation. Licensed under the MIT license.
 
 Extends TIMM transformer block with compute and  memory efficient FlashAttention
 

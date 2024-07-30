@@ -1,11 +1,11 @@
-"""
-Copyright (c) Microsoft Corporation. Licensed under the MIT license.
+"""Copyright (c) Microsoft Corporation. Licensed under the MIT license.
 
 Basic blocks for the Perceiver architecture.
 
-The code borrows elements from the following repositories:
-https://github.com/lucidrains/perceiver-pytorch/blob/main/perceiver_pytorch/perceiver_pytorch.py
-https://github.com/mlfoundations/open_flamingo/blob/main/open_flamingo/src/helpers.py
+The code borrows elements from the following files:
+
+    https://github.com/lucidrains/perceiver-pytorch/blob/main/perceiver_pytorch/perceiver_pytorch.py
+    https://github.com/mlfoundations/open_flamingo/blob/main/open_flamingo/src/helpers.py
 """
 
 import torch

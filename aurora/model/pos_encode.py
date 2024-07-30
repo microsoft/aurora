@@ -1,5 +1,4 @@
-"""
-Copyright (c) Microsoft Corporation. Licensed under the MIT license.
+"""Copyright (c) Microsoft Corporation. Licensed under the MIT license.
 
 TODO(Johannes): not sure what to do with the licensing, now all used functions have been newly
                 written by myself

@@ -1,17 +1,10 @@
-"""
-Copyright (c) Microsoft Corporation. Licensed under the MIT license.
-
---------------------------------------------------------
-Swin Transformer V2
-Copyright (c) 2022 Microsoft
-Licensed under The MIT License [see LICENSE for details]
-Written by Ze Liu
+"""Copyright (c) Microsoft Corporation. Licensed under the MIT license.
 
 Code adapted from
 
   https://github.com/microsoft/Swin-Transformer/blob/main/models/swin_transformer_v2.py
 
---------------------------------------------------------
+which was written by Ze Liu.
 """
 
 from functools import lru_cache

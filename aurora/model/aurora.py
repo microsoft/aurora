@@ -1,6 +1,4 @@
-"""
-Copyright (c) Microsoft Corporation. Licensed under the MIT license.
-"""
+"""Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
 from datetime import timedelta
 from functools import partial
