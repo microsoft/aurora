@@ -7,6 +7,7 @@ Code adapted from
 """
 
 import itertools
+from datetime import timedelta
 from functools import lru_cache
 
 import torch
@@ -650,7 +651,7 @@ class Swin3DTransformerBackbone(nn.Module):
         return all_res, padded_outs
 
     def forward(
-        self, x: torch.Tensor, t: torch.Tensor, rollout_step: int, patch_res: Int3Tuple
+        self, x: torch.Tensor, lead_time: timedelta, rollout_step: int, patch_res: Int3Tuple
     ) -> torch.Tensor:
         assert (
             x.shape[1] == patch_res[0] * patch_res[1] * patch_res[2]
@@ -664,7 +665,9 @@ class Swin3DTransformerBackbone(nn.Module):
 
         all_enc_res, padded_outs = self.get_encoder_specs(patch_res)
 
-        c = self.time_mlp(lead_time_expansion(t, self.embed_dim).to(dtype=x.dtype))
+        lead_hours = lead_time / timedelta(hours=1)
+        lead_times = lead_hours * torch.ones(x.shape[0], dtype=torch.float32, device=x.device)
+        c = self.time_mlp(lead_time_expansion(lead_times, self.embed_dim).to(dtype=x.dtype))
 
         skips = []
         for i, layer in enumerate(self.encoder_layers):

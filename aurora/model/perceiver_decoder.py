@@ -108,7 +108,7 @@ class Perceiver3DDecoder(nn.Module):
         self,
         x: torch.Tensor,
         batch: Batch,
-        pres: Int3Tuple,
+        patch_res: Int3Tuple,
         lead_time: timedelta,
     ) -> Batch:
         """Forward pass of MultiScaleEncoder.
@@ -135,7 +135,13 @@ class Perceiver3DDecoder(nn.Module):
         H, W = lat.shape[0], lon.shape[-1]
 
         # Unwrap the latent level dimension.
-        x = rearrange(x, "B (C H W) D -> B (H W) C D", C=pres[0], H=pres[1], W=pres[2])
+        x = rearrange(
+            x,
+            "B (C H W) D -> B (H W) C D",
+            C=patch_res[0],
+            H=patch_res[1],
+            W=patch_res[2],
+        )
 
         # Decode surface vars.
         x_surf = self.surf_head(x[..., :1, :])  # (B, L, 1, V_S*p*p)

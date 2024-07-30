@@ -165,9 +165,9 @@ class Perceiver3DEncoder(nn.Module):
         atmos_vars = tuple(batch.atmos_vars.keys())
         atmos_levels = batch.metadata.atmos_levels
 
-        x_surf = torch.stack(batch.surf_vars.values(), dim=2)
-        x_static = torch.stack(batch.static_vars.values(), dim=2)
-        x_atmos = torch.stack(batch.atmos_vars.values(), dim=2)
+        x_surf = torch.stack(tuple(batch.surf_vars.values()), dim=2)
+        x_static = torch.stack(tuple(batch.static_vars.values()), dim=2)
+        x_atmos = torch.stack(tuple(batch.atmos_vars.values()), dim=2)
 
         B, T, _, C, H, W = x_atmos.size()
         assert x_surf.shape[:2] == (
