@@ -33,4 +33,4 @@ jobs:
         run: |
             pytest -v --cov=aurora --cov-report term-missing
         env:
-            HUGGINGFACE_REPO=wbruinsma/aurora
+            HUGGINGFACE_REPO: wbruinsma/aurora
