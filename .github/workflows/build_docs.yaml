@@ -31,6 +31,10 @@ jobs:
       run: |
         jupyter-book build docs
 
+    - name: Copy extras
+      run: |
+          cp -r docs/_extras/* docs/_build/html/
+
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v4
       with:
