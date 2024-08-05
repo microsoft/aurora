@@ -1,5 +1,6 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
+import os
 from datetime import datetime
 
 import torch
@@ -9,6 +10,8 @@ from aurora import AuroraSmall, Batch, Metadata
 
 def test_aurora_small():
     model = AuroraSmall()
+
+    model.load_checkpoint(os.environ["HUGGINGFACE_REPO"], "aurora-0.25-small-pretrained.ckpt")
 
     batch = Batch(
         surf_vars={k: torch.randn(1, 2, 16, 32) for k in ("2t", "10u", "10v", "msl")},

@@ -57,7 +57,7 @@ Install with `pip`:
 pip install microsoft-aurora
 ```
 
-Run an untrained small model on random data:
+Run the pretrained small model on random data:
 
 ```python
 import torch
@@ -65,6 +65,8 @@ import torch
 from aurora import AuroraSmall, Batch, Metadata
 
 model = AuroraSmall()
+
+model.load_checkpoint("wbruinsma/aurora", "aurora-0.25-small-pretrained.ckpt")
 
 batch = Batch(
     surf_vars={k: torch.randn(1, 2, 16, 32) for k in ("2t", "10u", "10v", "msl")},
@@ -82,6 +84,12 @@ prediction = model.forward(batch)
 
 print(prediction.surf_vars["2t"])
 ```
+
+Note that this will incur a 500 MB download
+and you may need to authenticate with `huggingface-cli login`.
+
+See the [HuggingFace repository `wbruinsma/aurora`](https://huggingface.co/wbruinsma/aurora)
+for an overview of which models are available.
 
 ## Contributing
 
@@ -146,6 +154,13 @@ First, install the repository in editable mode and setup `pre-commit`:
 
 ```bash
 make install
+```
+
+Then configure the HuggingFace repository where the weights can be found and log into HuggingFace:
+
+```bash
+export HUGGINGFACE_REPO=wbruinsma/aurora
+huggingface-cli login
 ```
 
 To run the tests and print coverage, run

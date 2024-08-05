@@ -3,7 +3,8 @@
 from datetime import timedelta
 from functools import partial
 
-from torch import nn
+import torch
+from huggingface_hub import hf_hub_download
 
 from aurora.batch import Batch
 from aurora.model.decoder import Perceiver3DDecoder
@@ -16,7 +17,7 @@ VariableList = tuple[str, ...]
 """type: Tuple of variable names."""
 
 
-class Aurora(nn.Module):
+class Aurora(torch.nn.Module):
     """The Aurora model.
 
     Defaults to to the 1.3 B parameter configuration.
@@ -141,6 +142,18 @@ class Aurora(nn.Module):
 
         return pred
 
+    def load_checkpoint(self, repo: str, name: str) -> None:
+        path = hf_hub_download(repo_id=repo, filename=name)
+        d = torch.load(path, map_location="cpu")
+
+        # Rename keys to ensure compatibility.
+        for k, v in list(d.items()):
+            if k.startswith("net."):
+                del d[k]
+                d[k[4:]] = v
+
+        self.load_state_dict(d, strict=True)
+
 
 AuroraSmall = partial(
     Aurora,
@@ -150,4 +163,5 @@ AuroraSmall = partial(
     decoder_num_heads=(16, 8, 4),
     embed_dim=256,
     num_heads=8,
+    use_lora=False,
 )
