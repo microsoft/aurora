@@ -86,9 +86,9 @@ print(prediction.surf_vars["2t"])
 ```
 
 Note that this will incur a 500 MB download
-and you may need to authenticate with `huggingface-cli login`.
+and that you may need to authenticate with `huggingface-cli login`.
 
-See the [HuggingFace repository `wbruinsma/aurora`](https://huggingface.co/wbruinsma/aurora)
+See our [HuggingFace repository `wbruinsma/aurora`](https://huggingface.co/wbruinsma/aurora)
 for an overview of which models are available.
 
 ## Contributing
