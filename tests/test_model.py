@@ -80,6 +80,7 @@ def test_aurora_small() -> None:
     # Load the checkpoint and run the model.
     model.load_checkpoint(os.environ["HUGGINGFACE_REPO"], "aurora-0.25-small-pretrained.ckpt")
     torch.manual_seed(0)  # Very important to seed! The test data was generated using this.
+    torch.set_num_threads(1)
     with torch.inference_mode():
         pred = model.forward(batch)
 
