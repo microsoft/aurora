@@ -26,6 +26,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install --upgrade --no-cache-dir -e '.[dev]'
+          python -c "import torch; print(torch.__config__.show())"
       - name: Log into HuggingFace
         run: |
             huggingface-cli login --token ${{ secrets.HUGGINGFACE_TOKEN }}
