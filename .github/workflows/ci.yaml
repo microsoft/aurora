@@ -36,4 +36,4 @@ jobs:
             pytest -v --cov=aurora --cov-report term-missing
         env:
             HUGGINGFACE_REPO: wbruinsma/aurora
-            MKL_CBWR: SSE2
+            MKL_CBWR: COMPATIBLE
