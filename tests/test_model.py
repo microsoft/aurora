@@ -11,6 +11,8 @@ from huggingface_hub import hf_hub_download
 
 from aurora import AuroraSmall, Batch, Metadata
 
+torch.use_deterministic_algorithms(True)
+
 
 class SavedMetadata(TypedDict):
     """Type of metadata of a saved test batch."""
@@ -77,8 +79,8 @@ def test_aurora_small() -> None:
 
     # Load the checkpoint and run the model.
     model.load_checkpoint(os.environ["HUGGINGFACE_REPO"], "aurora-0.25-small-pretrained.ckpt")
-    with torch.no_grad():
-        torch.manual_seed(0)  # Very important to seed! The test data was generated using this.
+    torch.manual_seed(0)  # Very important to seed! The test data was generated using this.
+    with torch.inference_mode():
         pred = model.forward(batch)
 
     def assert_approx_equality(v_out, v_ref) -> None:
