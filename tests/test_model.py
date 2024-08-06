@@ -1,30 +1,99 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
 import os
+import pickle
 from datetime import datetime
+from typing import TypedDict
 
+import numpy as np
 import torch
+from huggingface_hub import hf_hub_download
 
 from aurora import AuroraSmall, Batch, Metadata
 
 
-def test_aurora_small():
+class SavedMetadata(TypedDict):
+    """Type of metadata of a saved test batch."""
+
+    lat: np.ndarray
+    lon: np.ndarray
+    time: list[datetime]
+    atmos_levels: list[int | float]
+
+
+class SavedBatch(TypedDict):
+    """Type of a saved test batch."""
+
+    surf_vars: dict[str, np.ndarray]
+    static_vars: dict[str, np.ndarray]
+    atmos_vars: dict[str, np.ndarray]
+    metadata: SavedMetadata
+
+
+def test_aurora_small() -> None:
     model = AuroraSmall()
 
-    model.load_checkpoint(os.environ["HUGGINGFACE_REPO"], "aurora-0.25-small-pretrained.ckpt")
+    # Load test input.
+    path = hf_hub_download(
+        repo_id=os.environ["HUGGINGFACE_REPO"],
+        filename="aurora-0.25-small-pretrained-test-input.pickle",
+    )
+    with open(path, "rb") as f:
+        test_input: SavedBatch = pickle.load(f)
 
+    # Load test output.
+    path = hf_hub_download(
+        repo_id=os.environ["HUGGINGFACE_REPO"],
+        filename="aurora-0.25-small-pretrained-test-output.pickle",
+    )
+    with open(path, "rb") as f:
+        test_output: SavedBatch = pickle.load(f)
+
+    # Load static variables.
+    path = hf_hub_download(
+        repo_id=os.environ["HUGGINGFACE_REPO"],
+        filename="aurora-0.25-static.pickle",
+    )
+    with open(path, "rb") as f:
+        static_vars: dict[str, np.ndarray] = pickle.load(f)
+
+    # Select the test region for the static variables. For convenience, these are included wholly.
+    lat_inds = range(140, 140 + 32)
+    lon_inds = range(0, 0 + 64)
+    static_vars = {k: v[lat_inds, :][:, lon_inds] for k, v in static_vars.items()}
+
+    # Construct a proper batch from the test input.
     batch = Batch(
-        surf_vars={k: torch.randn(1, 2, 16, 32) for k in ("2t", "10u", "10v", "msl")},
-        static_vars={k: torch.randn(1, 2, 16, 32) for k in ("lsm", "z", "slt")},
-        atmos_vars={k: torch.randn(1, 2, 4, 16, 32) for k in ("z", "u", "v", "t", "q")},
+        surf_vars={k: torch.from_numpy(v) for k, v in test_input["surf_vars"].items()},
+        static_vars={k: torch.from_numpy(v) for k, v in static_vars.items()},
+        atmos_vars={k: torch.from_numpy(v) for k, v in test_input["atmos_vars"].items()},
         metadata=Metadata(
-            lat=torch.linspace(90, -90, 17)[:-1],  # Cut off the south pole.
-            lon=torch.linspace(0, 360, 32 + 1)[:-1],
-            time=(datetime(2020, 6, 1, 12, 0),),
-            atmos_levels=(100, 250, 500, 850),
+            lat=torch.from_numpy(test_input["metadata"]["lat"]),
+            lon=torch.from_numpy(test_input["metadata"]["lon"]),
+            atmos_levels=tuple(test_input["metadata"]["atmos_levels"]),
+            time=tuple(test_input["metadata"]["time"]),
         ),
     )
 
-    prediction = model.forward(batch)
+    # Load the checkpoint and run the model.
+    model.load_checkpoint(os.environ["HUGGINGFACE_REPO"], "aurora-0.25-small-pretrained.ckpt")
+    with torch.no_grad():
+        torch.manual_seed(0)  # Very important to seed! The test data was generated using this.
+        pred = model.forward(batch)
 
-    assert isinstance(prediction, Batch)
+    def assert_approx_equality(v_out, v_ref) -> None:
+        err_rel = ((v_out - v_ref) / (v_ref + 1e-10)).abs().mean()
+        assert err_rel <= 1e-4
+
+    # Check the outputs.
+    for k in pred.surf_vars:
+        assert_approx_equality(pred.surf_vars[k], test_output["surf_vars"][k])
+    for k in pred.static_vars:
+        assert_approx_equality(pred.static_vars[k], static_vars[k])
+    for k in pred.atmos_vars:
+        assert_approx_equality(pred.atmos_vars[k], test_output["atmos_vars"][k])
+
+    np.testing.assert_allclose(pred.metadata.lon, test_output["metadata"]["lon"])
+    np.testing.assert_allclose(pred.metadata.lat, test_output["metadata"]["lat"])
+    assert pred.metadata.atmos_levels == tuple(test_output["metadata"]["atmos_levels"])
+    assert pred.metadata.time == tuple(test_output["metadata"]["time"])

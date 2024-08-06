@@ -1,5 +1,6 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
+import dataclasses
 from datetime import timedelta
 from functools import partial
 
@@ -119,6 +120,13 @@ class Aurora(torch.nn.Module):
             W // self.encoder.patch_size,
         )
 
+        # Insert batch and history dimension for static variables.
+        B, T = next(iter(batch.surf_vars.values())).shape[:2]
+        batch = dataclasses.replace(
+            batch,
+            static_vars={k: v[None, None].repeat(B, T, 1, 1) for k, v in batch.static_vars.items()},
+        )
+
         x = self.encoder(
             batch,
             lead_time=timedelta(hours=6),
@@ -136,13 +144,25 @@ class Aurora(torch.nn.Module):
             patch_res=patch_res,
         )
 
-        # TODO: Ensure time dim is present and time is right.
+        # Remove batch and history dimension from static variables.
+        B, T = next(iter(batch.surf_vars.values()))[0]
+        pred = dataclasses.replace(
+            pred,
+            static_vars={k: v[0, 0] for k, v in batch.static_vars.items()},
+        )
+
+        # Insert history dimension in prediction. The time should already be right.
+        pred = dataclasses.replace(
+            pred,
+            surf_vars={k: v[:, None] for k, v in pred.surf_vars.items()},
+            atmos_vars={k: v[:, None] for k, v in pred.atmos_vars.items()},
+        )
 
         pred = pred.unnormalise()
 
         return pred
 
-    def load_checkpoint(self, repo: str, name: str) -> None:
+    def load_checkpoint(self, repo: str, name: str, strict: bool = True) -> None:
         path = hf_hub_download(repo_id=repo, filename=name)
         d = torch.load(path, map_location="cpu")
 
@@ -152,7 +172,7 @@ class Aurora(torch.nn.Module):
                 del d[k]
                 d[k[4:]] = v
 
-        self.load_state_dict(d, strict=True)
+        self.load_state_dict(d, strict=strict)
 
 
 AuroraSmall = partial(
