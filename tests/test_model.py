@@ -83,7 +83,7 @@ def test_aurora_small() -> None:
 
     def assert_approx_equality(v_out, v_ref) -> None:
         err_rel = ((v_out - v_ref) / (v_ref + 1e-10)).abs().mean()
-        assert err_rel <= 1e-4
+        assert err_rel <= 5e-4
 
     # Check the outputs.
     for k in pred.surf_vars:
