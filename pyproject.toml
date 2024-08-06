@@ -32,9 +32,9 @@ dynamic = ["version"]
 
 requires-python = ">=3.10"
 dependencies = [
-    "numpy",
-    "torch",
-    "einops",
+    "numpy==1.26.2",
+    "torch==2.2.0",
+    "einops==0.6.1",
     "timm==0.6.13",
     "huggingface-hub",
 ]
@@ -50,7 +50,6 @@ dev = [
     "ruff==0.4.1",
     "pre-commit",
     "jupyter-book",
-    "torch==2.2.0",
 ]
 
 [project.urls]
