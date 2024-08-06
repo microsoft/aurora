@@ -37,3 +37,5 @@ jobs:
         env:
             HUGGINGFACE_REPO: wbruinsma/aurora
             MKL_CBWR: COMPATIBLE
+            MKL_DYNAMIC: FALSE
+            MKL_NUM_THREADS: 1
