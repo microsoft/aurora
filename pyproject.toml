@@ -50,6 +50,7 @@ dev = [
     "ruff==0.4.1",
     "pre-commit",
     "jupyter-book",
+    "torch==2.2.0",
 ]
 
 [project.urls]
