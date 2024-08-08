@@ -39,7 +39,7 @@ def test_aurora_small() -> None:
     # Load test input.
     path = hf_hub_download(
         repo_id=os.environ["HUGGINGFACE_REPO"],
-        filename="aurora-0.25-small-pretrained-test-input.pickle",
+        filename="aurora-0.25-small-pretrained-test-input-sse2.pickle",
     )
     with open(path, "rb") as f:
         test_input: SavedBatch = pickle.load(f)
@@ -47,7 +47,7 @@ def test_aurora_small() -> None:
     # Load test output.
     path = hf_hub_download(
         repo_id=os.environ["HUGGINGFACE_REPO"],
-        filename="aurora-0.25-small-pretrained-test-output.pickle",
+        filename="aurora-0.25-small-pretrained-test-output-sse2.pickle",
     )
     with open(path, "rb") as f:
         test_output: SavedBatch = pickle.load(f)
@@ -80,7 +80,7 @@ def test_aurora_small() -> None:
 
     # Load the checkpoint and run the model.
     model.load_checkpoint(os.environ["HUGGINGFACE_REPO"], "aurora-0.25-small-pretrained.ckpt")
-    torch.manual_seed(0)  # Very important to seed! The test data was generated using this.
+    model.eval()
     with torch.inference_mode():
         pred = model.forward(batch)
 

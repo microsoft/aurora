@@ -4,17 +4,29 @@ from pathlib import Path
 
 import pytest
 
-SKIP_FILES: set[str] = {"_version.py"}
-"""set[str]: These files are not required to have a copyright notice."""
-
 COPYRIGHT_NOTICE: str = '"""Copyright (c) Microsoft Corporation. Licensed under the MIT license.'
+"""str: Every file must start with this notice."""
+
+PYTHON_FILES: list[Path] = []
+"""list[Path]: Python files to scan for headers."""
+
+_root = Path(__file__).parents[1]
+for path in _root.rglob("**/*.py"):
+    relative_path = path.relative_to(_root)
+
+    # Ignore a possible virtual environment.
+    if str(relative_path.parents[-2]) in {"venv"}:
+        continue
+
+    # Ignore the automatically generated version file.
+    if relative_path.name in {"_version.py"}:
+        continue
+
+    PYTHON_FILES.append(path)
 
 
-@pytest.mark.parametrize("python_file", Path(__file__).parents[1].rglob("**/*.py"))
+@pytest.mark.parametrize("python_file", PYTHON_FILES)
 def test_presence_of_copyright_header(python_file: Path) -> None:
-    if python_file.name in SKIP_FILES:
-        return
-
     with open(python_file) as f:
         lines = list(f.read().splitlines())
 
