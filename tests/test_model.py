@@ -103,19 +103,43 @@ def test_aurora_small() -> None:
     # for k in pred.surf_vars:
     #     np.testing.assert_allclose(pred.surf_vars[k], pred2.surf_vars[k])
 
-    def assert_approx_equality(v_out, v_ref) -> None:
+    def assert_approx_equality(v_out, v_ref, tol) -> None:
         err = np.abs(v_out - v_ref).mean()
         mag = np.abs(v_ref).mean()
-        print(err / mag)
-        assert err / mag <= 1e-3
+        print(err / mag, tol, mag)
+        assert err / mag <= tol
+
+    # The wind speeds are a little more numerically unstable.
+    tolerances = {
+        "2t": 1e-4,
+        "10u": 5e-3,
+        "10v": 5e-3,
+        "msl": 1e-4,
+        "u": 1e-3,
+        "v": 1e-3,
+        "t": 1e-4,
+        "q": 1e-4,
+    }
 
     # Check the outputs.
     for k in pred.surf_vars:
-        assert_approx_equality(pred.surf_vars[k].numpy(), test_output["surf_vars"][k])
+        assert_approx_equality(
+            pred.surf_vars[k].numpy(),
+            test_output["surf_vars"][k],
+            tolerances[k],
+        )
     for k in pred.static_vars:
-        assert_approx_equality(pred.static_vars[k].numpy(), static_vars[k])
+        assert_approx_equality(
+            pred.static_vars[k].numpy(),
+            static_vars[k],
+            0,  # These should be exactly equal.
+        )
     for k in pred.atmos_vars:
-        assert_approx_equality(pred.atmos_vars[k].numpy(), test_output["atmos_vars"][k])
+        assert_approx_equality(
+            pred.atmos_vars[k].numpy(),
+            test_output["atmos_vars"][k],
+            tolerances[k],
+        )
 
     np.testing.assert_allclose(pred.metadata.lon, test_output["metadata"]["lon"])
     np.testing.assert_allclose(pred.metadata.lat, test_output["metadata"]["lat"])
