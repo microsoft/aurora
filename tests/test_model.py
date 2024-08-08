@@ -36,7 +36,7 @@ def test_aurora_small() -> None:
     # Load test input.
     path = hf_hub_download(
         repo_id=os.environ["HUGGINGFACE_REPO"],
-        filename="aurora-0.25-small-pretrained-test-input-sse2.pickle",
+        filename="aurora-0.25-small-pretrained-test-input.pickle",
     )
     with open(path, "rb") as f:
         test_input: SavedBatch = pickle.load(f)
@@ -44,7 +44,7 @@ def test_aurora_small() -> None:
     # Load test output.
     path = hf_hub_download(
         repo_id=os.environ["HUGGINGFACE_REPO"],
-        filename="aurora-0.25-small-pretrained-test-output-sse2.pickle",
+        filename="aurora-0.25-small-pretrained-test-output.pickle",
     )
     with open(path, "rb") as f:
         test_output: SavedBatch = pickle.load(f)
@@ -77,6 +77,7 @@ def test_aurora_small() -> None:
 
     # Load the checkpoint and run the model.
     model.load_checkpoint(os.environ["HUGGINGFACE_REPO"], "aurora-0.25-small-pretrained.ckpt")
+    model = model.double()
     model.eval()
     with torch.inference_mode():
         pred = model.forward(batch)
@@ -84,7 +85,8 @@ def test_aurora_small() -> None:
     def assert_approx_equality(v_out, v_ref) -> None:
         err = np.abs(v_out - v_ref).mean()
         mag = np.abs(v_ref).mean()
-        assert err / mag <= 1e-3
+        print(err / mag)
+        assert err / mag <= 1e-5
 
     # Check the outputs.
     for k in pred.surf_vars:
