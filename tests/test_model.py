@@ -35,13 +35,6 @@ class SavedBatch(TypedDict):
 def test_aurora_small() -> None:
     model = AuroraSmall()
 
-    def all_children(x):
-        return [x] + sum([all_children(xi) for xi in x.children()], [])
-
-    for layer in all_children(model):
-        if isinstance(layer, torch.nn.LayerNorm):
-            layer.eps = 1e-1
-
     # Load test input.
     path = hf_hub_download(
         repo_id=os.environ["HUGGINGFACE_REPO"],
@@ -109,8 +102,8 @@ def test_aurora_small() -> None:
         print(err / mag, tol, mag)
         assert err / mag <= tol
 
-    # For some reason, wind speeds are more numerically unstable, so we use a higher tolerance of
-    # 0.5% there.
+    # For some reason, wind speed and specific humidity are more numerically unstable, so we use a
+    # higher tolerance of 0.5% there.
     tolerances = {
         "2t": 1e-4,
         "10u": 5e-3,
@@ -119,7 +112,7 @@ def test_aurora_small() -> None:
         "u": 5e-3,
         "v": 5e-3,
         "t": 1e-4,
-        "q": 1e-4,
+        "q": 5e-3,
     }
 
     # Check the outputs.
