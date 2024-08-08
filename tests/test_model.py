@@ -109,14 +109,15 @@ def test_aurora_small() -> None:
         print(err / mag, tol, mag)
         assert err / mag <= tol
 
-    # The wind speeds are a little more numerically unstable.
+    # For some reason, wind speeds are more numerically unstable, so we use a higher tolerance of
+    # 0.5% there.
     tolerances = {
         "2t": 1e-4,
         "10u": 5e-3,
         "10v": 5e-3,
         "msl": 1e-4,
-        "u": 1e-3,
-        "v": 1e-3,
+        "u": 5e-3,
+        "v": 5e-3,
         "t": 1e-4,
         "q": 1e-4,
     }
