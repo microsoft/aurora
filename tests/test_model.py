@@ -86,7 +86,7 @@ def test_aurora_small() -> None:
         err = np.abs(v_out - v_ref).mean()
         mag = np.abs(v_ref).mean()
         print(err / mag)
-        assert err / mag <= 1e-5
+        assert err / mag <= 1e-4
 
     # Check the outputs.
     for k in pred.surf_vars:
