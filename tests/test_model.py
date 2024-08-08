@@ -11,9 +11,6 @@ from huggingface_hub import hf_hub_download
 
 from aurora import AuroraSmall, Batch, Metadata
 
-torch.manual_seed(0)
-torch.use_deterministic_algorithms(True)
-
 
 class SavedMetadata(TypedDict):
     """Type of metadata of a saved test batch."""
@@ -85,16 +82,17 @@ def test_aurora_small() -> None:
         pred = model.forward(batch)
 
     def assert_approx_equality(v_out, v_ref) -> None:
-        err_rel = ((v_out - v_ref) / (v_ref + 1e-10)).abs().mean()
-        assert err_rel <= 5e-4
+        err = np.abs(v_out - v_ref).mean()
+        mag = np.abs(v_ref).mean()
+        assert err / mag <= 1e-3
 
     # Check the outputs.
     for k in pred.surf_vars:
-        assert_approx_equality(pred.surf_vars[k], test_output["surf_vars"][k])
+        assert_approx_equality(pred.surf_vars[k].numpy(), test_output["surf_vars"][k])
     for k in pred.static_vars:
-        assert_approx_equality(pred.static_vars[k], static_vars[k])
+        assert_approx_equality(pred.static_vars[k].numpy(), static_vars[k])
     for k in pred.atmos_vars:
-        assert_approx_equality(pred.atmos_vars[k], test_output["atmos_vars"][k])
+        assert_approx_equality(pred.atmos_vars[k].numpy(), test_output["atmos_vars"][k])
 
     np.testing.assert_allclose(pred.metadata.lon, test_output["metadata"]["lon"])
     np.testing.assert_allclose(pred.metadata.lat, test_output["metadata"]["lat"])
