@@ -81,6 +81,10 @@ def test_aurora_small() -> None:
     model.eval()
     with torch.inference_mode():
         pred = model.forward(batch)
+        pred2 = model.forward(batch)
+
+    # Check that the outputs are deterministic.
+    np.testing.assert_allclose(pred.surf_vars["2t"], pred2.surf_vars["2t"])
 
     def assert_approx_equality(v_out, v_ref) -> None:
         err = np.abs(v_out - v_ref).mean()
