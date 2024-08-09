@@ -19,41 +19,6 @@ from timm.models.layers.helpers import to_2tuple
 from aurora.model.fourier import FourierExpansion
 
 
-def get_great_circle_distance(
-    lat_min: torch.Tensor, lon_min: torch.Tensor, lat_max: torch.Tensor, lon_max: torch.Tensor
-) -> torch.Tensor:
-    """Calculate the great-circle distance between two points on a sphere via the Haversine formula.
-    Latitude and longitude values are used as inputs.
-
-    Args:
-        lat_min (torch.Tensor): Latitude of first point.
-        lon_min (torch.Tensor): Longitude of first point.
-        lat_max (torch.Tensor): Latitude of second point.
-        lon_max (torch.Tensor): Longitude of second point.
-
-    Returns:
-        torch.Tensor: Tensor of great-circle distance between pairs of points multiplied by the
-            radius of the earth.
-    """
-    delta_lat = torch.deg2rad(lat_min) - torch.deg2rad(lat_max)
-    delta_lon = torch.deg2rad(lon_min) - torch.deg2rad(lon_max)
-    # "Haversine" formula where the radius is the radius of the earth = 6371km.
-    # https://en.wikipedia.org/wiki/Haversine_formula
-    great_circle_dist = (
-        2
-        * 6371
-        * torch.asin(
-            torch.sqrt(
-                torch.sin(delta_lat / 2) ** 2
-                + torch.cos(torch.deg2rad(lat_min))
-                * torch.cos(torch.deg2rad(lat_max))
-                * torch.sin(delta_lon / 2) ** 2
-            )
-        )
-    )
-    return great_circle_dist
-
-
 def get_root_area_on_sphere(
     lat_min: torch.Tensor, lon_min: torch.Tensor, lat_max: torch.Tensor, lon_max: torch.Tensor
 ) -> torch.Tensor:
@@ -221,38 +186,3 @@ def get_2d_patched_lat_lon_encode(
     )
 
     return pos_encode.squeeze(0), scale_encode.squeeze(0)  # Return without batch dimension.
-
-
-def get_flexible_2d_patched_lat_lon_encode(
-    encode_dim: int,
-    lat: torch.Tensor,
-    lon: torch.Tensor,
-    patch_dims: int | list | tuple,
-    pos_expansion: FourierExpansion,
-    scale_expansion: FourierExpansion,
-) -> torch.Tensor:
-    """Positional encoding of latitude-longitude data that works for non-regular data such as HRRR.
-
-    Args:
-        encode_dim (int): Output encoding dimension `D`.
-        lat (torch.Tensor): Tensor of latitude values `(B, H, W)`.
-        lon (torch.Tensor): Tensor of longitude values `(B, H, W)`.
-        patch (Union[list, tuple]): Patch dimensions. Different x- and y-values are supported.
-        pos_expansion (:class:`.FourierExpansion`): Fourier expansion for the latitudes and
-            longitudes.
-        scale_expansion (:class:`.FourierExpansion`): Fourier expansion for the patch areas.
-
-    Returns:
-        torch.Tensor: Returns positional encoding tensor of shape `(B, H/patch[0] * W/patch[1], D)`.
-    """
-
-    grid = torch.cat((lat[:, None, ...], lon[:, None, ...]), dim=1)
-    pos_encode, scale_encode = get_2d_patched_lat_lon_from_grid(
-        encode_dim,
-        grid,
-        to_2tuple(patch_dims),
-        pos_expansion=pos_expansion,
-        scale_expansion=scale_expansion,
-    )
-
-    return pos_encode, scale_encode

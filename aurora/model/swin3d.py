@@ -19,8 +19,145 @@ from timm.models.layers import DropPath, to_3tuple
 from aurora.model.film import AdaptiveLayerNorm
 from aurora.model.fourier import lead_time_expansion
 from aurora.model.helpers import Int3Tuple, init_weights, maybe_adjust_windows
-from aurora.model.lora import LoraMode
-from aurora.model.swin2d import MLP, WindowAttention, get_two_sidded_padding
+from aurora.model.lora import LoraMode, LoRARollout
+
+
+class MLP(nn.Module):
+    def __init__(
+        self,
+        in_features,
+        hidden_features=None,
+        out_features=None,
+        act_layer=nn.GELU,
+        drop=0.0,
+    ):
+        super().__init__()
+        out_features = out_features or in_features
+        hidden_features = hidden_features or in_features
+        self.fc1 = nn.Linear(in_features, hidden_features)
+        self.act = act_layer()
+        self.fc2 = nn.Linear(hidden_features, out_features)
+        self.drop = nn.Dropout(drop)
+
+    def forward(self, x):
+        x = self.fc1(x)
+        x = self.act(x)
+        x = self.drop(x)
+        x = self.fc2(x)
+        x = self.drop(x)
+        return x
+
+
+class WindowAttention(nn.Module):
+    r"""Window based multi-head self attention (W-MSA) module with relative position bias.
+    It supports both of shifted and non-shifted window.
+
+    Args:
+        dim (int): Number of input channels.
+        window_size (tuple[int]): The height and width of the window.
+        num_heads (int): Number of attention heads.
+        qkv_bias (bool, optional):  If True, add a learnable bias to query, key, value. Defaults to
+            `True`.
+        qk_scale (float | None, optional): Override default qk scale of head_dim ** -0.5 if set
+        attn_drop (float, optional): Dropout ratio of attention weight. Default: 0.0
+        proj_drop (float, optional): Dropout ratio of output. Default: 0.0
+    """
+
+    def __init__(
+        self,
+        dim,
+        window_size,
+        num_heads,
+        qkv_bias=True,
+        qk_scale=None,
+        attn_drop=0.0,
+        proj_drop=0.0,
+        lora_r=8,
+        lora_alpha=8,
+        lora_dropout=0.0,
+        lora_steps=40,
+        lora_mode: LoraMode = "single",
+        use_lora: bool = False,
+    ):
+        super().__init__()
+        self.dim = dim
+        self.window_size = window_size  # Wh, Ww
+        self.num_heads = num_heads
+        assert dim % num_heads == 0, f"dim {dim} should be divided by num_heads {num_heads}."
+        self.head_dim = dim // num_heads
+
+        self.attn_drop = attn_drop
+        self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
+        self.proj = nn.Linear(dim, dim)
+        self.proj_drop = nn.Dropout(proj_drop)
+
+        if use_lora:
+            self.lora_proj = LoRARollout(
+                dim, dim, lora_r, lora_alpha, lora_dropout, lora_steps, lora_mode
+            )
+            self.lora_qkv = LoRARollout(
+                dim, dim * 3, lora_r, lora_alpha, lora_dropout, lora_steps, lora_mode
+            )
+        else:
+            self.lora_proj = lambda *args, **kwargs: 0  # type: ignore
+            self.lora_qkv = lambda *args, **kwargs: 0  # type: ignore
+
+    def forward(
+        self, x: torch.Tensor, mask: torch.Tensor | None = None, rollout_step: int = 0
+    ) -> torch.Tensor:
+        """
+        Runs the forward pass of the window-based multi-head self attention layer.
+
+        Args:
+            x (torch.Tensor): Input features with shape of `(nW*B, N, C)`.
+            mask (torch.Tensor, optional): Attention mask of floating-points in the range
+                `[-inf, 0)` with shape of `(nW, ws, ws)`, where `nW` is the number of windows,
+                and `ws` is the window size (i.e. total tokens inside the window).
+
+        Returns:
+            torch.Tensor: Output of shape `(nW*B, N, C)`.
+        """
+        qkv = self.qkv(x) + self.lora_qkv(x, rollout_step)
+        qkv = rearrange(qkv, "B N (qkv H D) -> qkv B H N D", H=self.num_heads, qkv=3)
+        q, k, v = qkv[0], qkv[1], qkv[2]
+        attn_dropout = self.attn_drop if self.training else 0.0
+
+        if mask is not None:
+            nW = mask.shape[0]
+            q, k, v = map(lambda t: rearrange(t, "(B nW) H N D -> B nW H N D", nW=nW), (q, k, v))
+            mask = mask.unsqueeze(1).unsqueeze(0)  # (1, nW, 1, ws, ws)
+            x = F.scaled_dot_product_attention(q, k, v, attn_mask=mask, dropout_p=attn_dropout)
+            x = rearrange(x, "B nW H N D -> (B nW) H N D")
+        else:
+            x = F.scaled_dot_product_attention(q, k, v, dropout_p=attn_dropout)
+
+        x = rearrange(x, "B H N D -> B N (H D)")
+        x = self.proj(x) + self.lora_proj(x, rollout_step)
+        x = self.proj_drop(x)
+        return x
+
+    def extra_repr(self) -> str:
+        return f"dim={self.dim}, window_size={self.window_size}, num_heads={self.num_heads}"
+
+
+def get_two_sidded_padding(H_padding: int, W_padding: int) -> tuple[int, int, int, int]:
+    """Returns the padding for the left, right, top, and bottom sides."""
+    assert H_padding >= 0, f"H_padding ({H_padding}) must be >= 0"
+    assert W_padding >= 0, f"W_padding ({W_padding}) must be >= 0"
+
+    if H_padding:
+        padding_top = H_padding // 2
+        padding_bottom = H_padding - padding_top
+    else:
+        padding_top = padding_bottom = 0
+
+    if W_padding:
+        padding_left = W_padding // 2
+        padding_right = W_padding - padding_left
+    else:
+        padding_left = padding_right = 0
+
+    return padding_left, padding_right, padding_top, padding_bottom
 
 
 def window_partition_3d(x: torch.Tensor, ws: Int3Tuple) -> torch.Tensor:

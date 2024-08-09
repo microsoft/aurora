@@ -1,14 +1,11 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
 import math
-from collections.abc import Iterable
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from einops import rearrange
 from timm.models.layers.helpers import to_2tuple
-from timm.models.vision_transformer import trunc_normal_
 
 
 class LevelPatchEmbed(nn.Module):
@@ -92,71 +89,3 @@ class LevelPatchEmbed(nn.Module):
 
         x = self.norm(proj)
         return x
-
-
-class StableGroupedVarPatchEmbed(nn.Module):
-    def __init__(
-        self,
-        max_vars: int,
-        patch_size: int,
-        embed_dim: int,
-        norm_layer: nn.Module = None,
-        return_flatten: bool = True,
-    ):
-        super().__init__()
-        self.max_vars = max_vars
-        self.patch_size = to_2tuple(patch_size)
-        self.embed_dim = embed_dim
-        self.return_flatten = return_flatten
-
-        self.proj = nn.ModuleList(
-            [
-                nn.Conv2d(
-                    1,
-                    embed_dim,
-                    kernel_size=patch_size,
-                    stride=patch_size,
-                    bias=bool(norm_layer),
-                )
-                for _ in range(max_vars)
-            ]
-        )
-
-        if norm_layer is not None:
-            self.norm = norm_layer(embed_dim)
-        else:
-            self.norm = nn.Identity()
-
-        self.apply(self._init_weights)
-
-    def _init_weights(self, m):
-        """Initialize conv layers and layer norm."""
-        if isinstance(m, nn.Conv2d):
-            trunc_normal_(m.weight, std=0.02)
-            if m.bias is not None:
-                nn.init.constant_(m.bias, 0)
-        elif isinstance(m, nn.LayerNorm):
-            nn.init.constant_(m.bias, 0)
-            nn.init.constant_(m.weight, 1.0)
-
-    def forward(self, x: torch.Tensor, vars: Iterable[int]):
-        """Forward fucntion
-
-        Args:
-            x (torch.Tensor): a shape of [BT, V, L, C] tensor
-            vars (list[int], optional): a list of variable ID
-
-        Returns:
-            proj (torch.Tensor): a shape of [BT V L' C] tensor
-        """
-        proj = []
-        for i, var in enumerate(vars):
-            proj.append(self.proj[var](x[:, i : i + 1]))
-        proj = torch.stack(proj, dim=1)  # BT, V, C, H, W
-
-        if self.return_flatten:
-            proj = rearrange(proj, "b v c h w -> b v (h w) c")
-
-        proj = self.norm(proj)
-
-        return proj

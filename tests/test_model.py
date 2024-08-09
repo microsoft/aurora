@@ -32,7 +32,7 @@ class SavedBatch(TypedDict):
 
 
 def test_aurora_small() -> None:
-    model = AuroraSmall()
+    model = AuroraSmall(use_lora=True)
 
     # Load test input.
     path = hf_hub_download(
@@ -93,7 +93,11 @@ def test_aurora_small() -> None:
     )
 
     # Load the checkpoint and run the model.
-    model.load_checkpoint(os.environ["HUGGINGFACE_REPO"], "aurora-0.25-small-pretrained.ckpt")
+    model.load_checkpoint(
+        os.environ["HUGGINGFACE_REPO"],
+        "aurora-0.25-small-pretrained.ckpt",
+        strict=False,  # LoRA parameters not available.
+    )
     model = model.double()
     model.eval()
     with torch.inference_mode():
