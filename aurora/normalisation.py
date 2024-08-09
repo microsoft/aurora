@@ -52,7 +52,7 @@ unnormalise_atmos_var = partial(normalise_atmos_var, unnormalise=True)
 
 
 locations: dict[str, float] = {
-    "z": 0,  # -1.386496e03,
+    "z": -1.386496e03,
     "lsm": 0.000000e00,
     "slt": 0.000000e00,
     "2t": 2.785140e02,
@@ -127,9 +127,9 @@ locations: dict[str, float] = {
 }
 
 scales: dict[str, float] = {
-    "z": 1,  # 5.884467e04,
+    "z": 5.884467e04,
     "lsm": 1.000000e00,
-    "slt": 1,  # 7.000000e00,  # 7 or 8?!
+    "slt": 7.000000e00,
     "2t": 2.122036e01,
     "10u": 5.547512e00,
     "10v": 4.765339e00,

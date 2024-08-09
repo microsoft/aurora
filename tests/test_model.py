@@ -8,6 +8,7 @@ from typing import TypedDict
 import numpy as np
 import torch
 from huggingface_hub import hf_hub_download
+from scipy.interpolate import RegularGridInterpolator as RGI
 
 from aurora import AuroraSmall, Batch, Metadata
 
@@ -40,8 +41,6 @@ def test_aurora_small() -> None:
         repo_id=os.environ["HUGGINGFACE_REPO"],
         filename="aurora-0.25-small-pretrained-test-input.pickle",
     )
-    # path = "/home/wessel/feynman/projects/climai_global/notebooks/
-    # aurora-0.25-small-pretrained-test-input.pickle"
     with open(path, "rb") as f:
         test_input: SavedBatch = pickle.load(f)
 
@@ -50,26 +49,37 @@ def test_aurora_small() -> None:
         repo_id=os.environ["HUGGINGFACE_REPO"],
         filename="aurora-0.25-small-pretrained-test-output.pickle",
     )
-    # path = "/home/wessel/feynman/projects/climai_global/notebooks/
-    # aurora-0.25-small-pretrained-test-output.pickle"
     with open(path, "rb") as f:
         test_output: SavedBatch = pickle.load(f)
 
     # Load static variables.
     path = hf_hub_download(
         repo_id=os.environ["HUGGINGFACE_REPO"],
-        # filename="aurora-0.25-static.pickle",
-        filename="static_vars_ecmwf_regridded.pickle",
+        filename="aurora-0.25-static.pickle",
     )
-    # path = "/home/wessel/feynman/.data/weather/pde-data-preprocessed/ECMWF-IFS-HR/
-    # seqrecord/static_vars_ecmwf_regridded.pickle"
     with open(path, "rb") as f:
         static_vars: dict[str, np.ndarray] = pickle.load(f)
 
-    # Select the test region for the static variables. For convenience, these are included wholly.
-    # lat_inds = range(140, 140 + 32 * 4)
-    # lon_inds = range(0, 0 + 64 * 4)
-    static_vars = {k: v[:-1, :][:, :] for k, v in static_vars.items()}
+    def interpolate(v: np.ndarray) -> np.ndarray:
+        """Interpolate the static variable at 0.25 degrees to the grid of the test data."""
+        rgi = RGI(
+            (
+                np.linspace(90, -90, v.shape[0]),
+                np.linspace(0, 360, v.shape[1], endpoint=False),
+            ),
+            v,  # This transpose is needed!
+            method="linear",
+            bounds_error=False,
+        )
+        lat_new, lon_new = np.meshgrid(
+            test_input["metadata"]["lat"],
+            test_input["metadata"]["lon"],
+            indexing="ij",
+            sparse=True,
+        )
+        return rgi((lat_new, lon_new))
+
+    static_vars = {k: interpolate(v) for k, v in static_vars.items()}
 
     # Construct a proper batch from the test input.
     batch = Batch(
@@ -90,16 +100,10 @@ def test_aurora_small() -> None:
     model.eval()
     with torch.inference_mode():
         pred = model.forward(batch)
-        # pred2 = model.forward(batch)
-
-    # # Check that the outputs are deterministic by just checking the surface-level variables.
-    # for k in pred.surf_vars:
-    #     np.testing.assert_allclose(pred.surf_vars[k], pred2.surf_vars[k])
 
     def assert_approx_equality(v_out, v_ref, tol) -> None:
         err = np.abs(v_out - v_ref).mean()
         mag = np.abs(v_ref).mean()
-        print(err / mag, tol, mag)
         assert err / mag <= tol
 
     # For some reason, wind speed and specific humidity are more numerically unstable, so we use a
@@ -126,7 +130,7 @@ def test_aurora_small() -> None:
         assert_approx_equality(
             pred.static_vars[k].numpy(),
             static_vars[k],
-            0,  # These should be exactly equal.
+            1e-10,  # These should be exactly equal.
         )
     for k in pred.atmos_vars:
         assert_approx_equality(
