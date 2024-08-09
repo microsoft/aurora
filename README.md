@@ -88,6 +88,8 @@ print(prediction.surf_vars["2t"])
 Note that this will incur a 500 MB download
 and that you may need to authenticate with `huggingface-cli login`.
 
+Please read the [documentation](https://microsoft.github.io/aurora) for more detailed instructions.
+
 See our [HuggingFace repository `wbruinsma/aurora`](https://huggingface.co/wbruinsma/aurora)
 for an overview of which models are available.
 
