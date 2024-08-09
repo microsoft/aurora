@@ -12,8 +12,6 @@ from scipy.interpolate import RegularGridInterpolator as RGI
 
 from aurora import AuroraSmall, Batch, Metadata
 
-torch.use_deterministic_algorithms(True)
-
 
 class SavedMetadata(TypedDict):
     """Type of metadata of a saved test batch."""
@@ -101,7 +99,7 @@ def test_aurora_small() -> None:
     with torch.inference_mode():
         pred = model.forward(batch)
 
-    def assert_approx_equality(v_out, v_ref, tol) -> None:
+    def assert_approx_equality(v_out: np.ndarray, v_ref: np.ndarray, tol: float) -> None:
         err = np.abs(v_out - v_ref).mean()
         mag = np.abs(v_ref).mean()
         assert err / mag <= tol
