@@ -59,13 +59,13 @@ def test_aurora_small() -> None:
         static_vars: dict[str, np.ndarray] = pickle.load(f)
 
     def interpolate(v: np.ndarray) -> np.ndarray:
-        """Interpolate the static variable at 0.25 degrees to the grid of the test data."""
+        """Interpolate a static variable `v` to the grid of the test data."""
         rgi = RGI(
             (
                 np.linspace(90, -90, v.shape[0]),
                 np.linspace(0, 360, v.shape[1], endpoint=False),
             ),
-            v,  # This transpose is needed!
+            v,
             method="linear",
             bounds_error=False,
         )
