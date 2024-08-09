@@ -50,6 +50,7 @@ dev = [
     "ruff==0.4.1",
     "pre-commit",
     "jupyter-book",
+    "scipy",
 ]
 
 [project.urls]
