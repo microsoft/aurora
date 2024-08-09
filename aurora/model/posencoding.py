@@ -1,15 +1,8 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license.
 
-TODO(Johannes): not sure what to do with the licensing, now all used functions have been newly
-                written by myself
-Copyright (c) Meta Platforms, Inc. and affiliates.
-All rights reserved.
+Parts of this code are inspired by
 
-This source code is licensed under the license found in the
-LICENSE file in the root directory of this source tree.
---------------------------------------------------------
-Position embedding utils
---------------------------------------------------------
+    https://github.com/microsoft/ClimaX/blob/6d5d354ffb4b91bb684f430b98e8f6f8af7c7f7c/src/climax/utils/pos_embed.py
 """
 
 import torch
@@ -35,9 +28,8 @@ def get_root_area_on_sphere(
     Returns:
         torch.Tensor: Tensor of root area on grid.
     """
-    # Calculate area of latitude (phi) - longitude (theta) grid.
-    # Using the formula:
-    # R**2 * pi * (sin(phi_1) - sin(phi_2)) *(theta_1 - theta_2)
+    # Calculate area of latitude (phi) - longitude (theta) grid using the formula:
+    #   R**2 * pi * (sin(phi_1) - sin(phi_2)) *(theta_1 - theta_2)
     # https://www.johndcook.com/blog/2023/02/21/sphere-grid-area/
     assert (lat_max > lat_min).all(), f"lat_max - lat_min: {torch.min(lat_max - lat_min)}"
     assert (lon_max > lon_min).all(), f"lon_max - lon_min: {torch.min(lon_max - lon_min)}"
