@@ -1,0 +1,96 @@
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.10.14/x64/lib/python3.10/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
+    executenb(
+  File "/opt/hostedtoolcache/Python/3.10.14/x64/lib/python3.10/site-packages/nbclient/client.py", line 1314, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+  File "/opt/hostedtoolcache/Python/3.10.14/x64/lib/python3.10/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+  File "/opt/hostedtoolcache/Python/3.10.14/x64/lib/python3.10/asyncio/base_events.py", line 649, in run_until_complete
+    return future.result()
+  File "/opt/hostedtoolcache/Python/3.10.14/x64/lib/python3.10/site-packages/nbclient/client.py", line 709, in async_execute
+    await self.async_execute_cell(
+  File "/opt/hostedtoolcache/Python/3.10.14/x64/lib/python3.10/site-packages/nbclient/client.py", line 1062, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "/opt/hostedtoolcache/Python/3.10.14/x64/lib/python3.10/site-packages/nbclient/client.py", line 918, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+from pathlib import Path
+
+import cdsapi
+
+# Data will be downloaded here.
+download_path = Path("~/downloads")
+
+c = cdsapi.Client()
+
+download_path = download_path.expanduser()
+download_path.mkdir(parents=True, exist_ok=True)
+
+if not (download_path / "2023-01-01-surface-level.nc").exists():
+    c.retrieve(
+        "reanalysis-era5-single-levels",
+        {
+            "product_type": "reanalysis",
+            "variable": [
+                "2m_temperature",
+                "10m_u_component_of_wind",
+                "10m_v_component_of_wind",
+                "mean_sea_level_pressure",
+            ],
+            "year": "2023",
+            "month": "01",
+            "day": "01",
+            "time": ["00:00", "06:00", "12:00", "18:00"],
+            "format": "netcdf",
+        },
+        "2023-01-01-surface-level.nc",
+    )
+if not (download_path / "2023-01-01-atmospheric.nc").exists():
+    c.retrieve(
+        "reanalysis-era5-pressure-levels",
+        {
+            "product_type": "reanalysis",
+            "variable": [
+                "temperature",
+                "u_component_of_wind",
+                "v_component_of_wind",
+                "specific_humidity",
+                "geopotential",
+            ],
+            "pressure_level": [
+                "50",
+                "100",
+                "150",
+                "200",
+                "250",
+                "300",
+                "400",
+                "500",
+                "600",
+                "700",
+                "850",
+                "925",
+                "1000",
+            ],
+            "year": "2023",
+            "month": "01",
+            "day": "01",
+            "time": ["00:00", "06:00", "12:00", "18:00"],
+            "format": "netcdf",
+        },
+        "2023-01-01-atmospheric.nc",
+    )
+------------------
+
+
+[0;31m---------------------------------------------------------------------------[0m
+[0;31mModuleNotFoundError[0m                       Traceback (most recent call last)
+Cell [0;32mIn[1], line 3[0m
+[1;32m      1[0m [38;5;28;01mfrom[39;00m [38;5;21;01mpathlib[39;00m [38;5;28;01mimport[39;00m Path
+[0;32m----> 3[0m [38;5;28;01mimport[39;00m [38;5;21;01mcdsapi[39;00m
+[1;32m      5[0m [38;5;66;03m# Data will be downloaded here.[39;00m
+[1;32m      6[0m download_path [38;5;241m=[39m Path([38;5;124m"[39m[38;5;124m~/downloads[39m[38;5;124m"[39m)
+
+[0;31mModuleNotFoundError[0m: No module named 'cdsapi'
+
