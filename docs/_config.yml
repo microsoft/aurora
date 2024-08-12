@@ -10,7 +10,7 @@ parse:
 
 # Force re-execution of notebooks on each build.
 execute:
-  execute_notebooks: force
+  execute_notebooks: off
 
 # Load AutoDoc extension.
 sphinx:

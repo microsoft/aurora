@@ -13,6 +13,9 @@ venv
 dist
 pip-wheel-metadata
 
+# Notebook checkpoints
+.ipynb_checkpoints
+
 # Documentation and coverage
 docs/_build
 docs/_static
