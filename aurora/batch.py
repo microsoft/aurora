@@ -104,7 +104,12 @@ class Batch:
                 surf_vars={k: v[..., :-1, :] for k, v in self.surf_vars.items()},
                 static_vars={k: v[..., :-1, :] for k, v in self.static_vars.items()},
                 atmos_vars={k: v[..., :-1, :] for k, v in self.atmos_vars.items()},
-                metadata=self.metadata,
+                metadata=Metadata(
+                    lat=self.metadata.lat[:-1],
+                    lon=self.metadata.lon,
+                    atmos_levels=self.metadata.atmos_levels,
+                    time=self.metadata.time,
+                ),
             )
         else:
             raise ValueError(
