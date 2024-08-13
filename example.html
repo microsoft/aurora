@@ -357,7 +357,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -373,6 +375,16 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-the-data">Downloading the Data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preparing-a-batch">Preparing a Batch</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-and-running-the-model">Loading and Running the Model</a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -384,35 +396,12 @@ document.write(`
                   
   <section id="example">
 <h1>Example<a class="headerlink" href="#example" title="Link to this heading">#</a></h1>
-<p>In this example, we will download ERA5 data for 1 Jan 2023 at $0.25\degree$ resolution and produce predictions using the non-fine-tuned version of Aurora $0.25\degree$.</p>
+<p>In this example, we will download ERA5 data for 1 Jan 2023 at 0.25 degrees resolution and run Aurora on this data. The fine-tuned version of Aurora specifically only works with IFS HRES T0, so we used the non-fine-tuned version of Aurora in this example.</p>
+<section id="downloading-the-data">
+<h2>Downloading the Data<a class="headerlink" href="#downloading-the-data" title="Link to this heading">#</a></h2>
 <p>To begin with, register an account with the <a class="reference external" href="https://cds.climate.copernicus.eu/">CDS</a> and create <code class="docutils literal notranslate"><span class="pre">$HOME/.cdsapirc</span></code> with the following content:</p>
 <p>You can find your UID and API key on your account page.</p>
 <p>We now download the ERA5 data.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>cdsapi
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Requirement already satisfied: cdsapi in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (0.7.0)
-Requirement already satisfied: cads-api-client&gt;=0.9.2 in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from cdsapi) (1.2.0)
-Requirement already satisfied: requests&gt;=2.5.0 in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from cdsapi) (2.32.3)
-Requirement already satisfied: tqdm in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from cdsapi) (4.66.5)
-Requirement already satisfied: attrs in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from cads-api-client&gt;=0.9.2-&gt;cdsapi) (24.2.0)
-Requirement already satisfied: multiurl in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from cads-api-client&gt;=0.9.2-&gt;cdsapi) (0.3.1)
-Requirement already satisfied: typing-extensions in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from cads-api-client&gt;=0.9.2-&gt;cdsapi) (4.12.2)
-Requirement already satisfied: charset-normalizer&lt;4,&gt;=2 in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from requests&gt;=2.5.0-&gt;cdsapi) (3.3.2)
-Requirement already satisfied: idna&lt;4,&gt;=2.5 in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from requests&gt;=2.5.0-&gt;cdsapi) (3.7)
-Requirement already satisfied: urllib3&lt;3,&gt;=1.21.1 in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from requests&gt;=2.5.0-&gt;cdsapi) (2.2.2)
-Requirement already satisfied: certifi&gt;=2017.4.17 in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from requests&gt;=2.5.0-&gt;cdsapi) (2024.7.4)
-Requirement already satisfied: pytz in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from multiurl-&gt;cads-api-client&gt;=0.9.2-&gt;cdsapi) (2024.1)
-Requirement already satisfied: python-dateutil in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from multiurl-&gt;cads-api-client&gt;=0.9.2-&gt;cdsapi) (2.9.0.post0)
-Requirement already satisfied: six&gt;=1.5 in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from python-dateutil-&gt;multiurl-&gt;cads-api-client&gt;=0.9.2-&gt;cdsapi) (1.16.0)
-</pre></div>
-</div>
-</div>
-</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
@@ -518,97 +507,55 @@ Atmospheric variables downloaded!
 </div>
 </div>
 </div>
+</section>
+<section id="preparing-a-batch">
+<h2>Preparing a Batch<a class="headerlink" href="#preparing-a-batch" title="Link to this heading">#</a></h2>
+<p>We convert the downloaded data to an <code class="docutils literal notranslate"><span class="pre">aurora.Batch</span></code>, which is what the model requires.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
-
-<span class="kn">import</span> <span class="nn">torch</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Pretrained version does not use LoRA.</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;wbruinsma/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-  from .autonotebook import tqdm as notebook_tqdm
-/home/wbruinsma/aurora/aurora/model/aurora.py:167: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don&#39;t have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
-  d = torch.load(path, map_location=&quot;cpu&quot;)
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>xarray<span class="w"> </span>netcdf4
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Requirement already satisfied: xarray in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (2024.7.0)
-Requirement already satisfied: netcdf4 in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (1.7.1.post2)
-Requirement already satisfied: numpy&gt;=1.23 in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from xarray) (2.0.1)
-Requirement already satisfied: packaging&gt;=23.1 in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from xarray) (24.1)
-Requirement already satisfied: pandas&gt;=2.0 in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from xarray) (2.2.2)
-Requirement already satisfied: cftime in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from netcdf4) (1.6.4)
-Requirement already satisfied: certifi in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from netcdf4) (2024.7.4)
-Requirement already satisfied: python-dateutil&gt;=2.8.2 in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from pandas&gt;=2.0-&gt;xarray) (2.9.0.post0)
-Requirement already satisfied: pytz&gt;=2020.1 in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from pandas&gt;=2.0-&gt;xarray) (2024.1)
-Requirement already satisfied: tzdata&gt;=2022.7 in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from pandas&gt;=2.0-&gt;xarray) (2024.1)
-Requirement already satisfied: six&gt;=1.5 in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&gt;=2.0-&gt;xarray) (1.16.0)
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">Metadata</span>
-
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
 
+<span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">Metadata</span>
+
 <span class="n">static_vars_ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;static.nc&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;netcdf4&quot;</span><span class="p">)</span>
 <span class="n">surf_vars_ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-surface-level.nc&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;netcdf4&quot;</span><span class="p">)</span>
 <span class="n">atmos_vars_ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-atmospheric.nc&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;netcdf4&quot;</span><span class="p">)</span>
 
-<span class="n">surf_vars</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;2t&quot;</span><span class="p">:</span> <span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;t2m&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">],</span>
-    <span class="s2">&quot;10u&quot;</span><span class="p">:</span> <span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;u10&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">],</span>
-    <span class="s2">&quot;10v&quot;</span><span class="p">:</span> <span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;v10&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">],</span>
-    <span class="s2">&quot;msl&quot;</span><span class="p">:</span> <span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;msl&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">],</span>
-<span class="p">}</span>
-<span class="n">static_vars</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">static_vars_ds</span><span class="p">[</span><span class="s2">&quot;z&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-    <span class="s2">&quot;slt&quot;</span><span class="p">:</span> <span class="n">static_vars_ds</span><span class="p">[</span><span class="s2">&quot;slt&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-    <span class="s2">&quot;lsm&quot;</span><span class="p">:</span> <span class="n">static_vars_ds</span><span class="p">[</span><span class="s2">&quot;lsm&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-<span class="p">}</span>
-<span class="n">atmos_vars</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">],</span>
-    <span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;u&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">],</span>
-    <span class="s2">&quot;v&quot;</span><span class="p">:</span> <span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;v&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">],</span>
-    <span class="s2">&quot;q&quot;</span><span class="p">:</span> <span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">],</span>
-    <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;z&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">],</span>
-<span class="p">}</span>
-
-
-<span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="n">variables</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert the variables to PyTorch and move them to the GPU.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">variables</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-
+<span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Select this time index in the downloaded data.</span>
 
 <span class="n">batch</span> <span class="o">=</span> <span class="n">Batch</span><span class="p">(</span>
-    <span class="n">surf_vars</span><span class="o">=</span><span class="n">convert</span><span class="p">(</span><span class="n">surf_vars</span><span class="p">),</span>
-    <span class="n">static_vars</span><span class="o">=</span><span class="n">convert</span><span class="p">(</span><span class="n">static_vars</span><span class="p">),</span>
-    <span class="n">atmos_vars</span><span class="o">=</span><span class="n">convert</span><span class="p">(</span><span class="n">atmos_vars</span><span class="p">),</span>
+    <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span>
+        <span class="c1"># First select time points `i` and `i - 1`. Afterwards, `[None]` inserts a</span>
+        <span class="c1"># batch dimension of size one.</span>
+        <span class="s2">&quot;2t&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;t2m&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
+        <span class="s2">&quot;10u&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;u10&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
+        <span class="s2">&quot;10v&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;v10&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
+        <span class="s2">&quot;msl&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;msl&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
+    <span class="p">},</span>
+    <span class="n">static_vars</span><span class="o">=</span><span class="p">{</span>
+        <span class="c1"># The static variables are constant, so we just get them for the first time.</span>
+        <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">static_vars_ds</span><span class="p">[</span><span class="s2">&quot;z&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+        <span class="s2">&quot;slt&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">static_vars_ds</span><span class="p">[</span><span class="s2">&quot;slt&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+        <span class="s2">&quot;lsm&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">static_vars_ds</span><span class="p">[</span><span class="s2">&quot;lsm&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+    <span class="p">},</span>
+    <span class="n">atmos_vars</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
+        <span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;u&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
+        <span class="s2">&quot;v&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;v&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
+        <span class="s2">&quot;q&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
+        <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;z&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
+    <span class="p">},</span>
     <span class="n">metadata</span><span class="o">=</span><span class="n">Metadata</span><span class="p">(</span>
-        <span class="n">lat</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">),</span>
-        <span class="n">lon</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">),</span>
-        <span class="n">time</span><span class="o">=</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2023</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">0</span><span class="p">),),</span>
+        <span class="n">lat</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="n">lon</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="c1"># Converting to `datetime64[s]` ensure that the output of `tolist()` gives</span>
+        <span class="c1"># `datetime.datetime`s. Note that this needs to be a tuple of length one:</span>
+        <span class="c1"># one value for every batch element.</span>
+        <span class="n">time</span><span class="o">=</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;datetime64[s]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="n">i</span><span class="p">],),</span>
         <span class="n">atmos_levels</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">level</span><span class="p">)</span> <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="n">atmos_vars_ds</span><span class="o">.</span><span class="n">level</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
     <span class="p">),</span>
 <span class="p">)</span>
@@ -616,49 +563,27 @@ Requirement already satisfied: six&gt;=1.5 in /home/wbruinsma/miniconda3/envs/au
 </div>
 </div>
 </div>
+</section>
+<section id="loading-and-running-the-model">
+<h2>Loading and Running the Model<a class="headerlink" href="#loading-and-running-the-model" title="Link to this heading">#</a></h2>
+<p>Finally, we are ready to load and run the model and visualise the predictions.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Pretrained version does not use LoRA.</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;wbruinsma/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
     <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>matplotlib
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Collecting matplotlib
-  Downloading matplotlib-3.9.1.post1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (11 kB)
-Collecting contourpy&gt;=1.0.1 (from matplotlib)
-  Downloading contourpy-1.2.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (5.8 kB)
-Collecting cycler&gt;=0.10 (from matplotlib)
-  Downloading cycler-0.12.1-py3-none-any.whl.metadata (3.8 kB)
-Collecting fonttools&gt;=4.22.0 (from matplotlib)
-  Downloading fonttools-4.53.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (162 kB)
-Collecting kiwisolver&gt;=1.3.1 (from matplotlib)
-  Downloading kiwisolver-1.4.5-cp310-cp310-manylinux_2_12_x86_64.manylinux2010_x86_64.whl.metadata (6.4 kB)
-Requirement already satisfied: numpy&gt;=1.23 in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from matplotlib) (2.0.1)
-Requirement already satisfied: packaging&gt;=20.0 in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from matplotlib) (24.1)
-Requirement already satisfied: pillow&gt;=8 in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from matplotlib) (10.4.0)
-Collecting pyparsing&gt;=2.3.1 (from matplotlib)
-  Downloading pyparsing-3.1.2-py3-none-any.whl.metadata (5.1 kB)
-Requirement already satisfied: python-dateutil&gt;=2.7 in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from matplotlib) (2.9.0.post0)
-Requirement already satisfied: six&gt;=1.5 in /home/wbruinsma/miniconda3/envs/aurora/lib/python3.10/site-packages (from python-dateutil&gt;=2.7-&gt;matplotlib) (1.16.0)
-Downloading matplotlib-3.9.1.post1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (8.3 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">8.3/8.3 MB</span> <span class=" -Color -Color-Red">22.3 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>a <span class=" -Color -Color-Cyan">0:00:01</span>
-?25hDownloading contourpy-1.2.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (305 kB)
-Downloading cycler-0.12.1-py3-none-any.whl (8.3 kB)
-Downloading fonttools-4.53.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (4.6 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">4.6/4.6 MB</span> <span class=" -Color -Color-Red">56.2 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
-?25hDownloading kiwisolver-1.4.5-cp310-cp310-manylinux_2_12_x86_64.manylinux2010_x86_64.whl (1.6 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">1.6/1.6 MB</span> <span class=" -Color -Color-Red">62.5 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
-?25hDownloading pyparsing-3.1.2-py3-none-any.whl (103 kB)
-Installing collected packages: pyparsing, kiwisolver, fonttools, cycler, contourpy, matplotlib
-Successfully installed contourpy-1.2.1 cycler-0.12.1 fonttools-4.53.1 kiwisolver-1.4.5 matplotlib-3.9.1.post1 pyparsing-3.1.2
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+<span class="n">pred</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -669,13 +594,13 @@ Successfully installed contourpy-1.2.1 cycler-0.12.1 fonttools-4.53.1 kiwisolver
 
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
 
-<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;2t&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">-</span> <span class="mi">270</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">30</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;2t&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">-</span> <span class="mi">270</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Prediction&quot;</span><span class="p">)</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
 
-<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;t2m&quot;</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">-</span> <span class="mi">270</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">30</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;t2m&quot;</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">-</span> <span class="mi">270</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Truth&quot;</span><span class="p">)</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([]);</span>
@@ -683,9 +608,10 @@ Successfully installed contourpy-1.2.1 cycler-0.12.1 fonttools-4.53.1 kiwisolver
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="_images/8bf4593b6e089a789d9e91e88a44e0849fcad57e73fece0f3080a955c829b65f.png" src="_images/8bf4593b6e089a789d9e91e88a44e0849fcad57e73fece0f3080a955c829b65f.png" />
+<img alt="_images/8ee7958cedbfc9082d78bd977ae8d265129563623b700eb1a8a0ad9b2e8679e2.png" src="_images/8ee7958cedbfc9082d78bd977ae8d265129563623b700eb1a8a0ad9b2e8679e2.png" />
 </div>
 </div>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -742,6 +668,23 @@ Successfully installed contourpy-1.2.1 cycler-0.12.1 fonttools-4.53.1 kiwisolver
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-the-data">Downloading the Data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preparing-a-batch">Preparing a Batch</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-and-running-the-model">Loading and Running the Model</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>
