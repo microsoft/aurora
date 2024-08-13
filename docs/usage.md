@@ -103,7 +103,7 @@ with torch.inference_mode():
     pred = model.forward(batch)
 ```
 
-Predictions are also of the form :class:`aurora.Batch`.
+Predictions are also of the form of `aurora.Batch`.
 For example, `pred.surf_vars["2t"]` gives the predictions for two-meter temperature.
 
 You will need approximately 40 GB of GPU memory for running the regular model on global 0.25 degree data.
