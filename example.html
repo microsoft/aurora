@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Example &#8212; Aurora: A Foundation Model of the Atmosphere</title>
+    <title>Full Example: Predictions for ERA5 &#8212; Aurora: A Foundation Model of the Atmosphere</title>
   
   
   
@@ -183,7 +183,7 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="batch.html">Form of a Batch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="models.html">Available Models</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Example</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Full Example: Predictions for ERA5</a></li>
 <li class="toctree-l1"><a class="reference internal" href="beware.html">Beware!</a></li>
 </ul>
 
@@ -370,7 +370,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Example</h1>
+    <h1>Full Example: Predictions for ERA5</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -394,9 +394,9 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="example">
-<h1>Example<a class="headerlink" href="#example" title="Link to this heading">#</a></h1>
-<p>In this example, we will download ERA5 data for 1 Jan 2023 at 0.25 degrees resolution and run Aurora on this data. The fine-tuned version of Aurora specifically only works with IFS HRES T0, so we used the non-fine-tuned version of Aurora in this example.</p>
+  <section id="full-example-predictions-for-era5">
+<h1>Full Example: Predictions for ERA5<a class="headerlink" href="#full-example-predictions-for-era5" title="Link to this heading">#</a></h1>
+<p>In this example, we will download ERA5 data for 1 Jan 2023 at 0.25 degrees resolution and run Aurora on this data. The fine-tuned version of Aurora specifically only works with IFS HRES T0, so we use the non-fine-tuned version of Aurora in this example.</p>
 <section id="downloading-the-data">
 <h2>Downloading the Data<a class="headerlink" href="#downloading-the-data" title="Link to this heading">#</a></h2>
 <p>To begin with, register an account with the <a class="reference external" href="https://cds.climate.copernicus.eu/">CDS</a> and create <code class="docutils literal notranslate"><span class="pre">$HOME/.cdsapirc</span></code> with the following content:</p>
@@ -569,11 +569,9 @@ Atmospheric variables downloaded!
 <p>Finally, we are ready to load and run the model and visualise the predictions.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
 
-<span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Pretrained version does not use LoRA.</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># The pretrained version does not use LoRA.</span>
 <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;wbruinsma/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">)</span>
 
 <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
@@ -594,13 +592,13 @@ Atmospheric variables downloaded!
 
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
 
-<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;2t&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">-</span> <span class="mi">270</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;2t&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">-</span> <span class="mf">273.15</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Prediction&quot;</span><span class="p">)</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
 
-<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;t2m&quot;</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">-</span> <span class="mi">270</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;t2m&quot;</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">-</span> <span class="mf">273.15</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Truth&quot;</span><span class="p">)</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([]);</span>
@@ -608,7 +606,7 @@ Atmospheric variables downloaded!
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="_images/8ee7958cedbfc9082d78bd977ae8d265129563623b700eb1a8a0ad9b2e8679e2.png" src="_images/8ee7958cedbfc9082d78bd977ae8d265129563623b700eb1a8a0ad9b2e8679e2.png" />
+<img alt="_images/5a3bf28c8808aaf5bced0bf0e06812c7de15459056080876e3a54860be844d8e.png" src="_images/5a3bf28c8808aaf5bced0bf0e06812c7de15459056080876e3a54860be844d8e.png" />
 </div>
 </div>
 </section>
