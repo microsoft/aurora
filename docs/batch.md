@@ -1,11 +1,97 @@
 # Form of a Batch
 
-* Dimensions convention: `(b, t, h, w)` for surf and static; `(b, t, c, h, w)` for atmos.
+You must feed data to the model in the form of a `aurora.Batch`.
+We now explain the exact form of `aurora.Batch`.
 
-* Emphasise unnormalised.
+## Overall Structure
 
-* Lat/lon conventions.
+Batches contain four things:
 
-* Give code example.
+1. some surface-level variables,
+2. some static variables,
+3. some atmospheric variables all at the same collection of pressure levels, and
+4. metadata describing these variables: latitudes, longitudes,
+    the pressure levels of the atmospheric variables, and the time of the data.
 
-* Give static variable sources for 0.25 and 0.1.
+All variables in a batch are unnormalised.
+Normalisation happens internally in the model.
+
+Before we explain the four components in detail, here is an example with randomly generated data:
+
+```python
+from datetime import datetime
+
+import torch
+
+from aurora import Batch, Metadata
+
+batch = Batch(
+    surf_vars={k: torch.randn(1, 2, 17, 32) for k in ("2t", "10u", "10v", "msl")},
+    static_vars={k: torch.randn(17, 32) for k in ("lsm", "z", "slt")},
+    atmos_vars={k: torch.randn(1, 2, 4, 17, 32) for k in ("z", "u", "v", "t", "q")},
+    metadata=Metadata(
+        lat=torch.linspace(90, -90, 17),
+        lon=torch.linspace(0, 360, 32 + 1)[:-1],
+        time=(datetime(2020, 6, 1, 12, 0),),
+        atmos_levels=(100, 250, 500, 850),
+    ),
+)
+```
+
+## `Batch.surf_vars`
+
+`Batch.surf_vars` is a dictionary mapping names of surface-level variables to the numerical values
+of the variables.
+The surface-level variables must be of the form `(b, t, h, w)` where `b` is the batch size,
+`t` the history dimension, `h` the number of latitudes, and `w` the number of longitudes.
+
+All Aurora models produce the prediction for the next step from the current _and_ previous step.
+`surf_vars[:, 1, :, :]` must correspond to the current step,
+and `surf_vars[:, 0, :, :]` must correspond to the previous step, so the step before that.
+
+The following surface-level variables are allowed:
+
+| Name | Description |
+| - | - |
+| `2t` | Two-meter temperature in `K` |
+| `10u` | Ten-meter eastward wind speed in `m/s` |
+| `10v` | Ten-meter southward wind speed in `m/s` |
+| `msl` | Mean sea-level pressure in `Pa` |
+
+
+## `Batch.static_vars`
+
+`Batch.static_vars` is a dictionary mapping names of static variables to the
+numerical values of the variables.
+The static variables must be of the form `(h, w)` where `h` is the number of latitudes
+and `w` the number of longitudes.
+
+The following static variables are allowed:
+
+| Name | Description |
+| - | - |
+| `lsm` | [Land-sea mask](https://codes.ecmwf.int/grib/param-db/172) |
+| `slt` | [Soil type](https://codes.ecmwf.int/grib/param-db/43) |
+| `z` | Surface-level geopotential in `m^2 / s^2` |
+
+tell source
+
+## `Batch.atmos_vars`
+
+`Batch.static_vars` is a dictionary mapping names of atmospheric variables to the
+numerical values of the variables.
+The atmospheric variables must be of the form `(b, t, c, h, w)` where `b` is the batch size,
+`t` the history dimension, `c` the number of pressure levels, `h` the number of latitudes,
+and `h` the number of longitudes.
+All atmospheric variables must contain the same collection of pressure levels in the same order.
+
+The following atmospheric variables are allows:
+
+| Name | Description |
+| - | - |
+
+## `Batch.metadata`
+
+`Batch.metadata` must be an `aurora.Metadata`.
+
+lat/lon conventions
