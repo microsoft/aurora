@@ -6,3 +6,4 @@ chapters:
 - file: models
 - file: example
 - file: beware
+- file: api

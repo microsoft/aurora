@@ -12,7 +12,7 @@ from aurora.model.decoder import Perceiver3DDecoder
 from aurora.model.encoder import Perceiver3DEncoder
 from aurora.model.swin3d import Int3Tuple, Swin3DTransformerBackbone
 
-__all__ = ["Aurora"]
+__all__ = ["Aurora", "AuroraSmall"]
 
 VariableList = tuple[str, ...]
 """type: Tuple of variable names."""

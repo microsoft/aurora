@@ -24,7 +24,8 @@ class Metadata:
         lat (:class:`torch.Tensor`): Latitudes.
         lon (:class:`torch.Tensor`): Longitudes.
         time (tuple[datetime, ...]): For every batch element, the time.
-        atmos_levels (tuple[int |float, ...]): Pressure levels for the atmospheric variables in hPa.
+        atmos_levels (tuple[int | float, ...]): Pressure levels for the atmospheric variables in
+            hPa.
     """
 
     lat: torch.Tensor
