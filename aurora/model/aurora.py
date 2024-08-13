@@ -111,7 +111,11 @@ class Aurora(torch.nn.Module):
         Returns:
             :class:`Batch`: Prediction for the batch.
         """
-        batch = batch.normalise().crop(patch_size=self.patch_size)
+        batch = batch.float()  # `float64`s will take up too much memory.
+        batch = batch.normalise()
+        batch = batch.crop(patch_size=self.patch_size)
+        # Assume that all parameters of the model are either on the CPU or GPU.
+        batch = batch.to(next(self.parameters()).device)
 
         H, W = batch.spatial_shape
         patch_res: Int3Tuple = (
@@ -163,8 +167,11 @@ class Aurora(torch.nn.Module):
         return pred
 
     def load_checkpoint(self, repo: str, name: str, strict: bool = True) -> None:
+        # Assume that all parameters are either on the CPU or on the GPU.
+        device = next(self.parameters()).device
+
         path = hf_hub_download(repo_id=repo, filename=name)
-        d = torch.load(path, map_location="cpu")
+        d = torch.load(path, map_location=device, weights_only=True)
 
         # Rename keys to ensure compatibility.
         for k, v in list(d.items()):

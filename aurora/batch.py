@@ -2,6 +2,7 @@
 
 import dataclasses
 from datetime import datetime
+from typing import Callable
 
 import torch
 
@@ -116,3 +117,24 @@ class Batch:
                 f"There can at most be one latitude too many, "
                 f"but there are {h % patch_size} too many."
             )
+
+    def _fmap(self, f: Callable[[torch.Tensor], torch.Tensor]) -> "Batch":
+        return Batch(
+            surf_vars={k: f(v) for k, v in self.surf_vars.items()},
+            static_vars={k: f(v) for k, v in self.static_vars.items()},
+            atmos_vars={k: f(v) for k, v in self.atmos_vars.items()},
+            metadata=Metadata(
+                lat=f(self.metadata.lat),
+                lon=f(self.metadata.lon),
+                atmos_levels=self.metadata.atmos_levels,
+                time=self.metadata.time,
+            ),
+        )
+
+    def to(self, device: str | torch.device) -> "Batch":
+        """Move the batch to another device."""
+        return self._fmap(lambda x: x.to(device))
+
+    def float(self) -> "Batch":
+        """Convert everything to `float32`s."""
+        return self._fmap(lambda x: x.float())

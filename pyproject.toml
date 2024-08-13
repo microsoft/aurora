@@ -83,6 +83,7 @@ minversion = "6.0"
 src = ["aurora"]
 target-version = "py38"
 line-length = 100
+extend-include = ["*.ipynb"]
 
 [tool.ruff.lint]
 select = [
