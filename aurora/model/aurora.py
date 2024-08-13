@@ -111,11 +111,12 @@ class Aurora(torch.nn.Module):
         Returns:
             :class:`Batch`: Prediction for the batch.
         """
-        batch = batch.float()  # `float64`s will take up too much memory.
+        # Get the first parameter. We'll derive the data type and device from this parameter.
+        p = next(self.parameters())
+        batch = batch.type(p.dtype)
         batch = batch.normalise()
         batch = batch.crop(patch_size=self.patch_size)
-        # Assume that all parameters of the model are either on the CPU or GPU.
-        batch = batch.to(next(self.parameters()).device)
+        batch = batch.to(p.device)
 
         H, W = batch.spatial_shape
         patch_res: Int3Tuple = (

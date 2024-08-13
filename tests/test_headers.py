@@ -15,7 +15,7 @@ for path in _root.rglob("**/*.py"):
     relative_path = path.relative_to(_root)
 
     # Ignore a possible virtual environment.
-    if str(relative_path.parents[-2]) in {"venv"}:
+    if len(relative_path.parents) >= 2 and str(relative_path.parents[-2]) in {"venv"}:
         continue
 
     # Ignore the automatically generated version file.
