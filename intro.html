@@ -385,7 +385,29 @@ document.write(`
                   
   <section id="aurora-a-foundation-model-of-the-atmosphere">
 <h1>Aurora: A Foundation Model of the Atmosphere<a class="headerlink" href="#aurora-a-foundation-model-of-the-atmosphere" title="Link to this heading">#</a></h1>
-<p>Introduction.</p>
+<p>Welcome to the documentation of Aurora!
+Here you will detailed instructions for using the model.
+If you just want to see the model in action, you can skip to <a class="reference internal" href="example.html"><span class="doc std std-doc">a full-fledged example that runs the model on ERA5</span></a>.
+For details on how exactly the model works, <a class="reference external" href="https://arxiv.org/abs/2405.13063">please see the paper on arXiv.</a></p>
+<p>Aurora is a machine learning model that can predict atmospheric variables, such as temperature.
+It is a <em>foundation model</em>, which means that it was first generally trained on a lot of data,
+and then can adapted to specialised atmospheric forecasting tasks with relatively little data.
+We provide three such specialised versions:
+one for medium-resolution weather prediction,
+one for high-resolution weather prediction,
+and one for air pollution prediction.</p>
+<p>Cite us as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@misc</span><span class="p">{</span><span class="n">bodnar2024aurora</span><span class="p">,</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="p">{</span><span class="n">Aurora</span><span class="p">:</span> <span class="n">A</span> <span class="n">Foundation</span> <span class="n">Model</span> <span class="n">of</span> <span class="n">the</span> <span class="n">Atmosphere</span><span class="p">},</span>
+    <span class="n">author</span> <span class="o">=</span> <span class="p">{</span><span class="n">Cristian</span> <span class="n">Bodnar</span> <span class="ow">and</span> <span class="n">Wessel</span> <span class="n">P</span><span class="o">.</span> <span class="n">Bruinsma</span> <span class="ow">and</span> <span class="n">Ana</span> <span class="n">Lucic</span> <span class="ow">and</span> <span class="n">Megan</span> <span class="n">Stanley</span> <span class="ow">and</span> <span class="n">Johannes</span> <span class="n">Brandstetter</span> <span class="ow">and</span> <span class="n">Patrick</span> <span class="n">Garvan</span> <span class="ow">and</span> <span class="n">Maik</span> <span class="n">Riechert</span> <span class="ow">and</span> <span class="n">Jonathan</span> <span class="n">Weyn</span> <span class="ow">and</span> <span class="n">Haiyu</span> <span class="n">Dong</span> <span class="ow">and</span> <span class="n">Anna</span> <span class="n">Vaughan</span> <span class="ow">and</span> <span class="n">Jayesh</span> <span class="n">K</span><span class="o">.</span> <span class="n">Gupta</span> <span class="ow">and</span> <span class="n">Kit</span> <span class="n">Tambiratnam</span> <span class="ow">and</span> <span class="n">Alex</span> <span class="n">Archibald</span> <span class="ow">and</span> <span class="n">Elizabeth</span> <span class="n">Heider</span> <span class="ow">and</span> <span class="n">Max</span> <span class="n">Welling</span> <span class="ow">and</span> <span class="n">Richard</span> <span class="n">E</span><span class="o">.</span> <span class="n">Turner</span> <span class="ow">and</span> <span class="n">Paris</span> <span class="n">Perdikaris</span><span class="p">},</span>
+    <span class="n">year</span> <span class="o">=</span> <span class="p">{</span><span class="mi">2024</span><span class="p">},</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="p">{</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">arxiv</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="nb">abs</span><span class="o">/</span><span class="mf">2405.13063</span><span class="p">},</span>
+    <span class="n">eprint</span> <span class="o">=</span> <span class="p">{</span><span class="mf">2405.13063</span><span class="p">},</span>
+    <span class="n">archivePrefix</span> <span class="o">=</span> <span class="p">{</span><span class="n">arXiv</span><span class="p">},</span>
+    <span class="n">primaryClass</span> <span class="o">=</span> <span class="p">{</span><span class="n">physics</span><span class="o">.</span><span class="n">ao</span><span class="o">-</span><span class="n">ph</span><span class="p">},</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 <div class="toctree-wrapper compound">
 </div>
 </section>

@@ -380,6 +380,8 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#one-step-predictions">One-Step Predictions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#autoregressive-roll-outs">Autoregressive Roll-Outs</a></li>
 </ul>
             </nav>
@@ -394,14 +396,108 @@ document.write(`
                   
   <section id="usage">
 <h1>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h1>
-<ul class="simple">
-<li><p>Load the model and checkpoint.</p></li>
-<li><p>Construct a batch (more details next page).</p></li>
-<li><p>Run the model.</p></li>
-<li><p>Talk about system specs.</p></li>
-</ul>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
+<p>For the latest official release, install the <code class="docutils literal notranslate"><span class="pre">pip</span></code> package:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>microsoft-aurora
+</pre></div>
+</div>
+<p>You can also install directly from GitHub:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/microsoft/aurora.git
+<span class="nb">cd</span><span class="w"> </span>aurora
+</pre></div>
+</div>
+<p>Then create a new virtual environment and install the requirements:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>virtualenv<span class="w"> </span>venv<span class="w"> </span>-p<span class="w"> </span>python3.10
+<span class="nb">source</span><span class="w"> </span>venv/bin/activate
+make<span class="w"> </span>install
+</pre></div>
+</div>
+</section>
+<section id="one-step-predictions">
+<h2>One-Step Predictions<a class="headerlink" href="#one-step-predictions" title="Link to this heading">#</a></h2>
+<p>Making predictions with the model involves three steps:</p>
+<ol class="arabic simple">
+<li><p>prepare a batch of data,</p></li>
+<li><p>construct the model and load a checkpoint, and</p></li>
+<li><p>run the model on the batch.</p></li>
+</ol>
+<p>We walk through these steps in order.</p>
+<p>First, you must construct a batch of data.
+A batch of data contains surface-level variables,
+static variables, atmospheric variables, and associated metadata.
+This batch must be an <code class="docutils literal notranslate"><span class="pre">aurora.Batch</span></code>.
+Here is an example that constructs a random batch:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">Metadata</span>
+
+<span class="n">batch</span> <span class="o">=</span> <span class="n">Batch</span><span class="p">(</span>
+    <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;2t&quot;</span><span class="p">,</span> <span class="s2">&quot;10u&quot;</span><span class="p">,</span> <span class="s2">&quot;10v&quot;</span><span class="p">,</span> <span class="s2">&quot;msl&quot;</span><span class="p">)},</span>
+    <span class="n">static_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">17</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;lsm&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;slt&quot;</span><span class="p">)},</span>
+    <span class="n">atmos_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">)},</span>
+    <span class="n">metadata</span><span class="o">=</span><span class="n">Metadata</span><span class="p">(</span>
+        <span class="n">lat</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">17</span><span class="p">),</span>
+        <span class="n">lon</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">360</span><span class="p">,</span> <span class="mi">32</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+        <span class="n">time</span><span class="o">=</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2020</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">0</span><span class="p">),),</span>
+        <span class="n">atmos_levels</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">250</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">850</span><span class="p">),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The exact form of a <code class="docutils literal notranslate"><span class="pre">Batch</span></code> will be explained in detail on <a class="reference internal" href="batch.html"><span class="doc std std-doc">the next page</span></a>.</p>
+<p>Second, you need to construct a model and load a checkpoint.
+There are various versions of Aurora, both in terms of model size and in terms of what the model was trained on.
+The regular version of Aurora can be constructed as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In this example, however, we use a smaller version:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">AuroraSmall</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraSmall</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>A checkpoint can then be loaded with <code class="docutils literal notranslate"><span class="pre">model.load_checkpoint</span></code> by specifying a checkpoint file in a HuggingFace repository.
+In this case, we use <code class="docutils literal notranslate"><span class="pre">aurora-0.25-small-pretrained.ckpt</span></code> from the repository <code class="docutils literal notranslate"><span class="pre">wbruinsma/aurora</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;wbruinsma/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-small-pretrained.ckpt&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Typically, you will want to set the model to evaluation mode, which disables e.g. drop-out:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>A detailed overview of all available models is given <a class="reference internal" href="models.html"><span class="doc std std-doc">here</span></a>.</p>
+<p>Finally, you are ready to run the model!</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Predictions are also of the form :class:<code class="docutils literal notranslate"><span class="pre">aurora.Batch</span></code>.
+For example, <code class="docutils literal notranslate"><span class="pre">pred.surf_vars[&quot;2t&quot;]</span></code> gives the predictions for two-meter temperature.</p>
+<p>You will need approximately 40 GB of GPU memory for running the regular model on global 0.25 degree data.</p>
+</section>
 <section id="autoregressive-roll-outs">
 <h2>Autoregressive Roll-Outs<a class="headerlink" href="#autoregressive-roll-outs" title="Link to this heading">#</a></h2>
+<p>To make predictions for more than one step ahead, you can apply the model autoregressively.
+This can be done with <code class="docutils literal notranslate"><span class="pre">aurora.rollout</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">rollout</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="p">[</span><span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">10</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p>In the list comprehension, we move the prediction after every step immediately
+to the CPU to prevent GPU memory buildup.
+Every element of <code class="docutils literal notranslate"><span class="pre">preds</span></code> is again of the form of <code class="docutils literal notranslate"><span class="pre">aurora.Batch</span></code>.</p>
 </section>
 </section>
 
@@ -469,6 +565,8 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#one-step-predictions">One-Step Predictions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#autoregressive-roll-outs">Autoregressive Roll-Outs</a></li>
 </ul>
   </nav></div>
