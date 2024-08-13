@@ -135,6 +135,6 @@ class Batch:
         """Move the batch to another device."""
         return self._fmap(lambda x: x.to(device))
 
-    def float(self) -> "Batch":
-        """Convert everything to `float32`s."""
-        return self._fmap(lambda x: x.float())
+    def type(self, t: type) -> "Batch":
+        """Convert everything to type `t`."""
+        return self._fmap(lambda x: x.type(t))
