@@ -510,7 +510,18 @@ document.write(`
         <span class="k">return</span> <span class="n">pred</span></div>
 
 
+<div class="viewcode-block" id="Aurora.load_checkpoint">
+<a class="viewcode-back" href="../../../api.html#aurora.Aurora.load_checkpoint">[docs]</a>
     <span class="k">def</span> <span class="nf">load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">repo</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a checkpoint from HuggingFace.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            repo (str): Name of the repository of the form `user/repo`.</span>
+<span class="sd">            name (str): Path to the checkpoint relative to the root of the repository, e.g.</span>
+<span class="sd">                `checkpoint.cpkt`.</span>
+<span class="sd">            strict (bool, optional): Error if the model parameters are not exactly equal to the</span>
+<span class="sd">                parameters in the checkpoint. Defaults to `True`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Assume that all parameters are either on the CPU or on the GPU.</span>
         <span class="n">device</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span><span class="o">.</span><span class="n">device</span>
 
@@ -524,6 +535,7 @@ document.write(`
                 <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">[</span><span class="mi">4</span><span class="p">:]]</span> <span class="o">=</span> <span class="n">v</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">)</span></div>
+</div>
 
 
 
