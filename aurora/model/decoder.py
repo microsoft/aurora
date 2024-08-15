@@ -9,7 +9,6 @@ from torch import nn
 from aurora.batch import Batch, Metadata
 from aurora.model.fourier import levels_expansion
 from aurora.model.helpers import (
-    Int3Tuple,
     check_lat_lon_dtype,
     create_var_map,
     get_ids_for_var_map,
@@ -17,6 +16,8 @@ from aurora.model.helpers import (
     unpatchify,
 )
 from aurora.model.perceiver import PerceiverResampler
+
+__all__ = ["Perceiver3DDecoder"]
 
 
 class Perceiver3DDecoder(nn.Module):
@@ -38,21 +39,21 @@ class Perceiver3DDecoder(nn.Module):
         """Initialize the MultiScaleDecoder.
 
         Args:
-            surf_vars (tuple[str, ...]): Names of surface-level variables.
-            atmos_vars (tuple[str, ...]): Names of atmospheric variables.
-            patch_size (int, optional): Patch size. Defaults to 4.
-            embed_dim (int, optional): Embedding dim. Defaults to 1024.
-            level_embed_dim (int): Embedding dim for the pressure levels. Defaults to 1024.
-            depth (int, optional): Number of Perceiver cross-attention + feedforward blocks.
-                Defaults to 1.
+            surf_vars (tuple[str, ...]): All supported surface-level variables.
+            atmos_vars (tuple[str, ...]): All supported atmospheric variables.
+            patch_size (int, optional): Patch size. Defaults to `4`.
+            embed_dim (int, optional): Embedding dim.. Defaults to `1024`.
+            depth (int, optional): Number of Perceiver cross-attention and feed-forward blocks.
+                Defaults to `1`.
             head_dim (int, optional): Dimension of the attention heads used in the aggregation
-                blocks. Defaults to 64.
+                blocks. Defaults to `64`.
             num_heads (int, optional): Number of attention heads used in the aggregation blocks.
-                Defaults to 8.
+                Defaults to `8`.
             mlp_ratio (float, optional): Ratio of MLP hidden dimension to embedding dimensionality.
-                Defaults to 4.0.
-            drop_rate (float, optional): Drop-out rate for input patches. Defaults to 0.0.
-            perceiver_ln_eps (float, optional): Layer norm epsilon for the Perceiver blocks.
+                Defaults to `4.0`.
+            drop_rate (float, optional): Drop-out rate for input patches. Defaults to `0.0`.
+            perceiver_ln_eps (float, optional): Layer norm. epsilon for the Perceiver blocks.
+                Defaults to `1e-5`.
         """
         super().__init__()
 
@@ -83,14 +84,14 @@ class Perceiver3DDecoder(nn.Module):
         self.apply(init_weights)
 
     def deaggregate_levels(self, level_embed: torch.Tensor, x: torch.Tensor) -> torch.Tensor:
-        """De-aggregate pressure level information.
+        """Deaggregate pressure level information.
 
         Args:
-            level_embed (torch.Tensor): `(B, L, C, D)`
-            x (torch.Tensor): `(B, L, C', D)`
+            level_embed (torch.Tensor): Level embedding of shape `(B, L, C, D)`.
+            x (torch.Tensor): Aggregated input of shape `(B, L, C', D)`.
 
         Returns:
-            torch.Tensor: `(B, L, C, D)`
+            torch.Tensor: Deaggregate output of shape `(B, L, C, D)`.
         """
         B, L, C, D = level_embed.shape
         level_embed = level_embed.flatten(0, 1)  # (BxL, C, D)
@@ -108,18 +109,19 @@ class Perceiver3DDecoder(nn.Module):
         self,
         x: torch.Tensor,
         batch: Batch,
-        patch_res: Int3Tuple,
+        patch_res: tuple[int, int, int],
         lead_time: timedelta,
     ) -> Batch:
         """Forward pass of MultiScaleEncoder.
 
         Args:
-            x (torch.Tensor): `(B, L, D)`.
-            metadata (Metadata): Metadata information.
+            x (torch.Tensor): Backbone output of shape `(B, L, D)`.
+            batch (:class:`aurora.batch.Batch`): Batch to make predictions for.
+            patch_res (tuple[int, int, int]): Patch resolution
+            lead_time (timedelta): Lead time.
 
         Returns:
-            torch.Tensor: Predictions for the surface-level variables of shape `(B, V_S, H, W)`.
-            torch.Tensor: Predictions for the atmospheric variables of shape `(V, V_A, C_A, H, W)`.
+            :class:`aurora.batch.Batch`: Prediction for `batch`.
         """
         surf_vars = tuple(batch.surf_vars.keys())
         atmos_vars = tuple(batch.atmos_vars.keys())

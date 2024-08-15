@@ -10,7 +10,7 @@ from huggingface_hub import hf_hub_download
 from aurora.batch import Batch
 from aurora.model.decoder import Perceiver3DDecoder
 from aurora.model.encoder import Perceiver3DEncoder
-from aurora.model.swin3d import Int3Tuple, Swin3DTransformerBackbone
+from aurora.model.swin3d import Swin3DTransformerBackbone
 
 __all__ = ["Aurora", "AuroraSmall"]
 
@@ -26,7 +26,7 @@ class Aurora(torch.nn.Module):
         surf_vars: tuple[str, ...] = ("2t", "10u", "10v", "msl"),
         static_vars: tuple[str, ...] = ("lsm", "z", "slt"),
         atmos_vars: tuple[str, ...] = ("z", "u", "v", "t", "q"),
-        window_size: Int3Tuple = (2, 6, 12),
+        window_size: tuple[int, int, int] = (2, 6, 12),
         encoder_depths: tuple[int, ...] = (6, 10, 8),
         encoder_num_heads: tuple[int, ...] = (8, 16, 32),
         decoder_depths: tuple[int, ...] = (8, 10, 6),
@@ -156,7 +156,7 @@ class Aurora(torch.nn.Module):
         batch = batch.to(p.device)
 
         H, W = batch.spatial_shape
-        patch_res: Int3Tuple = (
+        patch_res = (
             self.encoder.latent_levels,
             H // self.encoder.patch_size,
             W // self.encoder.patch_size,

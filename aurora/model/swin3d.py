@@ -18,7 +18,7 @@ from timm.models.layers import DropPath, to_3tuple
 
 from aurora.model.film import AdaptiveLayerNorm
 from aurora.model.fourier import lead_time_expansion
-from aurora.model.helpers import Int3Tuple, init_weights, maybe_adjust_windows
+from aurora.model.helpers import init_weights, maybe_adjust_windows
 from aurora.model.lora import LoraMode, LoRARollout
 
 
@@ -160,12 +160,12 @@ def get_two_sidded_padding(H_padding: int, W_padding: int) -> tuple[int, int, in
     return padding_left, padding_right, padding_top, padding_bottom
 
 
-def window_partition_3d(x: torch.Tensor, ws: Int3Tuple) -> torch.Tensor:
+def window_partition_3d(x: torch.Tensor, ws: tuple[int, int, int]) -> torch.Tensor:
     """Partition into windows.
 
     Args:
         x: (torch.Tensor): Input tensor of shape `(B, C, H, W, D)`.
-        ws: (Int3Tuple): A 3D window size `(Wc, Wh, Ww)`.
+        ws: (tuple[int, int, int]): A 3D window size `(Wc, Wh, Ww)`.
 
     Returns:
         torch.Tensor: Partitioning of shape `(num_windows*B, Wc, Wh, Ww, D)`.
@@ -180,12 +180,12 @@ def window_partition_3d(x: torch.Tensor, ws: Int3Tuple) -> torch.Tensor:
     return windows
 
 
-def window_reverse_3d(windows: torch.Tensor, ws: Int3Tuple, C: int, H: int, W: int):
+def window_reverse_3d(windows: torch.Tensor, ws: tuple[int, int, int], C: int, H: int, W: int):
     """Unpartition a partitioning.
 
     Args:
         windows (torch.Tensor): Partitioning of shape `(num_windows*B, Wc, Wh, Ww, D)`.
-        ws: (:obj:`Int3Tuple`): The 3D window size
+        ws: (:obj:`tuple[int, int, int]`): The 3D window size
         C (int): Number of levels.
         H (int): Height of image.
         W (int): Width of image.
@@ -232,13 +232,13 @@ def get_three_sidded_padding(
     )
 
 
-def pad_3d(x: torch.Tensor, pad_size: Int3Tuple, value: float = 0.0) -> torch.Tensor:
+def pad_3d(x: torch.Tensor, pad_size: tuple[int, int, int], value: float = 0.0) -> torch.Tensor:
     """Pads the input with value to the specified size."""
     # Padding is done from the last dimension. We use zero padding for the last dimension.
     return F.pad(x, (0, 0, *get_three_sidded_padding(*pad_size)), value=value)
 
 
-def crop_3d(x: torch.Tensor, pad_size: Int3Tuple) -> torch.Tensor:
+def crop_3d(x: torch.Tensor, pad_size: tuple[int, int, int]) -> torch.Tensor:
     """Undoes the `pad_3d` function by cropping the padded values."""
     B, C, H, W, D = x.shape
     Cp, Hp, Wp = pad_size
@@ -266,8 +266,8 @@ def compute_3d_shifted_window_mask(
     C: int,
     H: int,
     W: int,
-    ws: Int3Tuple,
-    ss: Int3Tuple,
+    ws: tuple[int, int, int],
+    ss: tuple[int, int, int],
     device: torch.device,
     dtype: torch.dtype = torch.bfloat16,
     warped: bool = True,
@@ -282,8 +282,8 @@ def compute_3d_shifted_window_mask(
         C (int): Number of levels.
         H (int): Height of the image.
         W (int): Width of the image.
-        ws (Int3Tuple): Window size of the form (Wc, Wh, Ww)
-        ss (Int3Tuple): Shift size of the form (Sc, Sh, Sw)
+        ws (tuple[int, int, int]): Window size of the form (Wc, Wh, Ww)
+        ss (tuple[int, int, int]): Shift size of the form (Sc, Sh, Sw)
         dtype (torch.dtype): Data type of the mask.
         warped (bool): If warped, we assume the left and right sides of the image are connected.
 
@@ -330,8 +330,8 @@ class Swin3DTransformerBlock(nn.Module):
         dim,
         num_heads,
         time_dim: int,
-        window_size: Int3Tuple = (2, 7, 7),
-        shift_size: Int3Tuple = (0, 0, 0),
+        window_size: tuple[int, int, int] = (2, 7, 7),
+        shift_size: tuple[int, int, int] = (0, 0, 0),
         mlp_ratio=4.0,
         qkv_bias=True,
         drop=0.0,
@@ -397,7 +397,7 @@ class Swin3DTransformerBlock(nn.Module):
         self,
         x: torch.Tensor,
         c: torch.Tensor,
-        res: Int3Tuple,
+        res: tuple[int, int, int],
         rollout_step: int,
         warped=True,
     ):
@@ -471,7 +471,7 @@ class PatchMerging3D(nn.Module):
         self.reduction = nn.Linear(4 * dim, 2 * dim, bias=False)
         self.norm = nn.LayerNorm(4 * dim)
 
-    def _merge(self, x: torch.Tensor, res: Int3Tuple) -> torch.Tensor:
+    def _merge(self, x: torch.Tensor, res: tuple[int, int, int]) -> torch.Tensor:
         C, H, W = res
         B, L, D = x.shape
         assert L == C * H * W, f"Wrong feature size: {L} vs {C}x{H}x{W}={C*H*W}"
@@ -487,7 +487,7 @@ class PatchMerging3D(nn.Module):
         x = x.reshape(B, C, new_H // 2, 2, new_W // 2, 2, D)
         return rearrange(x, "B C H h W w D -> B (C H W) (h w D)")
 
-    def forward(self, x: torch.Tensor, input_resolution: Int3Tuple) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, input_resolution: tuple[int, int, int]) -> torch.Tensor:
         x = self._merge(x, input_resolution)
         x = self.norm(x)
         x = self.reduction(x)
@@ -504,7 +504,7 @@ class PatchSplitting3D(nn.Module):
     def __init__(self, dim: int) -> None:
         """
         Args:
-            input_resolution (Int3Tuple): Resolution of input features.
+            input_resolution (tuple[int, int, int]): Resolution of input features.
             dim (int): Number of input channels.
             norm_layer (nn.Module): Normalization layer. Default: nn.LayerNorm.
         """
@@ -515,7 +515,9 @@ class PatchSplitting3D(nn.Module):
         self.lin2 = nn.Linear(dim // 2, dim // 2, bias=False)
         self.norm = nn.LayerNorm(dim // 2)
 
-    def _split(self, x: torch.Tensor, res: Int3Tuple, crop: Int3Tuple) -> torch.Tensor:
+    def _split(
+        self, x: torch.Tensor, res: tuple[int, int, int], crop: tuple[int, int, int]
+    ) -> torch.Tensor:
         C, H, W = res
         B, L, D = x.shape
         assert L == C * H * W, f"Wrong number of tokens: {L} != {C}*{H}*{W}={C*H*W}"
@@ -529,8 +531,8 @@ class PatchSplitting3D(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        input_resolution: Int3Tuple,
-        crop: Int3Tuple = (0, 0, 0),
+        input_resolution: tuple[int, int, int],
+        crop: tuple[int, int, int] = (0, 0, 0),
     ) -> torch.Tensor:
         x = self.lin1(x)  # (B C*H*W D*2)
         x = self._split(x, input_resolution, crop)
@@ -547,7 +549,7 @@ class BasicLayer3D(nn.Module):
         dim: int,
         depth: int,
         num_heads: int,
-        ws: Int3Tuple,
+        ws: tuple[int, int, int],
         time_dim: int,
         mlp_ratio: float = 4.0,
         qkv_bias: bool = True,
@@ -567,7 +569,7 @@ class BasicLayer3D(nn.Module):
             dim (int): Number of input channels.
             depth (int): Number of blocks.
             num_heads (int): Number of attention heads.
-            ws (Int3Tuple): Window size.
+            ws (tuple[int, int, int]): Window size.
             time_dim (int): Dimension of the lead time embedding.
             mlp_ratio (float): Ratio of mlp hidden dim to embedding dim. Default: 4.0
             qkv_bias (bool): If True, add a learnable bias to query, key, value. Default: True
@@ -632,8 +634,8 @@ class BasicLayer3D(nn.Module):
         self,
         x: torch.Tensor,
         c: torch.Tensor,
-        res: Int3Tuple,
-        crop: Int3Tuple = (False, False, False),
+        res: tuple[int, int, int],
+        crop: tuple[int, int, int] = (False, False, False),
         rollout_step: int = 0,
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
         for blk in self.blocks:
@@ -670,7 +672,7 @@ class Swin3DTransformerBackbone(nn.Module):
         encoder_num_heads: tuple[int, ...] = (3, 6, 12, 24),
         decoder_depths: tuple[int, ...] = (2, 6, 2, 2),
         decoder_num_heads: tuple[int, ...] = (24, 12, 6, 3),
-        window_size: int | Int3Tuple = 7,
+        window_size: int | tuple[int, int, int] = 7,
         mlp_ratio: float = 4.0,
         qkv_bias: bool = True,
         drop_rate: float = 0.0,
@@ -773,7 +775,9 @@ class Swin3DTransformerBackbone(nn.Module):
         for bly in self.decoder_layers:
             bly._init_respostnorm()
 
-    def get_encoder_specs(self, patch_res: Int3Tuple) -> tuple[list[Int3Tuple], list[Int3Tuple]]:
+    def get_encoder_specs(
+        self, patch_res: tuple[int, int, int]
+    ) -> tuple[list[tuple[int, int, int]], list[tuple[int, int, int]]]:
         """Gets the input resolution and output padding of each encoder layer."""
         all_res = [patch_res]
         padded_outs = []
@@ -788,7 +792,11 @@ class Swin3DTransformerBackbone(nn.Module):
         return all_res, padded_outs
 
     def forward(
-        self, x: torch.Tensor, lead_time: timedelta, rollout_step: int, patch_res: Int3Tuple
+        self,
+        x: torch.Tensor,
+        lead_time: timedelta,
+        rollout_step: int,
+        patch_res: tuple[int, int, int],
     ) -> torch.Tensor:
         assert (
             x.shape[1] == patch_res[0] * patch_res[1] * patch_res[2]

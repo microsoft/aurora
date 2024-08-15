@@ -7,9 +7,6 @@ from einops import rearrange
 from timm.models.vision_transformer import trunc_normal_
 from torch import nn
 
-Int2Tuple = tuple[int, int]
-Int3Tuple = tuple[int, int, int]
-
 
 def unpatchify(x: torch.Tensor, V: int, H: int, W: int, P: int) -> torch.Tensor:
     """Unpatchify hidden representation.
@@ -78,7 +75,7 @@ def check_lat_lon_dtype(lat: torch.Tensor, lon: torch.Tensor) -> None:
     ], f"Longitude numerically unstable. Found type: {lon.dtype}."
 
 
-T = TypeVar("T", Int2Tuple, Int3Tuple)
+T = TypeVar("T", tuple[int, int], tuple[int, int, int])
 
 
 def maybe_adjust_windows(window_size: T, shift_size: T, res: T) -> tuple[T, T]:
