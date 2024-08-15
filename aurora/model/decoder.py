@@ -21,7 +21,7 @@ __all__ = ["Perceiver3DDecoder"]
 
 
 class Perceiver3DDecoder(nn.Module):
-    """Multi-scale multi-source multi-variable decoder based on the Perceiver IO architecture."""
+    """Multi-scale multi-source multi-variable decoder based on the Perceiver architecture."""
 
     def __init__(
         self,
