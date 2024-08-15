@@ -82,9 +82,7 @@ Aurora 0.25° Fine-Tuned is the best performing version of Aurora at 0.25° reso
 For optimal performance, it is crucial that you only use Aurora 0.25° Fine-Tuned for IFS HRES T0.
 Producing predictions for any other data set will likely give sensible predictions,
 but performance may not be optimal anymore.
-Note also that IFS HRES T0 is _not_ the same as IFS HRES analysis;
-the analysis product includes an additional surface assimilation step.
-Aurora 0.25° Fine-Tuned requies IFS HRES T0, not IFS HRES analysis.
+[Note also that IFS HRES T0 is _not_ the same as IFS HRES analysis.](t0-vs-analysis)
 
 For optimal performance, the model requires the following variables and pressure levels:
 
@@ -145,9 +143,7 @@ Aurora 0.1° Fine-Tuned is the best performing version of Aurora at 0.1° resolu
 For optimal performance, it is crucial that you only use Aurora 0.1° Fine-Tuned for IFS HRES analysis.
 Producing predictions for any other data set will likely give sensible predictions,
 but performance may be significantly affected.
-Note also that IFS HRES analysis is _not_ the same as IFS HRES T0;
-the analysis product includes an additional surface assimilation step.
-Aurora 0.1° Fine-Tuned requies IFS HRES analysis, not IFS HRES T0.
+[Note also that IFS HRES T0 is _not_ the same as IFS HRES analysis.](t0-vs-analysis)
 
 For optimal performance, the model requires the following variables and pressure levels:
 

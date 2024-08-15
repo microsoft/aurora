@@ -18,6 +18,17 @@ at exactly the right pressure levels
 from exactly the right source.
 right variables at the right pressure levels
 
+(t0-vs-analysis)=
+## HRES IFS T0 Versus HRES IFS Analysis
+
+HRES IFS T0 is _not_ the same as HRES IFS analysis.
+Crucially, the analysis product includes an additional surface assimilation step.
+
+Specific versions of Aurora require specific version of HRES IFS:
+Aurora 0.25° Fine-Tuned requires IFS HRES T0,
+and Aurora 0.1° Fine-Tuned requires IFS HRES analysis.
+
+
 ## Deterministic and Reproducible Output
 
 If you require deterministic and reproducible output,
