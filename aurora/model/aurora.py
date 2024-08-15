@@ -168,6 +168,15 @@ class Aurora(torch.nn.Module):
         return pred
 
     def load_checkpoint(self, repo: str, name: str, strict: bool = True) -> None:
+        """Load a checkpoint from HuggingFace.
+
+        Args:
+            repo (str): Name of the repository of the form `user/repo`.
+            name (str): Path to the checkpoint relative to the root of the repository, e.g.
+                `checkpoint.cpkt`.
+            strict (bool, optional): Error if the model parameters are not exactly equal to the
+                parameters in the checkpoint. Defaults to `True`.
+        """
         # Assume that all parameters are either on the CPU or on the GPU.
         device = next(self.parameters()).device
 
