@@ -203,22 +203,20 @@ class Perceiver3DEncoder(nn.Module):
         x_atmos = self.atmos_token_embeds(x_atmos, atmos_ids)
         x_atmos = rearrange(x_atmos, "(b c) l d -> b c l d", b=B, c=C)
 
-        # Add surface level encoding: (B, L, D) + (1, 1, D).
-        # This helps the model distinguish between surface and atmospheric levels.
+        # Add surface level encoding. This helps the model distinguish between surface and
+        # atmospheric levels.
         x_surf = x_surf + self.surf_level_encoding[None, None, :].to(dtype=dtype)
         # Since the surface level is not aggregated, we add a Perceiver-like MLP only.
         x_surf = x_surf + self.surf_norm(self.surf_mlp(x_surf))
 
-        # Add atmospheric pressure encoding -> (C_A, D) and subsequent embedding
-        atmos_levels_encode = levels_expansion(
-            torch.tensor(atmos_levels, device=x_atmos.device),
-            self.embed_dim,
-        ).to(dtype=dtype)
+        # Add atmospheric pressure encoding of shape (C_A, D) and subsequent embedding.
+        atmos_levels_tensor = torch.tensor(atmos_levels, device=x_atmos.device)
+        atmos_levels_encode = levels_expansion(atmos_levels_tensor, self.embed_dim).to(dtype=dtype)
         atmos_levels_embed = self.atmos_levels_embed(atmos_levels_encode)[None, :, None, :]
         x_atmos = x_atmos + atmos_levels_embed  # (B, C_A, L, D)
 
         # Aggregate over pressure levels.
-        x_atmos = self.aggregate_levels(x_atmos)  # (B, C, L, D) -> (B, C', L, D)
+        x_atmos = self.aggregate_levels(x_atmos)  # (B, C_A, L, D) to (B, C, L, D)
 
         # Concatenate the surface level with the amospheric levels.
         x = torch.cat((x_surf.unsqueeze(1), x_atmos), dim=1)
@@ -232,13 +230,13 @@ class Perceiver3DEncoder(nn.Module):
             pos_expansion=pos_expansion,
             scale_expansion=scale_expansion,
         )
-        # (B, C, L, D) + (1, 1, L, D) + (1, 1, L, D)
+        # Encodings are (L, D)
         pos_encode = self.pos_embed(pos_encode[None, None, :].to(dtype=dtype))
         scale_encode = self.scale_embed(scale_encode[None, None, :].to(dtype=dtype))
         x = x + pos_encode + scale_encode
 
         # Flatten the tokens
-        x = x.reshape(B, -1, self.embed_dim)  # (B, C' + 1, L, D) -> (B, L', D)
+        x = x.reshape(B, -1, self.embed_dim)  # (B, C + 1, L, D) to (B, L', D)
 
         # Add lead time embedding.
         lead_hours = lead_time.total_seconds() / 3600
@@ -250,10 +248,8 @@ class Perceiver3DEncoder(nn.Module):
         # Add absolute time embedding.
         absolute_times_list = [t.timestamp() / 3600 for t in batch.metadata.time]  # Times in hours
         absolute_times = torch.tensor(absolute_times_list, dtype=torch.float32, device=x.device)
-        absolute_time_encode = absolute_time_expansion(absolute_times, self.embed_dim).to(
-            dtype=dtype
-        )
-        absolute_time_embed = self.absolute_time_embed(absolute_time_encode)  # (B, D)
+        absolute_time_encode = absolute_time_expansion(absolute_times, self.embed_dim)
+        absolute_time_embed = self.absolute_time_embed(absolute_time_encode.to(dtype=dtype))
         x = x + absolute_time_embed.unsqueeze(1)  # (B, L, D) + (B, 1, D)
 
         x = self.pos_drop(x)
