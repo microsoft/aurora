@@ -163,7 +163,9 @@ For optimal performance, the model requires the following variables and pressure
 
 Aurora 0.1° Fine-Tuned requires
 [static variables from IFS HRES analysis](https://rda.ucar.edu/datasets/ds113.1/).
-For convenience, these are also available in
+However, due to the way the model was trained,
+the model requires these variables to be scaled slightly differently.
+Therefore, you should use the static variables provided in
 [the HuggingFace repository](https://huggingface.co/wbruinsma/aurora/blob/main/aurora-0.1-static.pickle).
 
 ### Notes

@@ -624,7 +624,9 @@ Aurora 0.1° Fine-Tuned requies IFS HRES analysis, not IFS HRES T0.</p>
 <h3>Static Variables<a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
 <p>Aurora 0.1° Fine-Tuned requires
 <a class="reference external" href="https://rda.ucar.edu/datasets/ds113.1/">static variables from IFS HRES analysis</a>.
-For convenience, these are also available in
+However, due to the way the model was trained,
+the model requires these variables to be scaled slightly differently.
+Therefore, you should use the static variables provided in
 <a class="reference external" href="https://huggingface.co/wbruinsma/aurora/blob/main/aurora-0.1-static.pickle">the HuggingFace repository</a>.</p>
 </section>
 <section id="id9">
