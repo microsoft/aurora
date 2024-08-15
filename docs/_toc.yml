@@ -4,6 +4,7 @@ chapters:
 - file: usage
 - file: batch
 - file: models
-- file: example
 - file: beware
+- file: finetuning
+- file: example
 - file: api
