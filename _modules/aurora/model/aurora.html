@@ -352,9 +352,6 @@ document.write(`
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;AuroraSmall&quot;</span><span class="p">]</span>
 
-<span class="n">VariableList</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
-<span class="sd">&quot;&quot;&quot;type: Tuple of variable names.&quot;&quot;&quot;</span>
-
 
 <div class="viewcode-block" id="Aurora">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora">[docs]</a>
@@ -364,11 +361,13 @@ document.write(`
 <span class="sd">    Defaults to to the 1.3 B parameter configuration.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="Aurora.__init__">
+<a class="viewcode-back" href="../../../api.html#aurora.Aurora.__init__">[docs]</a>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">surf_vars</span><span class="p">:</span> <span class="n">VariableList</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;2t&quot;</span><span class="p">,</span> <span class="s2">&quot;10u&quot;</span><span class="p">,</span> <span class="s2">&quot;10v&quot;</span><span class="p">,</span> <span class="s2">&quot;msl&quot;</span><span class="p">),</span>
-        <span class="n">static_vars</span><span class="p">:</span> <span class="n">VariableList</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;lsm&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;slt&quot;</span><span class="p">),</span>
-        <span class="n">atmos_vars</span><span class="p">:</span> <span class="n">VariableList</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">),</span>
+        <span class="n">surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;2t&quot;</span><span class="p">,</span> <span class="s2">&quot;10u&quot;</span><span class="p">,</span> <span class="s2">&quot;10v&quot;</span><span class="p">,</span> <span class="s2">&quot;msl&quot;</span><span class="p">),</span>
+        <span class="n">static_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;lsm&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;slt&quot;</span><span class="p">),</span>
+        <span class="n">atmos_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">),</span>
         <span class="n">window_size</span><span class="p">:</span> <span class="n">Int3Tuple</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span>
         <span class="n">encoder_depths</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
         <span class="n">encoder_num_heads</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span>
@@ -389,6 +388,46 @@ document.write(`
         <span class="n">use_lora</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">lora_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct an instance of the model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            surf_vars (tuple[str, ...], optional): All surface-level variables supported by the</span>
+<span class="sd">                model. The model is sensitive to the order of `surf_vars`!</span>
+<span class="sd">            static_vars (tuple[str, ...], optional): All static variables supported by the</span>
+<span class="sd">                model. The model is sensitive to the order of `static_vars`!</span>
+<span class="sd">            atmos_vars (tuple[str, ...], optional): All atmospheric variables supported by the</span>
+<span class="sd">                model. The model is sensitive to the order of `atmos-vars`!</span>
+<span class="sd">            window_size (tuple[int, int, int], optional): Vertical height, height, and width of the</span>
+<span class="sd">                window of the underlying Swin transformer.</span>
+<span class="sd">            encoder_depths (tuple[int, ...], optional): Number of blocks in each encoder layer.</span>
+<span class="sd">            encoder_num_header (tuple[int, ...], optional) Number of attention heads in each encoder</span>
+<span class="sd">                layer.</span>
+<span class="sd">            decoder_depths (tuple[int, ...], optional): Number of blocks in each decoder layer.</span>
+<span class="sd">            decoder_num_header (tuple[int, ...], optional) Number of attention heads in each decoder</span>
+<span class="sd">                layer.</span>
+<span class="sd">            latent_levels (int, optional): Number of latent pressure levels.</span>
+<span class="sd">            patch_size (int, optional): Patch size.</span>
+<span class="sd">            embed_dim (int, optional): Patch embedding dimension.</span>
+<span class="sd">            num_heads (int, optional): Number of attention heads in the aggregation and</span>
+<span class="sd">                deaggregation blocks.</span>
+<span class="sd">            mlp_ratio (float, optional): Hidden dim. to embedding dim. ratio for MLPs.</span>
+<span class="sd">            drop_rate (float, optional): Drop-out rate.</span>
+<span class="sd">            drop_path (float, optional): Drop-path rate.</span>
+<span class="sd">            enc_depth (int, optional): Number of Perceiver blocks in the encoder.</span>
+<span class="sd">            dec_depth (int, optioanl): Number of Perceiver blocks in the decoder.</span>
+<span class="sd">            dec_mlp_ratio (float, optional): Hidden dim. to embedding dim. ratio for MLPs in the</span>
+<span class="sd">                decoder. The embedding dimensionality here is different, which is why this is a</span>
+<span class="sd">                separate parameter.</span>
+<span class="sd">            perceiver_ln_eps (float, optional): Epsilon in the perceiver layer norm. layers. Used</span>
+<span class="sd">                to stabilise the model.</span>
+<span class="sd">            max_history_size (int, optional): Maximum number of history steps.</span>
+<span class="sd">            use_lora (bool, optional): Use LoRA adaptation.</span>
+<span class="sd">            lora_steps (int, optional): Use different LoRA adaptation for the first so-many roll-out</span>
+<span class="sd">                steps.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :class:`aurora.model.aurora.Aurora`: Instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">surf_vars</span> <span class="o">=</span> <span class="n">surf_vars</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">atmos_vars</span> <span class="o">=</span> <span class="n">atmos_vars</span>
@@ -437,7 +476,8 @@ document.write(`
             <span class="c1"># We use a lower ratio here to keep the memory in check.</span>
             <span class="n">mlp_ratio</span><span class="o">=</span><span class="n">dec_mlp_ratio</span><span class="p">,</span>
             <span class="n">perceiver_ln_eps</span><span class="o">=</span><span class="n">perceiver_ln_eps</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="Aurora.forward">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora.forward">[docs]</a>
