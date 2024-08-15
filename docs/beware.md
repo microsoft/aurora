@@ -2,7 +2,7 @@
 
 When using Aurora, there are a few things to watch out for.
 
-Did you experience an issue that should be listed here?
+Did you experience an issue that should be listed here, but currently is not?
 Please let us know by [opening an issue](https://github.com/microsoft/aurora/issues/new)!
 
 ## Sensitivity to Data
@@ -16,7 +16,6 @@ This means that you should use provide
 exactly the right variables
 at exactly the right pressure levels
 from exactly the right source.
-right variables at the right pressure levels
 
 (t0-vs-analysis)=
 ## HRES IFS T0 Versus HRES IFS Analysis
@@ -27,7 +26,6 @@ Crucially, the analysis product includes an additional surface assimilation step
 Specific versions of Aurora require specific versions of HRES IFS:
 Aurora 0.25° Fine-Tuned requires IFS HRES T0,
 and Aurora 0.1° Fine-Tuned requires IFS HRES analysis.
-
 
 ## Deterministic and Reproducible Output
 
