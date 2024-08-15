@@ -95,7 +95,7 @@ The following atmospheric variables are allows:
 
 ## `Batch.metadata`
 
-`Batch.metadata` must be an `aurora.Metadata`, which contains the following fields:
+`Batch.metadata` must be a `Metadata`, which contains the following fields:
 
 * `Metadata.lat` is the vector of latitudes.
     The latitudes must be _decreasing_.
@@ -107,8 +107,8 @@ The following atmospheric variables are allows:
 * `Metadata.atmos_levels` is a `tuple` of the pressure levels of the atmospheric variables in hPa.
     Note that these levels must be in exactly correspond to the order of the atmospheric variables.
     Note also that `Metadata.atmos_levels` should be a `tuple`, not a `list`.
-* `Metadata.time` is a `tuple` with, for each batch element, the `datetime.datetime`s corresponding to the time of the data.
+* `Metadata.time` is a `tuple` with, for each batch element, a `datetime.datetime` representing the time of the data.
     If the batch size is one, then this will be a one-element `tuple`, e.g. `(datetime(2024, 1, 1, 12, 0),)`.
     Since all Aurora models require variables for the current _and_ previous step,
     `Metadata.time` corresponds to the time of the _current_ step.
-    Specifically, `Metadata.time[i]` correspond to the time of `Batch.surf_vars[i, -1]`.
+    Specifically, `Metadata.time[i]` corresponds to the time of `Batch.surf_vars[i, -1]`.
