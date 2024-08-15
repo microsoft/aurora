@@ -112,3 +112,9 @@ The following atmospheric variables are allows:
     Since all Aurora models require variables for the current _and_ previous step,
     `Metadata.time` corresponds to the time of the _current_ step.
     Specifically, `Metadata.time[i]` corresponds to the time of `Batch.surf_vars[i, -1]`.
+
+## Model Output
+
+The output of `aurora.forward(batch)` will again be a `Batch`.
+This batch is of exactly the same form, with only one difference:
+the history dimension will have size one.
