@@ -358,7 +358,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -374,6 +376,38 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora-0-25-pretrained">Aurora 0.25° Pretrained</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#recommended-use">Recommended Use</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#static-variables">Static Variables</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora-0-25-pretrained-small">Aurora 0.25° Pretrained Small</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Recommended Use</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora-0-25-fine-tuned">Aurora 0.25° Fine-Tuned</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Recommended Use</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Static Variables</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora-0-1-fine-tuned">Aurora 0.1° Fine-Tuned</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Recommended Use</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Static Variables</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Notes</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -385,10 +419,226 @@ document.write(`
                   
   <section id="available-models">
 <h1>Available Models<a class="headerlink" href="#available-models" title="Link to this heading">#</a></h1>
-<p>See our <a class="reference external" href="https://huggingface.co/wbruinsma/aurora">HuggingFace repository <code class="docutils literal notranslate"><span class="pre">wbruinsma/aurora</span></code></a>
-for an overview of which models are available.</p>
-<p>Talk about fine-tuned models.</p>
-<p>Talk about pretrained models.</p>
+<p>Weights for models are made available through our <a class="reference external" href="https://huggingface.co/wbruinsma/aurora">HuggingFace repository <code class="docutils literal notranslate"><span class="pre">wbruinsma/aurora</span></code></a>.
+We now describe the available models in turn.</p>
+<section id="aurora-0-25-pretrained">
+<h2>Aurora 0.25° Pretrained<a class="headerlink" href="#aurora-0-25-pretrained" title="Link to this heading">#</a></h2>
+<p>Aurora 0.25° Pretrained is a version of Aurora trained on a wide variety of data.</p>
+<section id="usage">
+<h3>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Model is not fine-tuned.</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;wbruinsma/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="recommended-use">
+<h3>Recommended Use<a class="headerlink" href="#recommended-use" title="Link to this heading">#</a></h3>
+<p>Use this version of Aurora if no fine-tuned version exists for your specific data set.
+For example, if you wish to make predictions for ERA5 at 0.25° resolution, this version is appropriate.
+Note that 0.25° resolution means that the data has dimensions <code class="docutils literal notranslate"><span class="pre">(721,</span> <span class="pre">1440)</span></code>.</p>
+<p>Also use Aurora 0.25° Pretrained if you plan to fine-tune Aurora for you specific application,
+<em>even if your application operates at another resolution</em>.</p>
+<p>For optimal performance, the model requires the following variables and pressure levels:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Required</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Surface-level variables</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">2t</span></code>, <code class="docutils literal notranslate"><span class="pre">10u</span></code>, <code class="docutils literal notranslate"><span class="pre">10v</span></code>, <code class="docutils literal notranslate"><span class="pre">msl</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Static variables</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">lsm</span></code>, <code class="docutils literal notranslate"><span class="pre">slt</span></code>, <code class="docutils literal notranslate"><span class="pre">z</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Atmospheric variables</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">t</span></code>, <code class="docutils literal notranslate"><span class="pre">u</span></code>, <code class="docutils literal notranslate"><span class="pre">v</span></code>, <code class="docutils literal notranslate"><span class="pre">q</span></code>, <code class="docutils literal notranslate"><span class="pre">z</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Pressure levels (hPa)</p></td>
+<td><p>50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="static-variables">
+<h3>Static Variables<a class="headerlink" href="#static-variables" title="Link to this heading">#</a></h3>
+<p>Aurora 0.25° Pretrained requires
+<a class="reference external" href="https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=form">static variables from ERA5</a>.
+For convenience, these are also available in
+<a class="reference external" href="https://huggingface.co/wbruinsma/aurora/blob/main/aurora-0.25-static.pickle">the HuggingFace repository</a>.</p>
+</section>
+</section>
+<section id="aurora-0-25-pretrained-small">
+<h2>Aurora 0.25° Pretrained Small<a class="headerlink" href="#aurora-0-25-pretrained-small" title="Link to this heading">#</a></h2>
+<p>Aurora 0.25° Pretrained Small is, as the name suggests, a smaller version of Aurora 0.25° Pretrained.</p>
+<section id="id1">
+<h3>Usage<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">AuroraSmall</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraSmall</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;wbruinsma/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-small-pretrained.ckpt&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id2">
+<h3>Recommended Use<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<p>Use this model for debugging purposes.
+We do not recommend any other use.</p>
+</section>
+</section>
+<section id="aurora-0-25-fine-tuned">
+<h2>Aurora 0.25° Fine-Tuned<a class="headerlink" href="#aurora-0-25-fine-tuned" title="Link to this heading">#</a></h2>
+<p>Aurora 0.25° Fine-Tuned is Aurora 0.25° Pretrained fine-tuned on IFS HRES T0.</p>
+<section id="id3">
+<h3>Usage<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;wbruinsma/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-finetuned.ckpt&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id4">
+<h3>Recommended Use<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
+<p>Use Aurora 0.25° Fine-Tuned if you aim to make predictions for IFS HRES T0.
+Aurora 0.25° Fine-Tuned is the best performing version of Aurora at 0.25° resolution.</p>
+<p><strong>Important:</strong>
+For optimal performance, it is crucial that you only use Aurora 0.25° Fine-Tuned for IFS HRES T0.
+Producing predictions for any other data set will likely give sensible predictions,
+but performance may not be optimal anymore.
+Note also that IFS HRES T0 is <em>not</em> the same as IFS HRES analysis;
+the analysis product includes an additional surface assimilation step.
+Aurora 0.25° Fine-Tuned requies IFS HRES T0, not IFS HRES analysis.</p>
+<p>For optimal performance, the model requires the following variables and pressure levels:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Required</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Surface-level variables</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">2t</span></code>, <code class="docutils literal notranslate"><span class="pre">10u</span></code>, <code class="docutils literal notranslate"><span class="pre">10v</span></code>, <code class="docutils literal notranslate"><span class="pre">msl</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Static variables</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">lsm</span></code>, <code class="docutils literal notranslate"><span class="pre">slt</span></code>, <code class="docutils literal notranslate"><span class="pre">z</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Atmospheric variables</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">t</span></code>, <code class="docutils literal notranslate"><span class="pre">u</span></code>, <code class="docutils literal notranslate"><span class="pre">v</span></code>, <code class="docutils literal notranslate"><span class="pre">q</span></code>, <code class="docutils literal notranslate"><span class="pre">z</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Pressure levels (hPa)</p></td>
+<td><p>50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="id5">
+<h3>Static Variables<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
+<p>Aurora 0.25° Fine-Tuned requires
+<a class="reference external" href="https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=form">static variables from ERA5</a>.
+For convenience, these are also available in
+<a class="reference external" href="https://huggingface.co/wbruinsma/aurora/blob/main/aurora-0.25-static.pickle">the HuggingFace repository</a>.</p>
+</section>
+<section id="notes">
+<span id="lora-or-no-lora"></span><h3>Notes<a class="headerlink" href="#notes" title="Link to this heading">#</a></h3>
+<p>If you require more realistic predictions are the expense of slightly higher MSE at longer lead times, you can try turning off LoRA.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Use LoRA?</p></th>
+<th class="head"><p>Effect</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Yes</p></td>
+<td><p>Optimal long-term MSE, but slightly blurrier predictions</p></td>
+</tr>
+<tr class="row-odd"><td><p>No</p></td>
+<td><p>More realistic predictions, but slightly higher long-term MSE</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>You can turn off LoRA as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Disable LoRA for more realistic samples.</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;wbruinsma/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-finetuned.ckpt&quot;</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="aurora-0-1-fine-tuned">
+<h2>Aurora 0.1° Fine-Tuned<a class="headerlink" href="#aurora-0-1-fine-tuned" title="Link to this heading">#</a></h2>
+<p>Aurora 0.1° Fine-Tuned is a high-resolution version of Aurora.</p>
+<section id="id6">
+<h3>Usage<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;wbruinsma/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.1-finetuned.ckpt&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id7">
+<h3>Recommended Use<a class="headerlink" href="#id7" title="Link to this heading">#</a></h3>
+<p>Use Aurora 0.1° Fine-Tuned if you aim to make predictions for IFS HRES T0 at 0.1° resolution.
+Note that 0.1° resolution means that the data should have dimensions <code class="docutils literal notranslate"><span class="pre">(1801,</span> <span class="pre">3600)</span></code>.
+Aurora 0.1° Fine-Tuned is the best performing version of Aurora at 0.1° resolution.</p>
+<p><strong>Important:</strong>
+For optimal performance, it is crucial that you only use Aurora 0.1° Fine-Tuned for IFS HRES analysis.
+Producing predictions for any other data set will likely give sensible predictions,
+but performance may be significantly affected.
+Note also that IFS HRES analysis is <em>not</em> the same as IFS HRES T0;
+the analysis product includes an additional surface assimilation step.
+Aurora 0.1° Fine-Tuned requies IFS HRES analysis, not IFS HRES T0.</p>
+<p>For optimal performance, the model requires the following variables and pressure levels:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Required</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Surface-level variables</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">2t</span></code>, <code class="docutils literal notranslate"><span class="pre">10u</span></code>, <code class="docutils literal notranslate"><span class="pre">10v</span></code>, <code class="docutils literal notranslate"><span class="pre">msl</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Static variables</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">lsm</span></code>, <code class="docutils literal notranslate"><span class="pre">slt</span></code>, <code class="docutils literal notranslate"><span class="pre">z</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Atmospheric variables</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">t</span></code>, <code class="docutils literal notranslate"><span class="pre">u</span></code>, <code class="docutils literal notranslate"><span class="pre">v</span></code>, <code class="docutils literal notranslate"><span class="pre">q</span></code>, <code class="docutils literal notranslate"><span class="pre">z</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Pressure levels (hPa)</p></td>
+<td><p>50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="id8">
+<h3>Static Variables<a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
+<p>Aurora 0.1° Fine-Tuned requires
+<a class="reference external" href="https://rda.ucar.edu/datasets/ds113.1/">static variables from IFS HRES analysis</a>.
+For convenience, these are also available in
+<a class="reference external" href="https://huggingface.co/wbruinsma/aurora/blob/main/aurora-0.1-static.pickle">the HuggingFace repository</a>.</p>
+</section>
+<section id="id9">
+<h3>Notes<a class="headerlink" href="#id9" title="Link to this heading">#</a></h3>
+<p><a class="reference internal" href="#lora-or-no-lora"><span class="std std-ref">Like for Aurora 0.25° Fine-Tuned</span></a>,
+you can turn off LoRA to obtain more realistic predictions at the expensive of slightly higher long-term MSE:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Disable LoRA for more realistic samples.</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;wbruinsma/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.1-finetuned.ckpt&quot;</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -445,6 +695,45 @@ for an overview of which models are available.</p>
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora-0-25-pretrained">Aurora 0.25° Pretrained</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#recommended-use">Recommended Use</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#static-variables">Static Variables</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora-0-25-pretrained-small">Aurora 0.25° Pretrained Small</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Recommended Use</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora-0-25-fine-tuned">Aurora 0.25° Fine-Tuned</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Recommended Use</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Static Variables</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora-0-1-fine-tuned">Aurora 0.1° Fine-Tuned</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Recommended Use</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Static Variables</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Notes</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

@@ -531,7 +531,7 @@ All atmospheric variables must contain the same collection of pressure levels in
 </section>
 <section id="batch-metadata">
 <h2><code class="docutils literal notranslate"><span class="pre">Batch.metadata</span></code><a class="headerlink" href="#batch-metadata" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">Batch.metadata</span></code> must be an <code class="docutils literal notranslate"><span class="pre">aurora.Metadata</span></code>, which contains the following fields:</p>
+<p><code class="docutils literal notranslate"><span class="pre">Batch.metadata</span></code> must be a <code class="docutils literal notranslate"><span class="pre">Metadata</span></code>, which contains the following fields:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">Metadata.lat</span></code> is the vector of latitudes.
 The latitudes must be <em>decreasing</em>.
@@ -543,11 +543,11 @@ The longitudes must be in the range <code class="docutils literal notranslate"><
 <li><p><code class="docutils literal notranslate"><span class="pre">Metadata.atmos_levels</span></code> is a <code class="docutils literal notranslate"><span class="pre">tuple</span></code> of the pressure levels of the atmospheric variables in hPa.
 Note that these levels must be in exactly correspond to the order of the atmospheric variables.
 Note also that <code class="docutils literal notranslate"><span class="pre">Metadata.atmos_levels</span></code> should be a <code class="docutils literal notranslate"><span class="pre">tuple</span></code>, not a <code class="docutils literal notranslate"><span class="pre">list</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Metadata.time</span></code> is a <code class="docutils literal notranslate"><span class="pre">tuple</span></code> with, for each batch element, the <code class="docutils literal notranslate"><span class="pre">datetime.datetime</span></code>s corresponding to the time of the data.
+<li><p><code class="docutils literal notranslate"><span class="pre">Metadata.time</span></code> is a <code class="docutils literal notranslate"><span class="pre">tuple</span></code> with, for each batch element, a <code class="docutils literal notranslate"><span class="pre">datetime.datetime</span></code> representing the time of the data.
 If the batch size is one, then this will be a one-element <code class="docutils literal notranslate"><span class="pre">tuple</span></code>, e.g. <code class="docutils literal notranslate"><span class="pre">(datetime(2024,</span> <span class="pre">1,</span> <span class="pre">1,</span> <span class="pre">12,</span> <span class="pre">0),)</span></code>.
 Since all Aurora models require variables for the current <em>and</em> previous step,
 <code class="docutils literal notranslate"><span class="pre">Metadata.time</span></code> corresponds to the time of the <em>current</em> step.
-Specifically, <code class="docutils literal notranslate"><span class="pre">Metadata.time[i]</span></code> correspond to the time of <code class="docutils literal notranslate"><span class="pre">Batch.surf_vars[i,</span> <span class="pre">-1]</span></code>.</p></li>
+Specifically, <code class="docutils literal notranslate"><span class="pre">Metadata.time[i]</span></code> corresponds to the time of <code class="docutils literal notranslate"><span class="pre">Batch.surf_vars[i,</span> <span class="pre">-1]</span></code>.</p></li>
 </ul>
 </section>
 </section>

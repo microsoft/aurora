@@ -358,7 +358,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -374,6 +376,15 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sensitivity-to-data">Sensitivity to Data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deterministic-and-reproducible-output">Deterministic and Reproducible Output</a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -385,7 +396,29 @@ document.write(`
                   
   <section id="beware">
 <h1>Beware!<a class="headerlink" href="#beware" title="Link to this heading">#</a></h1>
-<p>Things to watch out for.</p>
+<p>When using Aurora, there are a few things to watch out for.</p>
+<p>Did you experience an issue that should be listed here?
+Please let us know by <a class="reference external" href="https://github.com/microsoft/aurora/issues/new">opening an issue</a>!</p>
+<section id="sensitivity-to-data">
+<h2>Sensitivity to Data<a class="headerlink" href="#sensitivity-to-data" title="Link to this heading">#</a></h2>
+<p>Our hope is that Aurora generally produces sensible predictions.
+However, there is no guarantee that it will.</p>
+<p>For optimal performance, need to use exactly be right.
+This means that you should use provide
+exactly the right variables
+at exactly the right pressure levels
+from exactly the right source.
+right variables at the right pressure levels</p>
+</section>
+<section id="deterministic-and-reproducible-output">
+<h2>Deterministic and Reproducible Output<a class="headerlink" href="#deterministic-and-reproducible-output" title="Link to this heading">#</a></h2>
+<p>If you require deterministic and reproducible output,
+you should do two things:</p>
+<ol class="arabic simple">
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">torch.use_deterministic_algorithms(True)</span></code> to make PyTorch operations deterministic.</p></li>
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">model.eval()</span></code> to disable drop-out.</p></li>
+</ol>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -442,6 +475,22 @@ document.write(`
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sensitivity-to-data">Sensitivity to Data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deterministic-and-reproducible-output">Deterministic and Reproducible Output</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>
