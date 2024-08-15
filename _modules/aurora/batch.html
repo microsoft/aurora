@@ -393,11 +393,10 @@ document.write(`
 
 <span class="sd">    Args:</span>
 <span class="sd">        surf_vars (dict[str, :class:`torch.Tensor`]): Surface-level variables with shape</span>
-<span class="sd">            `(B, T, H, W)`.</span>
-<span class="sd">        static_vars (dict[str, :class:`torch.Tensor`]): Static variables with shape</span>
-<span class="sd">            `(B, T, H, W)`.</span>
+<span class="sd">            `(b, t, h, w)`.</span>
+<span class="sd">        static_vars (dict[str, :class:`torch.Tensor`]): Static variables with shape `(h, w)`.</span>
 <span class="sd">        atmos_vars (dict[str, :class:`torch.Tensor`]): Atmospheric variables with shape</span>
-<span class="sd">            `(B, T, C, H, W)`.</span>
+<span class="sd">            `(b, t, c, h, w)`.</span>
 <span class="sd">        metadata (:class:`Metadata`): Metadata associated to this batch.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -526,7 +525,7 @@ document.write(`
   <div class="footer-item">
     
 <p class="component-author">
-By the authors of "Aurora: A Foundation Model of the Atmosphere"
+By Microsoft Corporation
 </p>
 
   </div>

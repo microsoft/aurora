@@ -430,11 +430,10 @@ document.write(`
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>surf_vars</strong> (dict[str, <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code>]) – Surface-level variables with shape
-<cite>(B, T, H, W)</cite>.</p></li>
-<li><p><strong>static_vars</strong> (dict[str, <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code>]) – Static variables with shape
-<cite>(B, T, H, W)</cite>.</p></li>
+<cite>(b, t, h, w)</cite>.</p></li>
+<li><p><strong>static_vars</strong> (dict[str, <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code>]) – Static variables with shape <cite>(h, w)</cite>.</p></li>
 <li><p><strong>atmos_vars</strong> (dict[str, <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code>]) – Atmospheric variables with shape
-<cite>(B, T, C, H, W)</cite>.</p></li>
+<cite>(b, t, c, h, w)</cite>.</p></li>
 <li><p><strong>metadata</strong> (<a class="reference internal" href="#aurora.Metadata" title="aurora.Metadata"><code class="xref py py-class docutils literal notranslate"><span class="pre">Metadata</span></code></a>) – Metadata associated to this batch.</p></li>
 </ul>
 </dd>
@@ -666,7 +665,7 @@ parameters in the checkpoint. Defaults to <cite>True</cite>.</p></li>
   <div class="footer-item">
     
 <p class="component-author">
-By the authors of "Aurora: A Foundation Model of the Atmosphere"
+By Microsoft Corporation
 </p>
 
   </div>
