@@ -15,7 +15,7 @@ def rollout(model: Aurora, batch: Batch, steps: int) -> Generator[Batch, None, N
     """Perform a roll-out to make long-term predictions.
 
     Args:
-        model (:class:`aurora.model.aurora.Aurora`): The model to roll-out.
+        model (:class:`aurora.model.aurora.Aurora`): The model to roll out.
         batch (:class:`aurora.batch.Batch`): The batch to start the roll-out from.
         steps (int): The number of roll-out steps.
 

@@ -17,6 +17,7 @@ Roll-Outs
 Models
 ------
 .. autoclass:: aurora.Aurora
+    :special-members: __init__
     :members:
 
 .. autoclass:: aurora.AuroraSmall
