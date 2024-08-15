@@ -10,7 +10,8 @@ Please let us know by [opening an issue](https://github.com/microsoft/aurora/iss
 Our hope is that Aurora generally produces sensible predictions.
 However, there is no guarantee that it will.
 
-For optimal performance, need to use exactly be right.
+If you require optimal performance,
+then the data you use needs to be exactly right.
 This means that you should use provide
 exactly the right variables
 at exactly the right pressure levels
