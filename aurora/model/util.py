@@ -7,6 +7,15 @@ from einops import rearrange
 from timm.models.vision_transformer import trunc_normal_
 from torch import nn
 
+__all__ = [
+    "unpatchify",
+    "create_var_map",
+    "get_ids_for_var_map",
+    "check_lat_lon_dtype",
+    "maybe_adjust_windows",
+    "init_weights",
+]
+
 
 def unpatchify(x: torch.Tensor, V: int, H: int, W: int, P: int) -> torch.Tensor:
     """Unpatchify hidden representation.
@@ -47,7 +56,9 @@ def create_var_map(variables: tuple[str, ...]) -> dict[str, int]:
 
 
 def get_ids_for_var_map(
-    variables: tuple, var_maps: dict, device: torch.cuda.device
+    variables: tuple,
+    var_maps: dict,
+    device: torch.cuda.device,
 ) -> torch.Tensor:
     """Construct a tensor of variable IDs after retrieving those from a variable map created with
     :func:`.create_var_map`.
@@ -65,14 +76,8 @@ def get_ids_for_var_map(
 
 def check_lat_lon_dtype(lat: torch.Tensor, lon: torch.Tensor) -> None:
     """Assert that `lat` and `lon` are at least `float32`s."""
-    assert lat.dtype in [
-        torch.float32,
-        torch.float64,
-    ], f"Latitude numerically unstable. Found type: {lat.dtype}."
-    assert lon.dtype in [
-        torch.float32,
-        torch.float64,
-    ], f"Longitude numerically unstable. Found type: {lon.dtype}."
+    assert lat.dtype in [torch.float32, torch.float64], f"Latitude num. unstable: {lat.dtype}."
+    assert lon.dtype in [torch.float32, torch.float64], f"Longitude num. unstable: {lon.dtype}."
 
 
 T = TypeVar("T", tuple[int, int], tuple[int, int, int])

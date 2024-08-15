@@ -8,17 +8,19 @@
 import torch
 from torch import nn
 
+__all__ = ["AdaptiveLayerNorm"]
+
 
 class AdaptiveLayerNorm(nn.Module):
-    """Adaptive layer normalization with scale and shift modulation."""
+    """Adaptive layer normalisation with scale and shift modulation."""
 
     def __init__(self, dim: int, context_dim: int, scale_bias: float = 0):
-        """Initialize.
+        """Initialise.
 
         Args:
             dim (int): Input dimension.
             context_dim (int): Dimension of the conditioning signal.
-            scale_bias (float, optional): Scale bias to add to the scaling factor. Defaults to 0.
+            scale_bias (float, optional): Scale bias to add to the scaling factor. Defaults to `0`.
         """
         super().__init__()
         self.ln = nn.LayerNorm(dim, elementwise_affine=False)

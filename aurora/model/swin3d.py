@@ -18,8 +18,8 @@ from timm.models.layers import DropPath, to_3tuple
 
 from aurora.model.film import AdaptiveLayerNorm
 from aurora.model.fourier import lead_time_expansion
-from aurora.model.helpers import init_weights, maybe_adjust_windows
 from aurora.model.lora import LoraMode, LoRARollout
+from aurora.model.util import init_weights, maybe_adjust_windows
 
 
 class MLP(nn.Module):

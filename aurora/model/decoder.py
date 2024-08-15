@@ -8,14 +8,14 @@ from torch import nn
 
 from aurora.batch import Batch, Metadata
 from aurora.model.fourier import levels_expansion
-from aurora.model.helpers import (
+from aurora.model.perceiver import PerceiverResampler
+from aurora.model.util import (
     check_lat_lon_dtype,
     create_var_map,
     get_ids_for_var_map,
     init_weights,
     unpatchify,
 )
-from aurora.model.perceiver import PerceiverResampler
 
 __all__ = ["Perceiver3DDecoder"]
 
