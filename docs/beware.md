@@ -24,7 +24,7 @@ right variables at the right pressure levels
 HRES IFS T0 is _not_ the same as HRES IFS analysis.
 Crucially, the analysis product includes an additional surface assimilation step.
 
-Specific versions of Aurora require specific version of HRES IFS:
+Specific versions of Aurora require specific versions of HRES IFS:
 Aurora 0.25° Fine-Tuned requires IFS HRES T0,
 and Aurora 0.1° Fine-Tuned requires IFS HRES analysis.
 
