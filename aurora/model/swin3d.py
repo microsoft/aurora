@@ -111,9 +111,9 @@ class WindowAttention(nn.Module):
         super().__init__()
 
         self.dim = dim
-        self.window_size = window_size  # Wh, Ww
+        self.window_size = window_size  # (Wc, Wh, Ww)
         self.num_heads = num_heads
-        assert dim % num_heads == 0, f"dim {dim} should be divided by num_heads {num_heads}."
+        assert dim % num_heads == 0, f"dim ({dim}) should be divisible by num_heads ({num_heads})."
         self.head_dim = dim // num_heads
 
         self.attn_drop = attn_drop
@@ -507,16 +507,14 @@ class Swin3DTransformerBlock(nn.Module):
 
 
 class PatchMerging3D(nn.Module):
-    """Patch Merging Layer for 3D inputs.
+    """Patch merging layer."""
 
-    Goes from (B, C*H*W, D) --> (B, C*H/2*W/2, 2*D)
+    def __init__(self, dim: int) -> None:
+        """Initialise.
 
-    Args:
-        dim (int): Number of input channels.
-        norm_layer (nn.Module, optional): Normalization layer.  Default: nn.LayerNorm
-    """
-
-    def __init__(self, dim):
+        Args:
+            dim (int): Number of input channels.
+        """
         super().__init__()
         self.dim = dim
         self.reduction = nn.Linear(4 * dim, 2 * dim, bias=False)
@@ -525,20 +523,29 @@ class PatchMerging3D(nn.Module):
     def _merge(self, x: torch.Tensor, res: tuple[int, int, int]) -> torch.Tensor:
         C, H, W = res
         B, L, D = x.shape
-        assert L == C * H * W, f"Wrong feature size: {L} vs {C}x{H}x{W}={C*H*W}"
-        assert H > 1, f"Height ({H}) must be larger than 1"
-        assert W > 1, f"Width ({W}) must be larger than 1"
+        assert L == C * H * W, f"Wrong feature size: {L} vs {C}*{H}*{W}={C*H*W}."
+        assert H > 1, f"Height ({H}) must be larger than 1."
+        assert W > 1, f"Width ({W}) must be larger than 1."
 
         x = x.view(B, C, H, W, D)
         x = pad_3d(x, (0, H % 2, W % 2))  # Pad to multiple of 2.
         new_H, new_W = x.shape[2], x.shape[3]
-        assert x.shape[2] % 2 == 0, f"({new_H}) % 2 != 0"
-        assert x.shape[3] % 2 == 0, f"({new_W}) % 2 != 0"
+        assert x.shape[2] % 2 == 0, f"({new_H}) % 2 != 0."
+        assert x.shape[3] % 2 == 0, f"({new_W}) % 2 != 0."
 
         x = x.reshape(B, C, new_H // 2, 2, new_W // 2, 2, D)
         return rearrange(x, "B C H h W w D -> B (C H W) (h w D)")
 
     def forward(self, x: torch.Tensor, input_resolution: tuple[int, int, int]) -> torch.Tensor:
+        """Perform the path merging operation.
+
+        Args:
+            x (torch.Tensor): Input tokens of shape `(B, C*H*W, D)`.
+            input_resolution (tuple[int, int, int]): Resolution of `x` of the form `(C, H, W)`.
+
+        Returns:
+            torch.Tensor: Merged tokens of shape `(B, C*H/2*W/2, 2*D)`.
+        """
         x = self._merge(x, input_resolution)
         x = self.norm(x)
         x = self.reduction(x)
@@ -546,18 +553,13 @@ class PatchMerging3D(nn.Module):
 
 
 class PatchSplitting3D(nn.Module):
-    r"""Patch splitting layer for 3D inputs.
-
-    Quadruples the number of patches by doubling in the H and W dimensions.
-    Changes the shape of the inputs from `(B, C*H*W, D)` to `(B, C*2H*2W, D/2)`.
-    """
+    """Patch splitting layer."""
 
     def __init__(self, dim: int) -> None:
-        """
+        """Initialise.
+
         Args:
-            input_resolution (tuple[int, int, int]): Resolution of input features.
             dim (int): Number of input channels.
-            norm_layer (nn.Module): Normalization layer. Default: nn.LayerNorm.
         """
         super().__init__()
         self.dim = dim
@@ -567,17 +569,20 @@ class PatchSplitting3D(nn.Module):
         self.norm = nn.LayerNorm(dim // 2)
 
     def _split(
-        self, x: torch.Tensor, res: tuple[int, int, int], crop: tuple[int, int, int]
+        self,
+        x: torch.Tensor,
+        res: tuple[int, int, int],
+        crop: tuple[int, int, int],
     ) -> torch.Tensor:
         C, H, W = res
         B, L, D = x.shape
-        assert L == C * H * W, f"Wrong number of tokens: {L} != {C}*{H}*{W}={C*H*W}"
+        assert L == C * H * W, f"Wrong number of tokens: {L} != {C}*{H}*{W}={C*H*W}."
         assert D % 4 == 0, f"Number of input features ({D}) is not a multiple of 4."
 
         x = x.view(B, C, H, W, 2, 2, D // 4)
-        x = rearrange(x, "B C H W h w D -> B C (H h) (W w) D")  # (B C 2H 2W D/4)
-        x = crop_3d(x, crop)  # Undo padding from PatchMerging (if any).
-        return x.reshape(B, -1, D // 4)  # (B C*2H*2W D/4)
+        x = rearrange(x, "B C H W h w D -> B C (H h) (W w) D")  # (B, C, 2*H, 2*W, D/4)
+        x = crop_3d(x, crop)  # Undo padding from `PatchMerging` (if any).
+        return x.reshape(B, -1, D // 4)  # (B, C*2H*2W, D/4)
 
     def forward(
         self,
@@ -585,10 +590,23 @@ class PatchSplitting3D(nn.Module):
         input_resolution: tuple[int, int, int],
         crop: tuple[int, int, int] = (0, 0, 0),
     ) -> torch.Tensor:
-        x = self.lin1(x)  # (B C*H*W D*2)
+        """Perform the patch splitting.
+
+        Quadruples the number of patches by doubling in the `H` and `W` dimensions.
+
+        Args:
+            x (torch.Tensor): Input tokens of shape `(B, C*H*W, D)`.
+            input_resolution (tuple[int, int, int]): Resolution of `x` of the form `(C, H, W)`.
+            crop (tuple[int, int, int], optional): Cropping for every dimension. Defaults to
+                no cropping.
+
+        Returns:
+            torch.Tensor: Splitted tokens of shape `(B, C*(2*H)*(2*W), D/2)`.
+        """
+        x = self.lin1(x)  # (B, C*H*W, D*2)
         x = self._split(x, input_resolution, crop)
         x = self.norm(x)
-        x = self.lin2(x)  # (B C*2H*2W D/2)
+        x = self.lin2(x)  # (B, C*(2*H)*(2*W), D/2)
         return x
 
 
@@ -610,40 +628,41 @@ class BasicLayer3D(nn.Module):
         downsample: type[PatchMerging3D] | None = None,
         upsample: type[PatchSplitting3D] | None = None,
         scale_bias: float = 0.0,
-        use_checkpoint: bool = False,
-        use_lora: bool = False,
         lora_steps: int = 40,
         lora_mode: LoRAMode = "single",
+        use_lora: bool = False,
     ) -> None:
-        """
+        """Initialise.
+
         Args:
             dim (int): Number of input channels.
             depth (int): Number of blocks.
             num_heads (int): Number of attention heads.
             ws (tuple[int, int, int]): Window size.
             time_dim (int): Dimension of the lead time embedding.
-            mlp_ratio (float): Ratio of mlp hidden dim to embedding dim. Default: 4.0
-            qkv_bias (bool): If True, add a learnable bias to query, key, value. Default: True
-            drop (float): Dropout rate. Default: 0.0
-            attn_drop (float): Attention dropout rate. Default: 0.0
-            drop_path (float): Stochastic depth rate. Default: 0.0
-            downsample (PatchMerging3D): Downsample layer. Default: None
-            upsample (PatchSplitting3D): Upsample layer. Default: None
-            scale_bias (float): Scale bias to use for the AdaptiveLayerNorm. Default: 0
-            use_checkpoint (bool): If True, use checkpointing. Default: False
-            use_lora (bool): If True, use LoRA. Default: False
-            lora_steps (int): Maximum number of LoRA steps to use for rollouts. Default: 40
-            lora_mode (LoRAMode): Mode in which to run LoRA. Defaults to "single" for compatibility
-                with the best checkpoints.
+            mlp_ratio (float): Hidden layer dimensionality divided by that of the input for all
+                MLPs. Defaults to `4.0`.
+            qkv_bias (bool): If `True`, add a learnable bias to the query, key, and value. Defaults
+                to `True`.
+            drop (float): Drop-out rate. Defaults to `0.0`.
+            attn_drop (float): Attention drop-out rate. Defaults to `0.0`.
+            drop_path (float): Stochastic depth rate. Defaults to `0.0`.
+            downsample (PatchMerging3D, optional): Downsampling layer. Defaults to no downsampling.
+            upsample (PatchSplitting3D, optional): Upsampling layer. Defaults to no upsampling.
+            scale_bias (float, optional): Scale bias for
+                :class:`aurora.model.film.AdaptiveLayerNorm`. Default: 0
+            lora_steps (int, optional): Maximum number of LoRA roll-out steps. Defaults to `40`.
+            lora_mode (str, optional): Mode. `"single"` uses the same LoRA for all roll-out steps,
+                and `"all"` uses a different LoRA for every roll-out step. Defaults to `"single"`.
+            use_lora (bool): Enable LoRA. By default, LoRA is disabled.
         """
         super().__init__()
 
         if downsample is not None and upsample is not None:
-            raise ValueError("Cannot set both downsample and upsample")
+            raise ValueError("Cannot set both `downsample` and `upsample`.")
 
         self.dim = dim
         self.depth = depth
-        self.use_checkpoint = use_checkpoint
 
         self.blocks = nn.ModuleList(
             [
@@ -669,13 +688,11 @@ class BasicLayer3D(nn.Module):
             ]
         )
 
-        # patch downsample layer
         if downsample is not None:
             self.downsample: PatchMerging3D | None = downsample(dim=dim)
         else:
             self.downsample = None
 
-        # patch uplsample layer
         if upsample is not None:
             self.upsample: PatchSplitting3D | None = upsample(dim=dim)
         else:
@@ -686,9 +703,21 @@ class BasicLayer3D(nn.Module):
         x: torch.Tensor,
         c: torch.Tensor,
         res: tuple[int, int, int],
-        crop: tuple[int, int, int] = (False, False, False),
+        crop: tuple[int, int, int] = (0, 0, 0),
         rollout_step: int = 0,
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
+        """Run the basic layer.
+
+        Args:
+            x (torch.Tensor): Input tokens of shape `(B, L, D)`.
+            c (torch.Tensor): Conditioning context of shape `(B, D)`.
+            res (tuple[int, int, int]): Resolution of the input `x`.
+            crop (tuple[int, int, int]): Cropping for every dimension.
+            rollout_step (int): Roll-out step.
+
+        Returns:
+            torch.Tensor: Output tokens.
+        """
         for blk in self.blocks:
             x = blk(x, c, res, rollout_step)
         if self.downsample is not None:
@@ -699,7 +728,9 @@ class BasicLayer3D(nn.Module):
             return x_scaled, x
         return x, None
 
-    def _init_respostnorm(self):
+    def init_respostnorm(self):
+        """Initialise the post-normalisation layers in the residual connection of the windowed
+        attention mechanism."""
         for blk in self.blocks:
             blk.norm1.init_weights()
             blk.norm2.init_weights()
@@ -729,13 +760,13 @@ class Swin3DTransformerBackbone(nn.Module):
         drop_rate: float = 0.0,
         attn_drop_rate: float = 0.1,
         drop_path_rate: float = 0.1,
-        use_lora: bool = False,
         lora_steps: int = 40,
         lora_mode: LoRAMode = "single",
+        use_lora: bool = False,
     ) -> None:
         """
         Args:
-            embed_dim (int): Patch embedding dimension. Default: 96
+            embed_dim (int): Patch embedding dimension. Default to `96`.
             encoder_depths (tuple[int, ...]): Number of blocks in each encoder layer. Defaults to
                 `(2, 2, 6, 2)`.
             encoder_num_heads (tuple[int, ...]): Number of attention heads in each encoder layer.
@@ -744,16 +775,18 @@ class Swin3DTransformerBackbone(nn.Module):
                 `(2, 6, 2, 2)`.
             decoder_num_heads (tuple[int, ...]): Number of attention heads in each decoder layer.
                 Defaults to `(24, 12, 6, 3)`.
-            window_size (int | tuple[int, int, int]): Window size. Default: 7
-            mlp_ratio (float): Ratio of mlp hidden dim to embedding dim. Default: 4.0
-            qkv_bias (bool): If True, add a learnable bias to query, key, value. Default: True
-            drop_rate (float): Dropout rate. Default: 0.0
-            attn_drop_rate (float): Attention dropout rate. Default: 0.1
-            drop_path_rate (float): Stochastic depth rate. Default: 0.1
-            norm_layer (nn.Module): Normalization layer. Default: nn.LayerNorm
-            use_lora (bool): If True, use LoRA. Default: False
-            lora_steps (int): Maximum number of LoRA steps to use for rollouts. Default: 40
-            lora_mode (str): LoRA mode. Default: "single"
+            window_size (int | tuple[int, int, int]): Window size. Defaults to `7`.
+            mlp_ratio (float): Hidden layer dimensionality divided by that of the input for all
+                MLPs. Defaults to `4.0`.
+            qkv_bias (bool): If `True`, add a learnable bias to the query, key, and value. Defaults
+                to `True`.
+            drop_rate (float): Drop-out rate. Defaults to `0.0`.
+            attn_drop_rate (float): Attention drop-out rate. Defaults to `0.1`.
+            drop_path_rate (float): Stochastic depth rate. Defaults to `0.1`.
+            lora_steps (int, optional): Maximum number of LoRA roll-out steps. Defaults to `40`.
+            lora_mode (str, optional): Mode. `"single"` uses the same LoRA for all roll-out steps,
+                and `"all"` uses a different LoRA for every roll-out step. Defaults to `"single"`.
+            use_lora (bool): Enable LoRA. By default, LoRA is disabled.
         """
         super().__init__()
 
@@ -775,7 +808,7 @@ class Swin3DTransformerBackbone(nn.Module):
             x.item() for x in torch.linspace(0, drop_path_rate, sum(encoder_depths))
         ]
 
-        # build encoder layers
+        # Build encoder layers.
         self.encoder_layers = nn.ModuleList()
         for i_layer in range(self.num_encoder_layers):
             layer = Basic3DEncoderLayer(
@@ -796,7 +829,7 @@ class Swin3DTransformerBackbone(nn.Module):
             )
             self.encoder_layers.append(layer)
 
-        # build decoder layers
+        # Build decoder layers.
         self.decoder_layers = nn.ModuleList()
         for i_layer in range(self.num_decoder_layers):
             exponent = self.num_decoder_layers - i_layer - 1
@@ -819,12 +852,13 @@ class Swin3DTransformerBackbone(nn.Module):
             self.decoder_layers.append(layer)
 
         self.apply(init_weights)
-        # This should be called after the weights are initialized to overwrite the AdaptiveLayerNorm
-        # init.
+
+        # This must overwrite the initialisation of `AdaptiveLayerNorm` by
+        # `self.apply(init_weights)` above, so should be called afterwards.
         for bly in self.encoder_layers:
-            bly._init_respostnorm()
+            bly.init_respostnorm()
         for bly in self.decoder_layers:
-            bly._init_respostnorm()
+            bly.init_respostnorm()
 
     def get_encoder_specs(
         self, patch_res: tuple[int, int, int]
@@ -849,15 +883,24 @@ class Swin3DTransformerBackbone(nn.Module):
         rollout_step: int,
         patch_res: tuple[int, int, int],
     ) -> torch.Tensor:
-        assert (
-            x.shape[1] == patch_res[0] * patch_res[1] * patch_res[2]
-        ), "Input shape does not match patch size"
+        """Run the backbone.
 
-        # It's costly to pad across the level dimension, so we should not
-        # even though our model supports it.
-        assert (
-            patch_res[0] % self.window_size[0] == 0
-        ), f"Patch height ({patch_res[0]}) must be divisible by ws[0] ({self.window_size[0]})"
+        Args:
+            x (torch.Tensor): Input tokens of shape `(B, L, D)`.
+            lead_time (datetime.timedelta): Lead time.
+            rollout_step (int): Roll-out step.
+            patch_res (tuple[int, int, int]): Patch resolution of the form `(C, H, W)`.
+
+        Returns:
+            torch.Tensor: Output tokens of shape `(B, L, D)`.
+        """
+        _msg = "Input shape does not match patch size."
+        assert x.shape[1] == patch_res[0] * patch_res[1] * patch_res[2], _msg
+
+        # It's costly to pad across the level dimension, so we should not even though our model
+        # supports it.
+        _msg = f"Patch height ({patch_res[0]}) must be divisible by ws[0] ({self.window_size[0]})"
+        assert patch_res[0] % self.window_size[0] == 0, _msg
 
         all_enc_res, padded_outs = self.get_encoder_specs(patch_res)
 
