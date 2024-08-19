@@ -1,11 +1,14 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
 import math
+from typing import Optional
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from timm.models.layers.helpers import to_2tuple
+
+__all__ = ["LevelPatchEmbed"]
 
 
 class LevelPatchEmbed(nn.Module):
@@ -18,10 +21,11 @@ class LevelPatchEmbed(nn.Module):
         patch_size: int,
         embed_dim: int,
         history_size: int = 1,
-        norm_layer=None,
-        flatten=True,
-    ):
+        norm_layer: Optional[nn.Module] = None,
+        flatten: bool = True,
+    ) -> None:
         super().__init__()
+
         self.max_vars = max_vars
         self.kernel_size = (history_size,) + to_2tuple(patch_size)
         self.flatten = flatten
@@ -35,13 +39,11 @@ class LevelPatchEmbed(nn.Module):
         self.weight = nn.Parameter(weight)
         self.bias = nn.Parameter(torch.empty(embed_dim))
         self.norm = norm_layer(embed_dim) if norm_layer else nn.Identity()
+
         self.reset_parameters()
 
-    def reset_parameters(self):
-        """The following initialisation is taken from
-
-        https://pytorch.org/docs/stable/_modules/torch/nn/modules/conv.html#Conv3d
-        """
+    def reset_parameters(self) -> None:
+        """Reset the parameters."""
         # Setting `a = sqrt(5)` in kaiming_uniform is the same as initialising with
         # `uniform(-1/sqrt(k), 1/sqrt(k))`, where `k = weight.size(1) * prod(*kernel_size)`.
         # For more details, see
@@ -49,11 +51,15 @@ class LevelPatchEmbed(nn.Module):
         #   https://github.com/pytorch/pytorch/issues/15314#issuecomment-477448573
         #
         nn.init.kaiming_uniform_(self.weight, a=math.sqrt(5))
-        if self.bias is not None:
-            fan_in, _ = nn.init._calculate_fan_in_and_fan_out(self.weight)
-            if fan_in != 0:
-                bound = 1 / math.sqrt(fan_in)
-                nn.init.uniform_(self.bias, -bound, bound)
+
+        # The following initialisation is taken from
+        #
+        #   https://pytorch.org/docs/stable/_modules/torch/nn/modules/conv.html#Conv3d
+        #
+        fan_in, _ = nn.init._calculate_fan_in_and_fan_out(self.weight)
+        if fan_in != 0:
+            bound = 1 / math.sqrt(fan_in)
+            nn.init.uniform_(self.bias, -bound, bound)
 
     def forward(self, x: torch.Tensor, vars: list[int]) -> torch.Tensor:
         """Run the embedding.

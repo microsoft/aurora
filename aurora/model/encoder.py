@@ -45,8 +45,9 @@ class Perceiver3DEncoder(nn.Module):
         mlp_ratio: float = 4.0,
         max_history_size: int = 2,
         perceiver_ln_eps: float = 1e-5,
-    ):
-        """Initialize the MultiScaleEncoder.
+    ) -> None:
+        """Initialise.
+
         Args:
             surf_vars (tuple[str, ...]): All supported surface-level variables.
             static_vars (tuple[str, ...], optional): All supported static variables.

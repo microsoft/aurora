@@ -6,10 +6,14 @@ from typing import Literal
 import torch
 from torch import nn
 
-LoraMode = Literal["single", "all"]
+__all__ = ["LoRA", "LoRARollout", "LoRAMode"]
+
+LoRAMode = Literal["single", "all"]
 
 
 class LoRA(nn.Module):
+    """LoRA adaptation for a linear layer."""
+
     def __init__(
         self,
         in_features: int,
@@ -18,8 +22,18 @@ class LoRA(nn.Module):
         alpha: int = 1,
         dropout: float = 0.0,
     ):
+        """Initialise.
+
+        Args:
+            in_features (int): Number of input features.
+            out_features (int): Number of output features.
+            r (int, optional): Rank. Defaults to `4`.
+            alpha (int, optional): Alpha. Defaults to `1`.
+            dropout (float, optional): Drop-out rate. Defaults to `0.0`.
+        """
         super().__init__()
-        assert r > 0, "r must be non-negative"
+
+        assert r > 0, "The rank must be strictly positive."
         self.lora_alpha = alpha
         self.r = r
 
@@ -30,19 +44,27 @@ class LoRA(nn.Module):
 
         self.reset_parameters()
 
-    def reset_parameters(self):
-        # initialize A the same way as the default for nn.Linear and B to zero
+    def reset_parameters(self) -> None:
+        """Reset the parameters."""
+        # Initialise A the same way as the default for `nn.Linear` and set B to zero.
         nn.init.kaiming_uniform_(self.lora_A, a=math.sqrt(5))
         nn.init.zeros_(self.lora_B)
 
-    def forward(self, x: torch.Tensor):
-        return (
-            self.lora_dropout(x) @ self.lora_A.transpose(0, 1) @ self.lora_B.transpose(0, 1)
-        ) * self.scaling
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Compute the LoRA adaptation.
+
+        Args:
+            x (torch.Tensor): Input to the linear layer.
+
+        Returns:
+            torch.Tensor: Additive correction for the output of the linear layer.
+        """
+        x = self.lora_dropout(x) @ self.lora_A.transpose(0, 1) @ self.lora_B.transpose(0, 1)
+        return x * self.scaling
 
 
 class LoRARollout(nn.Module):
-    """Module for per rollout step LoRA finetuning."""
+    """Per-roll-out-step LoRA finetuning."""
 
     def __init__(
         self,
@@ -52,8 +74,20 @@ class LoRARollout(nn.Module):
         alpha: int = 8,
         dropout: float = 0.0,
         max_steps: int = 40,
-        mode: LoraMode = "single",
+        mode: LoRAMode = "single",
     ):
+        """Initialise.
+
+        Args:
+            in_features (int): Number of input features.
+            out_features (int): Number of output features.
+            r (int, optional): Rank. Defaults to `4`.
+            alpha (int, optional): Alpha. Defaults to `1`.
+            dropout (float, optional): Drop-out rate. Defaults to `0.0`.
+            max_steps (int, optional): Maximum number of roll-out steps. Defaults to `40`.
+            mode (str, optional): Mode. `"single"` uses the same LoRA for all roll-out steps,
+                and `"all"` uses a different LoRA for every roll-out step. Defaults to `"single"`.
+        """
         super().__init__()
 
         self.mode = mode
@@ -66,7 +100,16 @@ class LoRARollout(nn.Module):
             ]
         )
 
-    def forward(self, x: torch.Tensor, step: int):
+    def forward(self, x: torch.Tensor, step: int) -> torch.Tensor:
+        """Compute the LoRA adaptation.
+
+        Args:
+            x (torch.Tensor): Input to the linear layer.
+            step (int): Roll-out step, starting at zero.
+
+        Returns:
+            torch.Tensor: Additive correction for the output of the linear layer.
+        """
         assert step >= 0, f"Step must be non-negative, found {step}."
 
         if step >= self.max_steps:

@@ -14,7 +14,7 @@ __all__ = ["AdaptiveLayerNorm"]
 class AdaptiveLayerNorm(nn.Module):
     """Adaptive layer normalisation with scale and shift modulation."""
 
-    def __init__(self, dim: int, context_dim: int, scale_bias: float = 0):
+    def __init__(self, dim: int, context_dim: int, scale_bias: float = 0) -> None:
         """Initialise.
 
         Args:
@@ -23,12 +23,15 @@ class AdaptiveLayerNorm(nn.Module):
             scale_bias (float, optional): Scale bias to add to the scaling factor. Defaults to `0`.
         """
         super().__init__()
+
         self.ln = nn.LayerNorm(dim, elementwise_affine=False)
         self.ln_modulation = nn.Sequential(nn.SiLU(), nn.Linear(context_dim, dim * 2))
         self.scale_bias = scale_bias
+
         self.init_weights()
 
-    def init_weights(self):
+    def init_weights(self) -> None:
+        """Initialise the weights."""
         nn.init.zeros_(self.ln_modulation[-1].weight)
         nn.init.zeros_(self.ln_modulation[-1].bias)
 

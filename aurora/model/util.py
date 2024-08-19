@@ -21,7 +21,7 @@ def unpatchify(x: torch.Tensor, V: int, H: int, W: int, P: int) -> torch.Tensor:
     """Unpatchify hidden representation.
 
     Args:
-        x (torch.Tensor): Patchified input of shape `(B, L, C, D = V * P**2)` where `P` is the
+        x (torch.Tensor): Patchified input of shape `(B, L, C, V * P^2)` where `P` is the
             patch size.
         V (int): Number of variables.
         H (int): Number of latitudes.
@@ -84,28 +84,30 @@ T = TypeVar("T", tuple[int, int], tuple[int, int, int])
 
 
 def maybe_adjust_windows(window_size: T, shift_size: T, res: T) -> tuple[T, T]:
-    """Adjust the window size and shift size if the input res is smaller than the window size."""
+    """Adjust the window size and shift size if the input resolution is smaller than the window
+    size."""
     err_msg = f"Expected same length, found {len(window_size)}, {len(shift_size)} and {len(res)}."
     assert len(window_size) == len(shift_size) == len(res), err_msg
 
-    new_shift_size, new_window_size = list(shift_size), list(window_size)
+    mut_shift_size, mut_window_size = list(shift_size), list(window_size)
     for i in range(len(res)):
         if res[i] <= window_size[i]:
-            new_shift_size[i] = 0
-            new_window_size[i] = res[i]
+            mut_shift_size[i] = 0
+            mut_window_size[i] = res[i]
 
-    ws: T = tuple(new_window_size)  # type: ignore[assignment]
-    ss: T = tuple(new_shift_size)  # type: ignore[assignment]
+    new_window_size: T = tuple(mut_window_size)  # type: ignore[assignment]
+    new_shift_size: T = tuple(mut_shift_size)  # type: ignore[assignment]
 
-    assert min(ws) > 0, f"Window size must be positive. Found {ws}."
-    assert min(ss) >= 0, f"Shift size must be non-negative. Found {ss}."
+    assert min(new_window_size) > 0, f"Window size must be positive. Found {new_window_size}."
+    assert min(new_shift_size) >= 0, f"Shift size must be non-negative. Found {new_shift_size}."
 
-    return ws, ss
+    return new_window_size, new_shift_size
 
 
 def init_weights(m: nn.Module):
-    """Initialize weights of a module with a truncated normal distribution.
-    LayerNorm is initialised with a weight of 1 and a bias of 0.
+    """Initialise weights of a module with a truncated normal distribution.
+
+    `nn.LayerNorm` is initialised with a `weight` of 1 and a `bias` of 0.
 
     Args:
         m (torch.nn.Module): Module.

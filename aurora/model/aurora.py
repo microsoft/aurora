@@ -82,9 +82,6 @@ class Aurora(torch.nn.Module):
             use_lora (bool, optional): Use LoRA adaptation.
             lora_steps (int, optional): Use different LoRA adaptation for the first so-many roll-out
                 steps.
-
-        Returns:
-            :class:`aurora.model.aurora.Aurora`: Instance.
         """
         super().__init__()
         self.surf_vars = surf_vars

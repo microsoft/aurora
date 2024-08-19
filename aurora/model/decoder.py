@@ -36,7 +36,7 @@ class Perceiver3DDecoder(nn.Module):
         drop_rate: float = 0.0,
         perceiver_ln_eps: float = 1e-5,
     ) -> None:
-        """Initialize the MultiScaleDecoder.
+        """Initialise.
 
         Args:
             surf_vars (tuple[str, ...]): All supported surface-level variables.

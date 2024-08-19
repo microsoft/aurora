@@ -18,7 +18,7 @@ from timm.models.layers import DropPath, to_3tuple
 
 from aurora.model.film import AdaptiveLayerNorm
 from aurora.model.fourier import lead_time_expansion
-from aurora.model.lora import LoraMode, LoRARollout
+from aurora.model.lora import LoRAMode, LoRARollout
 from aurora.model.util import init_weights, maybe_adjust_windows
 
 
@@ -76,7 +76,7 @@ class WindowAttention(nn.Module):
         lora_alpha=8,
         lora_dropout=0.0,
         lora_steps=40,
-        lora_mode: LoraMode = "single",
+        lora_mode: LoRAMode = "single",
         use_lora: bool = False,
     ):
         super().__init__()
@@ -341,7 +341,7 @@ class Swin3DTransformerBlock(nn.Module):
         scale_bias: float = 0.0,
         use_lora: bool = False,
         lora_steps: int = 40,
-        lora_mode: LoraMode = "single",
+        lora_mode: LoRAMode = "single",
     ):
         """
         Args:
@@ -562,7 +562,7 @@ class BasicLayer3D(nn.Module):
         use_checkpoint: bool = False,
         use_lora: bool = False,
         lora_steps: int = 40,
-        lora_mode: LoraMode = "single",
+        lora_mode: LoRAMode = "single",
     ) -> None:
         """
         Args:
@@ -582,7 +582,7 @@ class BasicLayer3D(nn.Module):
             use_checkpoint (bool): If True, use checkpointing. Default: False
             use_lora (bool): If True, use LoRA. Default: False
             lora_steps (int): Maximum number of LoRA steps to use for rollouts. Default: 40
-            lora_mode (LoraMode): Mode in which to run LoRA. Defaults to "single" for compatibility
+            lora_mode (LoRAMode): Mode in which to run LoRA. Defaults to "single" for compatibility
                 with the best checkpoints.
         """
         super().__init__()
@@ -680,7 +680,7 @@ class Swin3DTransformerBackbone(nn.Module):
         drop_path_rate: float = 0.1,
         use_lora: bool = False,
         lora_steps: int = 40,
-        lora_mode: LoraMode = "single",
+        lora_mode: LoRAMode = "single",
     ) -> None:
         """
         Args:
