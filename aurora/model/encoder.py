@@ -16,7 +16,7 @@ from aurora.model.fourier import (
 )
 from aurora.model.patchembed import LevelPatchEmbed
 from aurora.model.perceiver import MLP, PerceiverResampler
-from aurora.model.posencoding import get_2d_patched_lat_lon_encode
+from aurora.model.posencoding import pos_scale_enc
 from aurora.model.util import (
     check_lat_lon_dtype,
     create_var_map,
@@ -223,7 +223,7 @@ class Perceiver3DEncoder(nn.Module):
         x = torch.cat((x_surf.unsqueeze(1), x_atmos), dim=1)
 
         # Add position and scale embeddings to the 3D tensor.
-        pos_encode, scale_encode = get_2d_patched_lat_lon_encode(
+        pos_encode, scale_encode = pos_scale_enc(
             self.embed_dim,
             lat,
             lon,
@@ -231,12 +231,12 @@ class Perceiver3DEncoder(nn.Module):
             pos_expansion=pos_expansion,
             scale_expansion=scale_expansion,
         )
-        # Encodings are (L, D)
+        # Encodings are (L, D).
         pos_encode = self.pos_embed(pos_encode[None, None, :].to(dtype=dtype))
         scale_encode = self.scale_embed(scale_encode[None, None, :].to(dtype=dtype))
         x = x + pos_encode + scale_encode
 
-        # Flatten the tokens
+        # Flatten the tokens.
         x = x.reshape(B, -1, self.embed_dim)  # (B, C + 1, L, D) to (B, L', D)
 
         # Add lead time embedding.
