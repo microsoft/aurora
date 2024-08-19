@@ -61,9 +61,20 @@ import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange
 
+__all__ = ["MLP", "PerceiverResampler"]
+
 
 class MLP(nn.Module):
-    def __init__(self, dim, hidden_features: int, dropout=0.0):
+    """A simple one-hidden-layer MLP."""
+
+    def __init__(self, dim: int, hidden_features: int, dropout: float = 0.0) -> None:
+        """Initialise.
+
+        Args:
+            dim (int): Input dimensionality.
+            hidden_features (int): Width of the hidden layer.
+            dropout (float, optional): Drop-out rate. Defaults to no drop-out.
+        """
         super().__init__()
         self.net = nn.Sequential(
             nn.Linear(dim, hidden_features),
@@ -72,7 +83,8 @@ class MLP(nn.Module):
             nn.Dropout(dropout),
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Run the MLP."""
         return self.net(x)
 
 
@@ -80,12 +92,24 @@ class PerceiverAttention(nn.Module):
     """Cross attention module from the Perceiver architecture."""
 
     def __init__(
-        self, latent_dim: int, context_dim: int, head_dim: int = 64, num_heads: int = 8
+        self,
+        latent_dim: int,
+        context_dim: int,
+        head_dim: int = 64,
+        num_heads: int = 8,
     ) -> None:
+        """Initialise.
+
+        Args:
+            latent_dim (int): Dimensionality of the latent features given as input.
+            context_dim (int): Dimensionality of the context features also given as input.
+            head_dim (int): Attention head dimensionality.
+            num_heads (int): Number of heads.
+        """
         super().__init__()
-        self.inner_dim = head_dim * num_heads
         self.num_heads = num_heads
         self.head_dim = head_dim
+        self.inner_dim = head_dim * num_heads
 
         self.to_q = nn.Linear(latent_dim, self.inner_dim, bias=False)
         self.to_kv = nn.Linear(context_dim, self.inner_dim * 2, bias=False)
@@ -105,8 +129,8 @@ class PerceiverAttention(nn.Module):
         """
         h = self.num_heads
 
-        q = self.to_q(latents)  # (B, L1, D2) -> (B, L1, D)
-        k, v = self.to_kv(x).chunk(2, dim=-1)  # (B, L2, D1) -> (B, L2, D) x 2
+        q = self.to_q(latents)  # (B, L1, D2) to (B, L1, D)
+        k, v = self.to_kv(x).chunk(2, dim=-1)  # (B, L2, D1) to twice (B, L2, D)
         q, k, v = map(lambda t: rearrange(t, "b l (h d) -> b h l d", h=h), (q, k, v))
 
         out = F.scaled_dot_product_attention(q, k, v)
@@ -125,10 +149,26 @@ class PerceiverResampler(nn.Module):
         head_dim: int = 64,
         num_heads: int = 16,
         mlp_ratio: float = 4.0,
-        drop=0.0,
+        drop: float = 0.0,
         residual_latent: bool = True,
         ln_eps: float = 1e-5,
     ) -> None:
+        """Initialise.
+
+        Args:
+            latent_dim (int): Dimensionality of the latent features given as input.
+            context_dim (int): Dimensionality of the context features also given as input.
+            depth (int, optional): Number of attention layers.
+            head_dim (int, optional): Attention head dimensionality. Defaults to `64`.
+            num_heads (int, optional): Number of heads. Defaults to `16`
+            mlp_ratio (float, optional): Rimensionality of the hidden layer divided by that of the
+                input for all MLPs. Defaults to `4.0`.
+            drop (float, optional): Drop-out rate. Defaults to no drop-out.
+            residual_latent (bool, optional): Use residual attention w.r.t. the latent features.
+                Defaults to `True`.
+            ln_eps (float, optional): Epsilon in the layer normalisation layers. Defaults to
+                `1e-5`.
+        """
         super().__init__()
 
         self.residual_latent = residual_latent
@@ -165,9 +205,11 @@ class PerceiverResampler(nn.Module):
             # We use post-res-norm like in Swin v2 and most Transformer architectures these days.
             # This empirically works better than the pre-norm used in the original Perceiver.
             attn_out = ln1(attn(latents, x))
-            # HuggingFace suggests using non-residual attention in Perceiver might
-            # work better when the semantics of the query and the output are different.
-            # https://github.com/huggingface/transformers/blob/v4.35.2/src/transformers/models/perceiver/modeling_perceiver.py#L398
+            # HuggingFace suggests using non-residual attention in Perceiver might work better when
+            # the semantics of the query and the output are different:
+            #
+            #   https://github.com/huggingface/transformers/blob/v4.35.2/src/transformers/models/perceiver/modeling_perceiver.py#L398
+            #
             latents = attn_out + latents if self.residual_latent else attn_out
             latents = ln2(ff(latents)) + latents
         return latents
