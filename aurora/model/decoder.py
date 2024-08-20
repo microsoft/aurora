@@ -172,9 +172,10 @@ class Perceiver3DDecoder(nn.Module):
             batch.static_vars,
             {v: atmos_preds[:, i] for i, v in enumerate(atmos_vars)},
             Metadata(
-                lat,
-                lon,
-                tuple(t + lead_time for t in batch.metadata.time),
-                atmos_levels,
+                lat=lat,
+                lon=lon,
+                time=tuple(t + lead_time for t in batch.metadata.time),
+                atmos_levels=atmos_levels,
+                rollout_step=batch.metadata.rollout_step + 1,
             ),
         )

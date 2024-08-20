@@ -26,12 +26,17 @@ class Metadata:
         time (tuple[datetime, ...]): For every batch element, the time.
         atmos_levels (tuple[int | float, ...]): Pressure levels for the atmospheric variables in
             hPa.
+        rollout_step (int, optional): How many roll-out steps were used to produce this prediction.
+            If equal to `0`, which is the default, then this means that this is not a prediction,
+            but actual data. This field is automatically populated by the model and used to use a
+            separate LoRA for every roll-out step. Generally, you are safe to ignore this field.
     """
 
     lat: torch.Tensor
     lon: torch.Tensor
     time: tuple[datetime, ...]
     atmos_levels: tuple[int | float, ...]
+    rollout_step: int = 0
 
     def __post_init__(self):
         if not torch.all(self.lat[1:] - self.lat[:-1] < 0):
@@ -110,6 +115,7 @@ class Batch:
                     lon=self.metadata.lon,
                     atmos_levels=self.metadata.atmos_levels,
                     time=self.metadata.time,
+                    rollout_step=self.metadata.rollout_step,
                 ),
             )
         else:
@@ -128,6 +134,7 @@ class Batch:
                 lon=f(self.metadata.lon),
                 atmos_levels=self.metadata.atmos_levels,
                 time=self.metadata.time,
+                rollout_step=self.metadata.rollout_step,
             ),
         )
 

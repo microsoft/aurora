@@ -10,6 +10,7 @@ from huggingface_hub import hf_hub_download
 from aurora.batch import Batch
 from aurora.model.decoder import Perceiver3DDecoder
 from aurora.model.encoder import Perceiver3DEncoder
+from aurora.model.lora import LoRAMode
 from aurora.model.swin3d import Swin3DTransformerBackbone
 
 __all__ = ["Aurora", "AuroraSmall"]
@@ -45,6 +46,7 @@ class Aurora(torch.nn.Module):
         max_history_size: int = 2,
         use_lora: bool = True,
         lora_steps: int = 40,
+        lora_mode: LoRAMode = "single",
     ) -> None:
         """Construct an instance of the model.
 
@@ -90,6 +92,8 @@ class Aurora(torch.nn.Module):
             use_lora (bool, optional): Use LoRA adaptation.
             lora_steps (int, optional): Use different LoRA adaptation for the first so-many roll-out
                 steps.
+            lora_mode (str, optional): Mode. `"single"` uses the same LoRA for all roll-out steps,
+                and `"all"` uses a different LoRA for every roll-out step. Defaults to `"single"`.
         """
         super().__init__()
         self.surf_vars = surf_vars
@@ -124,6 +128,7 @@ class Aurora(torch.nn.Module):
             drop_rate=drop_rate,
             use_lora=use_lora,
             lora_steps=lora_steps,
+            lora_mode=lora_mode,
         )
 
         self.decoder = Perceiver3DDecoder(
@@ -182,7 +187,7 @@ class Aurora(torch.nn.Module):
             x,
             lead_time=timedelta(hours=6),
             patch_res=patch_res,
-            rollout_step=0,
+            rollout_step=batch.metadata.rollout_step,
         )
         pred = self.decoder(
             x,
