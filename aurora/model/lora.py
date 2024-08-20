@@ -42,10 +42,10 @@ class LoRA(nn.Module):
         self.lora_B = nn.Parameter(torch.empty((out_features, r)))
         self.scaling = self.lora_alpha / self.r
 
-        self.reset_parameters()
+        self.init_weights()
 
-    def reset_parameters(self) -> None:
-        """Reset the parameters."""
+    def init_weights(self) -> None:
+        """Initialise weights."""
         # Initialise A the same way as the default for `nn.Linear` and set B to zero.
         nn.init.kaiming_uniform_(self.lora_A, a=math.sqrt(5))
         nn.init.zeros_(self.lora_B)

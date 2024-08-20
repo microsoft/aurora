@@ -53,10 +53,10 @@ class LevelPatchEmbed(nn.Module):
         self.bias = nn.Parameter(torch.empty(embed_dim))
         self.norm = norm_layer(embed_dim) if norm_layer else nn.Identity()
 
-        self.reset_parameters()
+        self.init_weights()
 
-    def reset_parameters(self) -> None:
-        """Reset the parameters."""
+    def init_weights(self) -> None:
+        """Initialise weights."""
         # Setting `a = sqrt(5)` in kaiming_uniform is the same as initialising with
         # `uniform(-1/sqrt(k), 1/sqrt(k))`, where `k = weight.size(1) * prod(*kernel_size)`.
         # For more details, see
