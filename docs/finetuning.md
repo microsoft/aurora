@@ -22,7 +22,7 @@ from aurora import Aurora
 
 model = Aurora(...)
 
-... # Modify `model`
+... # Modify `model`.
 
 model.load_checkpoint("wbruinsma/aurora", "aurora-0.25-pretrained.ckpt", strict=False)
 ```
