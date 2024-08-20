@@ -385,6 +385,8 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sensitivity-to-data">Sensitivity to Data</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hres-ifs-t0-versus-hres-ifs-analysis">HRES IFS T0 Versus HRES IFS Analysis</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deterministic-and-reproducible-output">Deterministic and Reproducible Output</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-a-checkpoint-onto-an-extended-model">Loading a Checkpoint Onto an Extended Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#extending-the-model-with-new-surface-level-variables">Extending the Model with New Surface-Level Variables</a></li>
 </ul>
             </nav>
         </div>
@@ -428,6 +430,23 @@ you should do two things:</p>
 <li><p>Set <code class="docutils literal notranslate"><span class="pre">torch.use_deterministic_algorithms(True)</span></code> to make PyTorch operations deterministic.</p></li>
 <li><p>Set <code class="docutils literal notranslate"><span class="pre">model.eval()</span></code> to disable drop-out.</p></li>
 </ol>
+</section>
+<section id="loading-a-checkpoint-onto-an-extended-model">
+<h2>Loading a Checkpoint Onto an Extended Model<a class="headerlink" href="#loading-a-checkpoint-onto-an-extended-model" title="Link to this heading">#</a></h2>
+<p>If you changed the model and added or removed parameters, you need to set <code class="docutils literal notranslate"><span class="pre">strict=False</span></code> when
+loading a checkpoint <code class="docutils literal notranslate"><span class="pre">Aurora.load_checkpoint(...,</span> <span class="pre">strict=False)</span></code>.
+Importantly, enabling or disabling LoRA for a model that was trained respectively without or
+with LoRA changes the parameters!</p>
+</section>
+<section id="extending-the-model-with-new-surface-level-variables">
+<h2>Extending the Model with New Surface-Level Variables<a class="headerlink" href="#extending-the-model-with-new-surface-level-variables" title="Link to this heading">#</a></h2>
+<p>Whereas we have attempted to design a robust and flexible model,
+inevitably some unfortunate design choices slipped through.</p>
+<p>A notable unfortunate design choice is that extending the model with a new surface-level
+variable breaks compatibility with existing checkpoints.
+It is possible to hack around this in a relatively simple way.
+We are working on a more principled fix.
+Please open an issue if this is a problem for you.</p>
 </section>
 </section>
 
@@ -498,6 +517,8 @@ you should do two things:</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sensitivity-to-data">Sensitivity to Data</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hres-ifs-t0-versus-hres-ifs-analysis">HRES IFS T0 Versus HRES IFS Analysis</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deterministic-and-reproducible-output">Deterministic and Reproducible Output</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-a-checkpoint-onto-an-extended-model">Loading a Checkpoint Onto an Extended Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#extending-the-model-with-new-surface-level-variables">Extending the Model with New Surface-Level Variables</a></li>
 </ul>
   </nav></div>
 

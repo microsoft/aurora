@@ -10,4 +10,21 @@ model = Aurora(use_lora=False)  # Model is not fine-tuned.
 model.load_checkpoint("wbruinsma/aurora", "aurora-0.25-pretrained.ckpt")
 ```
 
-More specific instructions coming soon.
+You are also free to extend the model for your particular use case.
+In that case, it might be that you add or remove parameters.
+Then `Aurora.load_checkpoint` will error,
+because the existing checkpoint now mismatches with the model's parameters.
+Simply set `Aurora.load_checkpoint(..., strict=False)`:
+
+```python
+from aurora import Aurora
+
+
+model = Aurora(...)
+
+... # Modify `model`
+
+model.load_checkpoint("wbruinsma/aurora", "aurora-0.25-pretrained.ckpt", strict=False)
+```
+
+More instructions coming soon!
