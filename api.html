@@ -531,7 +531,10 @@ hPa.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>surf_vars</strong> (<em>tuple</em><em>[</em><em>str</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – All surface-level variables supported by the
-model. The model is sensitive to the order of <cite>surf_vars</cite>!</p></li>
+model. The model is sensitive to the order of <cite>surf_vars</cite>! Currently, adding
+one more variable here causes the model to incorrectly load the static variables.
+It is possible to hack around this. We are working on a more principled fix. Please
+open an issue if this is a problem for you.</p></li>
 <li><p><strong>static_vars</strong> (<em>tuple</em><em>[</em><em>str</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – All static variables supported by the
 model. The model is sensitive to the order of <cite>static_vars</cite>!</p></li>
 <li><p><strong>atmos_vars</strong> (<em>tuple</em><em>[</em><em>str</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – All atmospheric variables supported by the
@@ -539,14 +542,19 @@ model. The model is sensitive to the order of <cite>atmos-vars</cite>!</p></li>
 <li><p><strong>window_size</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>]</em><em>, </em><em>optional</em>) – Vertical height, height, and width of the
 window of the underlying Swin transformer.</p></li>
 <li><p><strong>encoder_depths</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – Number of blocks in each encoder layer.</p></li>
-<li><p><strong>encoder_num_header</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – layer.</p></li>
-<li><p><strong>decoder_depths</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – Number of blocks in each decoder layer.</p></li>
-<li><p><strong>decoder_num_header</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – layer.</p></li>
+<li><p><strong>encoder_num_heads</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – layer. The dimensionality doubles after every layer. To keep the dimensionality of
+every head constant, you want to double the number of heads after every layer. The
+dimensionality of attention head of the first layer is determined by <cite>embed_dim</cite>
+divided by the value here. For all cases except one, this is equal to <cite>64</cite>.</p></li>
+<li><p><strong>decoder_depths</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – Number of blocks in each decoder layer.
+Generally, you want this to be the reversal of <cite>encoder_depths</cite>.</p></li>
+<li><p><strong>decoder_num_heads</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – layer. Generally, you want this to be the reversal of <cite>encoder_num_heads</cite>.</p></li>
 <li><p><strong>latent_levels</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of latent pressure levels.</p></li>
 <li><p><strong>patch_size</strong> (<em>int</em><em>, </em><em>optional</em>) – Patch size.</p></li>
 <li><p><strong>embed_dim</strong> (<em>int</em><em>, </em><em>optional</em>) – Patch embedding dimension.</p></li>
 <li><p><strong>num_heads</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of attention heads in the aggregation and
-deaggregation blocks.</p></li>
+deaggregation blocks. The dimensionality of these attention heads will be equal to
+<cite>embed_dim</cite> divided by this value.</p></li>
 <li><p><strong>mlp_ratio</strong> (<em>float</em><em>, </em><em>optional</em>) – Hidden dim. to embedding dim. ratio for MLPs.</p></li>
 <li><p><strong>drop_rate</strong> (<em>float</em><em>, </em><em>optional</em>) – Drop-out rate.</p></li>
 <li><p><strong>drop_path</strong> (<em>float</em><em>, </em><em>optional</em>) – Drop-path rate.</p></li>
