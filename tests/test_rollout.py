@@ -1,5 +1,6 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
+import os
 from datetime import datetime, timedelta
 
 import numpy as np
@@ -12,6 +13,11 @@ def test_rollout():
     # Construct two models which are initialised exactly the same, but the one uses a separate
     # LoRA for every step and the other does not.
     model1 = AuroraSmall(use_lora=True, lora_mode="single")
+    model1.load_checkpoint(
+        os.environ["HUGGINGFACE_REPO"],
+        "aurora-0.25-small-pretrained.ckpt",
+        strict=False,  # LoRA parameters not available.
+    )
     model2 = AuroraSmall(use_lora=True, lora_mode="all")
 
     sd1 = model1.state_dict()
