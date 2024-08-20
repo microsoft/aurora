@@ -92,8 +92,9 @@ class Aurora(torch.nn.Module):
             use_lora (bool, optional): Use LoRA adaptation.
             lora_steps (int, optional): Use different LoRA adaptation for the first so-many roll-out
                 steps.
-            lora_mode (str, optional): Mode. `"single"` uses the same LoRA for all roll-out steps,
-                and `"all"` uses a different LoRA for every roll-out step. Defaults to `"single"`.
+            lora_mode (str, optional): LoRA mode. `"single"` uses the same LoRA for all roll-out
+                steps, and `"all"` uses a different LoRA for every roll-out step. Defaults to
+                `"single"`.
         """
         super().__init__()
         self.surf_vars = surf_vars
