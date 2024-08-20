@@ -348,6 +348,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">aurora.batch</span> <span class="kn">import</span> <span class="n">Batch</span>
 <span class="kn">from</span> <span class="nn">aurora.model.decoder</span> <span class="kn">import</span> <span class="n">Perceiver3DDecoder</span>
 <span class="kn">from</span> <span class="nn">aurora.model.encoder</span> <span class="kn">import</span> <span class="n">Perceiver3DEncoder</span>
+<span class="kn">from</span> <span class="nn">aurora.model.lora</span> <span class="kn">import</span> <span class="n">LoRAMode</span>
 <span class="kn">from</span> <span class="nn">aurora.model.swin3d</span> <span class="kn">import</span> <span class="n">Swin3DTransformerBackbone</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;AuroraSmall&quot;</span><span class="p">]</span>
@@ -387,6 +388,7 @@ document.write(`
         <span class="n">max_history_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
         <span class="n">use_lora</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">lora_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span>
+        <span class="n">lora_mode</span><span class="p">:</span> <span class="n">LoRAMode</span> <span class="o">=</span> <span class="s2">&quot;single&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct an instance of the model.</span>
 
@@ -432,6 +434,8 @@ document.write(`
 <span class="sd">            use_lora (bool, optional): Use LoRA adaptation.</span>
 <span class="sd">            lora_steps (int, optional): Use different LoRA adaptation for the first so-many roll-out</span>
 <span class="sd">                steps.</span>
+<span class="sd">            lora_mode (str, optional): Mode. `&quot;single&quot;` uses the same LoRA for all roll-out steps,</span>
+<span class="sd">                and `&quot;all&quot;` uses a different LoRA for every roll-out step. Defaults to `&quot;single&quot;`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">surf_vars</span> <span class="o">=</span> <span class="n">surf_vars</span>
@@ -466,6 +470,7 @@ document.write(`
             <span class="n">drop_rate</span><span class="o">=</span><span class="n">drop_rate</span><span class="p">,</span>
             <span class="n">use_lora</span><span class="o">=</span><span class="n">use_lora</span><span class="p">,</span>
             <span class="n">lora_steps</span><span class="o">=</span><span class="n">lora_steps</span><span class="p">,</span>
+            <span class="n">lora_mode</span><span class="o">=</span><span class="n">lora_mode</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">Perceiver3DDecoder</span><span class="p">(</span>
@@ -527,7 +532,7 @@ document.write(`
             <span class="n">x</span><span class="p">,</span>
             <span class="n">lead_time</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">6</span><span class="p">),</span>
             <span class="n">patch_res</span><span class="o">=</span><span class="n">patch_res</span><span class="p">,</span>
-            <span class="n">rollout_step</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">rollout_step</span><span class="o">=</span><span class="n">batch</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">rollout_step</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span>
             <span class="n">x</span><span class="p">,</span>

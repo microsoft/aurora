@@ -366,12 +366,17 @@ document.write(`
 <span class="sd">        time (tuple[datetime, ...]): For every batch element, the time.</span>
 <span class="sd">        atmos_levels (tuple[int | float, ...]): Pressure levels for the atmospheric variables in</span>
 <span class="sd">            hPa.</span>
+<span class="sd">        rollout_step (int, optional): How many roll-out steps were used to produce this prediction.</span>
+<span class="sd">            If equal to `0`, which is the default, then this means that this is not a prediction,</span>
+<span class="sd">            but actual data. This field is automatically populated by the model and used to use a</span>
+<span class="sd">            separate LoRA for every roll-out step. Generally, you are safe to ignore this field.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">lat</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
     <span class="n">lon</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
     <span class="n">time</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">datetime</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
     <span class="n">atmos_levels</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+    <span class="n">rollout_step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
@@ -461,6 +466,7 @@ document.write(`
                     <span class="n">lon</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">lon</span><span class="p">,</span>
                     <span class="n">atmos_levels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">atmos_levels</span><span class="p">,</span>
                     <span class="n">time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
+                    <span class="n">rollout_step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">rollout_step</span><span class="p">,</span>
                 <span class="p">),</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -480,6 +486,7 @@ document.write(`
                 <span class="n">lon</span><span class="o">=</span><span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">lon</span><span class="p">),</span>
                 <span class="n">atmos_levels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">atmos_levels</span><span class="p">,</span>
                 <span class="n">time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
+                <span class="n">rollout_step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">rollout_step</span><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">)</span>
 
