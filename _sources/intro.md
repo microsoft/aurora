@@ -13,6 +13,9 @@ one for medium-resolution weather prediction,
 one for high-resolution weather prediction,
 and one for air pollution prediction.
 
+The package currently includes the pretrained model and the fine-tuned version for high-resolution weather forecasting.
+We are working on the fine-tuned version for air pollution forecasting, which will be included in due time.
+
 Cite us as follows:
 
 ```
