@@ -1,6 +1,6 @@
 # Available Models
 
-Weights for models are made available through our [HuggingFace repository `wbruinsma/aurora`](https://huggingface.co/wbruinsma/aurora).
+Weights for models are made available through our [HuggingFace repository `microsoft/aurora`](https://huggingface.co/microsoft/aurora).
 We now describe the available models in turn.
 
 ## Aurora 0.25° Pretrained
@@ -13,7 +13,7 @@ Aurora 0.25° Pretrained is a version of Aurora trained on a wide variety of dat
 from aurora import Aurora
 
 model = Aurora(use_lora=False)  # Model is not fine-tuned.
-model.load_checkpoint("wbruinsma/aurora", "aurora-0.25-pretrained.ckpt")
+model.load_checkpoint("microsoft/aurora", "aurora-0.25-pretrained.ckpt")
 ```
 
 ### Recommended Use
@@ -40,7 +40,7 @@ For optimal performance, the model requires the following variables and pressure
 Aurora 0.25° Pretrained requires
 [static variables from ERA5](https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=form).
 For convenience, these are also available in
-[the HuggingFace repository](https://huggingface.co/wbruinsma/aurora/blob/main/aurora-0.25-static.pickle).
+[the HuggingFace repository](https://huggingface.co/microsoft/aurora/blob/main/aurora-0.25-static.pickle).
 
 ## Aurora 0.25° Pretrained Small
 
@@ -52,7 +52,7 @@ Aurora 0.25° Pretrained Small is, as the name suggests, a smaller version of Au
 from aurora import AuroraSmall
 
 model = AuroraSmall()
-model.load_checkpoint("wbruinsma/aurora", "aurora-0.25-small-pretrained.ckpt")
+model.load_checkpoint("microsoft/aurora", "aurora-0.25-small-pretrained.ckpt")
 ```
 
 ### Recommended Use
@@ -70,7 +70,7 @@ Aurora 0.25° Fine-Tuned is Aurora 0.25° Pretrained fine-tuned on IFS HRES T0.
 from aurora import Aurora
 
 model = Aurora()
-model.load_checkpoint("wbruinsma/aurora", "aurora-0.25-finetuned.ckpt")
+model.load_checkpoint("microsoft/aurora", "aurora-0.25-finetuned.ckpt")
 ```
 
 ### Recommended Use
@@ -99,7 +99,7 @@ For optimal performance, the model requires the following variables and pressure
 Aurora 0.25° Fine-Tuned requires
 [static variables from ERA5](https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=form).
 For convenience, these are also available in
-[the HuggingFace repository](https://huggingface.co/wbruinsma/aurora/blob/main/aurora-0.25-static.pickle).
+[the HuggingFace repository](https://huggingface.co/microsoft/aurora/blob/main/aurora-0.25-static.pickle).
 
 (lora-or-no-lora)=
 ### Notes
@@ -117,7 +117,7 @@ You can turn off LoRA as follows:
 from aurora import Aurora
 
 model = Aurora(use_lora=False)  # Disable LoRA for more realistic samples.
-model.load_checkpoint("wbruinsma/aurora", "aurora-0.25-finetuned.ckpt", strict=False)
+model.load_checkpoint("microsoft/aurora", "aurora-0.25-finetuned.ckpt", strict=False)
 ```
 
 ## Aurora 0.1° Fine-Tuned
@@ -130,7 +130,7 @@ Aurora 0.1° Fine-Tuned is a high-resolution version of Aurora.
 from aurora import Aurora
 
 model = Aurora()
-model.load_checkpoint("wbruinsma/aurora", "aurora-0.1-finetuned.ckpt")
+model.load_checkpoint("microsoft/aurora", "aurora-0.1-finetuned.ckpt")
 ```
 
 ### Recommended Use
@@ -162,7 +162,7 @@ Aurora 0.1° Fine-Tuned requires
 However, due to the way the model was trained,
 the model requires these variables to be scaled slightly differently.
 Therefore, you should use the static variables provided in
-[the HuggingFace repository](https://huggingface.co/wbruinsma/aurora/blob/main/aurora-0.1-static.pickle).
+[the HuggingFace repository](https://huggingface.co/microsoft/aurora/blob/main/aurora-0.1-static.pickle).
 
 ### Notes
 
@@ -173,5 +173,5 @@ you can turn off LoRA to obtain more realistic predictions at the expensive of s
 from aurora import Aurora
 
 model = Aurora(use_lora=False)  # Disable LoRA for more realistic samples.
-model.load_checkpoint("wbruinsma/aurora", "aurora-0.1-finetuned.ckpt", strict=False)
+model.load_checkpoint("microsoft/aurora", "aurora-0.1-finetuned.ckpt", strict=False)
 ```
