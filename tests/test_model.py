@@ -1,6 +1,5 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
-import os
 import pickle
 from datetime import datetime
 from typing import TypedDict
@@ -36,7 +35,7 @@ def test_aurora_small() -> None:
 
     # Load test input.
     path = hf_hub_download(
-        repo_id=os.environ["HUGGINGFACE_REPO"],
+        repo_id="microsoft/aurora",
         filename="aurora-0.25-small-pretrained-test-input.pickle",
     )
     with open(path, "rb") as f:
@@ -44,7 +43,7 @@ def test_aurora_small() -> None:
 
     # Load test output.
     path = hf_hub_download(
-        repo_id=os.environ["HUGGINGFACE_REPO"],
+        repo_id="microsoft/aurora",
         filename="aurora-0.25-small-pretrained-test-output.pickle",
     )
     with open(path, "rb") as f:
@@ -52,7 +51,7 @@ def test_aurora_small() -> None:
 
     # Load static variables.
     path = hf_hub_download(
-        repo_id=os.environ["HUGGINGFACE_REPO"],
+        repo_id="microsoft/aurora",
         filename="aurora-0.25-static.pickle",
     )
     with open(path, "rb") as f:
@@ -94,7 +93,7 @@ def test_aurora_small() -> None:
 
     # Load the checkpoint and run the model.
     model.load_checkpoint(
-        os.environ["HUGGINGFACE_REPO"],
+        "microsoft/aurora",
         "aurora-0.25-small-pretrained.ckpt",
         strict=False,  # LoRA parameters not available.
     )

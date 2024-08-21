@@ -71,7 +71,7 @@ from aurora import AuroraSmall, Batch, Metadata
 
 model = AuroraSmall()
 
-model.load_checkpoint("wbruinsma/aurora", "aurora-0.25-small-pretrained.ckpt")
+model.load_checkpoint("microsoft/aurora", "aurora-0.25-small-pretrained.ckpt")
 
 batch = Batch(
     surf_vars={k: torch.randn(1, 2, 17, 32) for k in ("2t", "10u", "10v", "msl")},
@@ -90,8 +90,7 @@ prediction = model.forward(batch)
 print(prediction.surf_vars["2t"])
 ```
 
-Note that this will incur a 500 MB download
-and that you may need to authenticate with `huggingface-cli login`.
+Note that this will incur a 500 MB download.
 
 Please read the [documentation](https://microsoft.github.io/aurora) for more detailed instructions and for which models are available.
 
@@ -158,13 +157,6 @@ First, install the repository in editable mode and setup `pre-commit`:
 
 ```bash
 make install
-```
-
-Then configure the HuggingFace repository where the weights can be found and log into HuggingFace:
-
-```bash
-export HUGGINGFACE_REPO=wbruinsma/aurora
-huggingface-cli login
 ```
 
 To run the tests and print coverage, run

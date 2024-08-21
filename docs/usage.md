@@ -80,10 +80,10 @@ model = AuroraSmall()
 ```
 
 A checkpoint can then be loaded with `model.load_checkpoint` by specifying a checkpoint file in a HuggingFace repository.
-In this case, we use `aurora-0.25-small-pretrained.ckpt` from the repository `wbruinsma/aurora`:
+In this case, we use `aurora-0.25-small-pretrained.ckpt` from the repository `microsoft/aurora`:
 
 ```python
-model.load_checkpoint("wbruinsma/aurora", "aurora-0.25-small-pretrained.ckpt")
+model.load_checkpoint("microsoft/aurora", "aurora-0.25-small-pretrained.ckpt")
 ```
 
 Typically, you will want to set the model to evaluation mode, which disables e.g. drop-out:
