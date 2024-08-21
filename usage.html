@@ -465,8 +465,8 @@ The regular version of Aurora can be constructed as follows:</p>
 </pre></div>
 </div>
 <p>A checkpoint can then be loaded with <code class="docutils literal notranslate"><span class="pre">model.load_checkpoint</span></code> by specifying a checkpoint file in a HuggingFace repository.
-In this case, we use <code class="docutils literal notranslate"><span class="pre">aurora-0.25-small-pretrained.ckpt</span></code> from the repository <code class="docutils literal notranslate"><span class="pre">wbruinsma/aurora</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;wbruinsma/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-small-pretrained.ckpt&quot;</span><span class="p">)</span>
+In this case, we use <code class="docutils literal notranslate"><span class="pre">aurora-0.25-small-pretrained.ckpt</span></code> from the repository <code class="docutils literal notranslate"><span class="pre">microsoft/aurora</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-small-pretrained.ckpt&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Typically, you will want to set the model to evaluation mode, which disables e.g. drop-out:</p>

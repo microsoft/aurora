@@ -7,7 +7,7 @@ you should use the pretrained version:
 from aurora import Aurora
 
 model = Aurora(use_lora=False)  # Model is not fine-tuned.
-model.load_checkpoint("wbruinsma/aurora", "aurora-0.25-pretrained.ckpt")
+model.load_checkpoint("microsoft/aurora", "aurora-0.25-pretrained.ckpt")
 ```
 
 You are also free to extend the model for your particular use case.
@@ -24,7 +24,7 @@ model = Aurora(...)
 
 ... # Modify `model`.
 
-model.load_checkpoint("wbruinsma/aurora", "aurora-0.25-pretrained.ckpt", strict=False)
+model.load_checkpoint("microsoft/aurora", "aurora-0.25-pretrained.ckpt", strict=False)
 ```
 
 More instructions coming soon!

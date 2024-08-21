@@ -391,7 +391,7 @@ you should use the pretrained version:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Model is not fine-tuned.</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;wbruinsma/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>You are also free to extend the model for your particular use case.
@@ -406,7 +406,7 @@ Simply set <code class="docutils literal notranslate"><span class="pre">Aurora.l
 
 <span class="o">...</span> <span class="c1"># Modify `model`.</span>
 
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;wbruinsma/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>More instructions coming soon!</p>
