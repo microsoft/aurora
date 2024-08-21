@@ -10,6 +10,9 @@
 
 Implementation of the Aurora model for atmospheric forecasting.
 
+_The package currently includes the pretrained model and the fine-tuned version for high-resolution weather forecasting._
+_We are working on the fine-tuned version for air pollution forecasting, which will be included in due time._
+
 [Link to the paper on arXiv.](https://arxiv.org/abs/2405.13063)
 
 [Link to the documentation.](https://microsoft.github.io/aurora)
@@ -179,3 +182,8 @@ make docs
 ```
 
 To locally view the documentation, open `docs/_build/index.html` in your browser.
+
+### Why is the fine-tuned version of Aurora for air quality forecasting missing?
+
+The package currently includes the pretrained model and the fine-tuned version for high-resolution weather forecasting.
+We are working on the fine-tuned version for air pollution forecasting, which will be included in due time.
