@@ -399,6 +399,10 @@ document.write(`
   <section id="full-example-predictions-for-era5">
 <h1>Full Example: Predictions for ERA5<a class="headerlink" href="#full-example-predictions-for-era5" title="Link to this heading">#</a></h1>
 <p>In this example, we will download ERA5 data for 1 Jan 2023 at 0.25 degrees resolution and run Aurora on this data. The fine-tuned version of Aurora specifically only works with IFS HRES T0, so we use the non-fine-tuned version of Aurora in this example.</p>
+<p>Running this notebook requires additional Python packages. You can install these as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">cdsapi</span> <span class="n">xarray</span> <span class="n">netcdf4</span> <span class="n">matplotlib</span>
+</pre></div>
+</div>
 <section id="downloading-the-data">
 <h2>Downloading the Data<a class="headerlink" href="#downloading-the-data" title="Link to this heading">#</a></h2>
 <p>To begin with, register an account with the <a class="reference external" href="https://cds.climate.copernicus.eu/">Climate Data Store</a> and create <code class="docutils literal notranslate"><span class="pre">$HOME/.cdsapirc</span></code> with the following content:</p>
