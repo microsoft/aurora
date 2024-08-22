@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Full Example: Predictions for ERA5 &#8212; Aurora: A Foundation Model of the Atmosphere</title>
+    <title>Example: Predictions for HRES T0 &#8212; Aurora: A Foundation Model of the Atmosphere</title>
   
   
   
@@ -57,11 +57,11 @@
     <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'example';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'example_hres_t0';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Application Programming Interface" href="api.html" />
-    <link rel="prev" title="Fine-Tuning" href="finetuning.html" />
+    <link rel="prev" title="Example: Predictions for ERA5" href="example_era5.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -185,7 +185,8 @@
 <li class="toctree-l1"><a class="reference internal" href="models.html">Available Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="beware.html">Beware!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Fine-Tuning</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Full Example: Predictions for ERA5</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_era5.html">Example: Predictions for ERA5</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Example: Predictions for HRES T0</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">Application Programming Interface</a></li>
 </ul>
 
@@ -258,7 +259,7 @@
       
       
       
-      <li><a href="https://github.com/microsoft/aurora/issues/new?title=Issue%20on%20page%20%2Fexample.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/microsoft/aurora/issues/new?title=Issue%20on%20page%20%2Fexample_hres_t0.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -288,7 +289,7 @@
       
       
       
-      <li><a href="_sources/example.ipynb" target="_blank"
+      <li><a href="_sources/example_hres_t0.ipynb" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -372,7 +373,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Full Example: Predictions for ERA5</h1>
+    <h1>Example: Predictions for HRES T0</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -383,6 +384,7 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-the-data">Downloading the Data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-static-variables-from-era5-data">Downloading Static Variables from ERA5 Data</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preparing-a-batch">Preparing a Batch</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-and-running-the-model">Loading and Running the Model</a></li>
 </ul>
@@ -396,22 +398,80 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="full-example-predictions-for-era5">
-<h1>Full Example: Predictions for ERA5<a class="headerlink" href="#full-example-predictions-for-era5" title="Link to this heading">#</a></h1>
-<p>In this example, we will download ERA5 data for 1 Jan 2023 at 0.25 degrees resolution and run Aurora on this data. The fine-tuned version of Aurora specifically only works with IFS HRES T0, so we use the non-fine-tuned version of Aurora in this example.</p>
+  <section id="example-predictions-for-hres-t0">
+<h1>Example: Predictions for HRES T0<a class="headerlink" href="#example-predictions-for-hres-t0" title="Link to this heading">#</a></h1>
+<p>In this example, we will download HRES T0 data for 11 May 2022 from <a class="reference external" href="https://weatherbench2.readthedocs.io/">WeatherBench2</a> at 0.25 degrees resolution and run Aurora on this data. We will use the version of Aurora that was fine-tuned on IFS HRES T0 in this example.</p>
 <p>Running this notebook requires additional Python packages. You can install these as follows:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">cdsapi</span> <span class="n">xarray</span> <span class="n">netcdf4</span> <span class="n">matplotlib</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">gcsfs</span> <span class="n">cdsapi</span> <span class="n">xarray</span> <span class="n">zarr</span> <span class="n">netcdf4</span> <span class="n">matplotlib</span>
 </pre></div>
 </div>
 <section id="downloading-the-data">
 <h2>Downloading the Data<a class="headerlink" href="#downloading-the-data" title="Link to this heading">#</a></h2>
-<p>To begin with, register an account with the <a class="reference external" href="https://cds.climate.copernicus.eu/">Climate Data Store</a> and create <code class="docutils literal notranslate"><span class="pre">$HOME/.cdsapirc</span></code> with the following content:</p>
+<p>To begin with, we download the data from <a class="reference external" href="https://weatherbench2.readthedocs.io/">WeatherBench2</a>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span> <span class="nn">fsspec</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+
+<span class="c1"># Data will be downloaded here.</span>
+<span class="n">download_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;~/downloads&quot;</span><span class="p">)</span>
+
+<span class="n">download_path</span> <span class="o">=</span> <span class="n">download_path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
+<span class="n">download_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># We will download from Google Cloud.</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;gs://weatherbench2/datasets/hres_t0/2016-2022-6h-1440x721.zarr&quot;</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_zarr</span><span class="p">(</span><span class="n">fsspec</span><span class="o">.</span><span class="n">get_mapper</span><span class="p">(</span><span class="n">url</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+<span class="c1"># Day to download. This will download all times for that day.</span>
+<span class="n">day</span> <span class="o">=</span> <span class="s2">&quot;2022-05-11&quot;</span>
+
+<span class="c1"># Download the surface-level variables. We write the downloaded data to another file to cache.</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-surface-level.nc&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="n">surface_vars</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;10m_u_component_of_wind&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;10m_v_component_of_wind&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;2m_temperature&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mean_sea_level_pressure&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">ds_surf</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">surface_vars</span><span class="p">]</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">day</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+    <span class="n">ds_surf</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-surface-level.nc&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Surface-level variables downloaded!&quot;</span><span class="p">)</span>
+
+<span class="c1"># Download the atmospheric variables. We write the downloaded data to another file to cache.</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-atmospheric.nc&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="n">atmos_vars</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;temperature&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;u_component_of_wind&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;v_component_of_wind&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;specific_humidity&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;geopotential&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">ds_atmos</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">atmos_vars</span><span class="p">]</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">day</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+    <span class="n">ds_atmos</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-atmospheric.nc&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Atmos-level variables downloaded!&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Surface-level variables downloaded!
+Atmos-level variables downloaded!
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="downloading-static-variables-from-era5-data">
+<h2>Downloading Static Variables from ERA5 Data<a class="headerlink" href="#downloading-static-variables-from-era5-data" title="Link to this heading">#</a></h2>
+<p>The static variables are not available in WeatherBench2, so we need to download them from ERA5, just like we did <a class="reference internal" href="#example_era5#downloading-the-data"><span class="xref myst">in the example for ERA5</span></a>.
+To do so, register an account with the <a class="reference external" href="https://cds.climate.copernicus.eu/">Climate Data Store</a> and create <code class="docutils literal notranslate"><span class="pre">$HOME/.cdsapirc</span></code> with the following content:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">url</span><span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">cds</span><span class="o">.</span><span class="n">climate</span><span class="o">.</span><span class="n">copernicus</span><span class="o">.</span><span class="n">eu</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v2</span>
 <span class="n">key</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">UID</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">API</span> <span class="n">key</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>You can find your UID and API key on your account page.</p>
-<p>We now download the ERA5 data.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
@@ -446,73 +506,11 @@ document.write(`
         <span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;static.nc&quot;</span><span class="p">),</span>
     <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Static variables downloaded!&quot;</span><span class="p">)</span>
-
-<span class="c1"># Download the surface-level variables.</span>
-<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-surface-level.nc&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-    <span class="n">c</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span>
-        <span class="s2">&quot;reanalysis-era5-single-levels&quot;</span><span class="p">,</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;product_type&quot;</span><span class="p">:</span> <span class="s2">&quot;reanalysis&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="s2">&quot;2m_temperature&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;10m_u_component_of_wind&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;10m_v_component_of_wind&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;mean_sea_level_pressure&quot;</span><span class="p">,</span>
-            <span class="p">],</span>
-            <span class="s2">&quot;year&quot;</span><span class="p">:</span> <span class="s2">&quot;2023&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;month&quot;</span><span class="p">:</span> <span class="s2">&quot;01&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;day&quot;</span><span class="p">:</span> <span class="s2">&quot;01&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;00:00&quot;</span><span class="p">,</span> <span class="s2">&quot;06:00&quot;</span><span class="p">,</span> <span class="s2">&quot;12:00&quot;</span><span class="p">,</span> <span class="s2">&quot;18:00&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;netcdf&quot;</span><span class="p">,</span>
-        <span class="p">},</span>
-        <span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-surface-level.nc&quot;</span><span class="p">),</span>
-    <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Surface-level variables downloaded!&quot;</span><span class="p">)</span>
-
-<span class="c1"># Download the atmospheric variables.</span>
-<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-atmospheric.nc&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-    <span class="n">c</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span>
-        <span class="s2">&quot;reanalysis-era5-pressure-levels&quot;</span><span class="p">,</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;product_type&quot;</span><span class="p">:</span> <span class="s2">&quot;reanalysis&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="s2">&quot;temperature&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;u_component_of_wind&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;v_component_of_wind&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;specific_humidity&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;geopotential&quot;</span><span class="p">,</span>
-            <span class="p">],</span>
-            <span class="s2">&quot;pressure_level&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="s2">&quot;50&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;100&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;150&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;200&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;250&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;300&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;400&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;500&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;600&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;700&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;850&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;925&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;1000&quot;</span><span class="p">,</span>
-            <span class="p">],</span>
-            <span class="s2">&quot;year&quot;</span><span class="p">:</span> <span class="s2">&quot;2023&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;month&quot;</span><span class="p">:</span> <span class="s2">&quot;01&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;day&quot;</span><span class="p">:</span> <span class="s2">&quot;01&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;00:00&quot;</span><span class="p">,</span> <span class="s2">&quot;06:00&quot;</span><span class="p">,</span> <span class="s2">&quot;12:00&quot;</span><span class="p">,</span> <span class="s2">&quot;18:00&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;netcdf&quot;</span><span class="p">,</span>
-        <span class="p">},</span>
-        <span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-atmospheric.nc&quot;</span><span class="p">),</span>
-    <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Atmospheric variables downloaded!&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Static variables downloaded!
-Surface-level variables downloaded!
-Atmospheric variables downloaded!
 </pre></div>
 </div>
 </div>
@@ -523,44 +521,58 @@ Atmospheric variables downloaded!
 <p>We convert the downloaded data to an <code class="docutils literal notranslate"><span class="pre">aurora.Batch</span></code>, which is what the model requires.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
 
 <span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">Metadata</span>
 
 <span class="n">static_vars_ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;static.nc&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;netcdf4&quot;</span><span class="p">)</span>
-<span class="n">surf_vars_ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-surface-level.nc&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;netcdf4&quot;</span><span class="p">)</span>
-<span class="n">atmos_vars_ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-atmospheric.nc&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;netcdf4&quot;</span><span class="p">)</span>
+<span class="n">surf_vars_ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-surface-level.nc&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;netcdf4&quot;</span><span class="p">)</span>
+<span class="n">atmos_vars_ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-atmospheric.nc&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;netcdf4&quot;</span><span class="p">)</span>
 
 <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Select this time index in the downloaded data.</span>
 
+
+<span class="k">def</span> <span class="nf">_prepare</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepare a variable.</span>
+
+<span class="sd">    This does the following things:</span>
+<span class="sd">    * Select time indices `i` and `i - 1`.</span>
+<span class="sd">    * Insert an empty batch dimension with `[None]`.</span>
+<span class="sd">    * Flip along the latitude axis to ensure that the latitudes are decreasing.</span>
+<span class="sd">    * Copy the data, because the data must be contintiguous when converting to PyTorch.</span>
+<span class="sd">    * Convert to PyTorch.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">x</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">][</span><span class="o">...</span><span class="p">,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+
 <span class="n">batch</span> <span class="o">=</span> <span class="n">Batch</span><span class="p">(</span>
     <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span>
-        <span class="c1"># First select time points `i` and `i - 1`. Afterwards, `[None]` inserts a</span>
-        <span class="c1"># batch dimension of size one.</span>
-        <span class="s2">&quot;2t&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;t2m&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
-        <span class="s2">&quot;10u&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;u10&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
-        <span class="s2">&quot;10v&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;v10&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
-        <span class="s2">&quot;msl&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;msl&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
+        <span class="s2">&quot;2t&quot;</span><span class="p">:</span> <span class="n">_prepare</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;2m_temperature&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">&quot;10u&quot;</span><span class="p">:</span> <span class="n">_prepare</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;10m_u_component_of_wind&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">&quot;10v&quot;</span><span class="p">:</span> <span class="n">_prepare</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;10m_v_component_of_wind&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">&quot;msl&quot;</span><span class="p">:</span> <span class="n">_prepare</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;mean_sea_level_pressure&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
     <span class="p">},</span>
     <span class="n">static_vars</span><span class="o">=</span><span class="p">{</span>
-        <span class="c1"># The static variables are constant, so we just get them for the first time.</span>
+        <span class="c1"># The static variables are constant, so we just get them for the first time. They</span>
+        <span class="c1"># don&#39;t need to be flipped along the latitude dimension, because they are from</span>
+        <span class="c1"># ERA5.</span>
         <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">static_vars_ds</span><span class="p">[</span><span class="s2">&quot;z&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
         <span class="s2">&quot;slt&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">static_vars_ds</span><span class="p">[</span><span class="s2">&quot;slt&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
         <span class="s2">&quot;lsm&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">static_vars_ds</span><span class="p">[</span><span class="s2">&quot;lsm&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
     <span class="p">},</span>
     <span class="n">atmos_vars</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
-        <span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;u&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
-        <span class="s2">&quot;v&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;v&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
-        <span class="s2">&quot;q&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
-        <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;z&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
+        <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">_prepare</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;temperature&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="n">_prepare</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;u_component_of_wind&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">&quot;v&quot;</span><span class="p">:</span> <span class="n">_prepare</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;v_component_of_wind&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">&quot;q&quot;</span><span class="p">:</span> <span class="n">_prepare</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;specific_humidity&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">_prepare</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;geopotential&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
     <span class="p">},</span>
     <span class="n">metadata</span><span class="o">=</span><span class="n">Metadata</span><span class="p">(</span>
-        <span class="n">lat</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="c1"># Flip the latitudes! We need to copy because converting to PyTorch, because the</span>
+        <span class="c1"># data must be contiguous.</span>
+        <span class="n">lat</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">values</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()),</span>
         <span class="n">lon</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
         <span class="c1"># Converting to `datetime64[s]` ensures that the output of `tolist()` gives</span>
         <span class="c1"># `datetime.datetime`s. Note that this needs to be a tuple of length one:</span>
@@ -581,8 +593,8 @@ Atmospheric variables downloaded!
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span><span class="p">,</span> <span class="n">rollout</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># The pretrained version does not use LoRA.</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;wbruinsma/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-finetuned.ckpt&quot;</span><span class="p">)</span>
 
 <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
@@ -603,17 +615,18 @@ Atmospheric variables downloaded!
 
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
     <span class="n">pred</span> <span class="o">=</span> <span class="n">preds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-    
+
     <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;2t&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">-</span> <span class="mf">273.15</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
     <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
     <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Aurora Prediction&quot;</span><span class="p">)</span>
     <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
     <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
-    
-    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;t2m&quot;</span><span class="p">][</span><span class="mi">2</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">-</span> <span class="mf">273.15</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+
+    <span class="n">ref</span> <span class="o">=</span> <span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;2m_temperature&quot;</span><span class="p">][</span><span class="mi">2</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">ref</span> <span class="o">-</span> <span class="mf">273.15</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;ERA5&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;HRES T0&quot;</span><span class="p">)</span>
     <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
     <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
 
@@ -622,7 +635,7 @@ Atmospheric variables downloaded!
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="_images/5f41ef895377cecb04f923784bad338ade509df8ddd768855e685a7fb2251b51.png" src="_images/5f41ef895377cecb04f923784bad338ade509df8ddd768855e685a7fb2251b51.png" />
+<img alt="_images/42ddcbf9b2213afb01f1316358dd8ad89e5bf256cee19620545da0441fedeca5.png" src="_images/42ddcbf9b2213afb01f1316358dd8ad89e5bf256cee19620545da0441fedeca5.png" />
 </div>
 </div>
 </section>
@@ -659,12 +672,12 @@ Atmospheric variables downloaded!
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="finetuning.html"
+       href="example_era5.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Fine-Tuning</p>
+        <p class="prev-next-title">Example: Predictions for ERA5</p>
       </div>
     </a>
     <a class="right-next"
@@ -693,6 +706,7 @@ Atmospheric variables downloaded!
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-the-data">Downloading the Data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-static-variables-from-era5-data">Downloading Static Variables from ERA5 Data</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preparing-a-batch">Preparing a Batch</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-and-running-the-model">Loading and Running the Model</a></li>
 </ul>
