@@ -1,0 +1,10 @@
+format: jb-book
+root: intro
+chapters:
+- file: usage
+- file: batch
+- file: models
+- file: beware
+- file: finetuning
+- file: example
+- file: api

@@ -1,0 +1,35 @@
+title: "Aurora: A Foundation Model of the Atmosphere"
+author: Microsoft Corporation
+copyright: "2024"
+logo: aurora.jpg
+
+# Enable definition lists.
+parse:
+  myst_enable_extensions:
+    - deflist
+
+# Force re-execution of notebooks on each build.
+execute:
+  execute_notebooks: off
+
+# Load AutoDoc extension.
+sphinx:
+  extra_extensions:
+  - "sphinx.ext.autodoc"
+  - "sphinx.ext.napoleon"
+  - "sphinx.ext.viewcode"
+
+# Add a BiBTeX file so that we can create citations.
+bibtex_bibfiles:
+  - references.bib
+
+# Information about where the book exists on the web.
+repository:
+  url: https://github.com/microsoft/aurora
+  path_to_book: docs
+  branch: main
+
+# Add GitHub buttons to your book.
+html:
+  use_issues_button: true
+  use_repository_button: true
