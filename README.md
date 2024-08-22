@@ -16,7 +16,7 @@ _We are working on the fine-tuned version for air pollution forecasting, which w
 [Link to the paper on arXiv.](https://arxiv.org/abs/2405.13063)
 
 [Please see the documentation for detailed instructions and more examples.](https://microsoft.github.io/aurora)
-You can also directly go to [a full-fledged example that runs the model on ERA5](https://microsoft.github.io/aurora/example.html).
+You can also directly go to [a full-fledged example that runs the model on ERA5](https://microsoft.github.io/aurora/example_era5.html).
 
 Cite us as follows:
 
