@@ -54,7 +54,10 @@ def download_hres_rda_surf(
     v_num = var_dict[variable]
     print(f"Downloading {variable} for {year}-{month}-{day}...")
 
-    filename = f"ec.oper.an.sfc/{year}{month}/ec.oper.an.sfc.128_{v_num}_{variable}.regn1280sc.{year}{month}{day}.grb"
+    filename = (
+        f"ec.oper.an.sfc/{year}{month}/ec.oper.an.sfc.128_{v_num}_{variable}."
+        f"regn1280sc.{year}{month}{day}.grb"
+    )
 
     outpath = save_dir / f"{variable}_{year}_{month}_{day}.grb"
     url = "https://data.rda.ucar.edu/ds113.1/" + filename
@@ -90,9 +93,15 @@ def download_hres_rda_atmos(
     print(f"Downloading {variable} for {year}-{month}-{day}-{timeofday}...")
 
     if variable in ["z", "t", "q", "w"]:
-        filename = f"ec.oper.an.pl/{year}{month}/ec.oper.an.pl.128_{v_num}_{variable}.regn1280sc.{year}{month}{day}{timeofday}.grb"
+        filename = (
+            f"ec.oper.an.pl/{year}{month}/ec.oper.an.pl.128_{v_num}_{variable}."
+            f"regn1280sc.{year}{month}{day}{timeofday}.grb"
+        )
     else:  # u and v have different filenames than z, t, and q.
-        filename = f"ec.oper.an.pl/{year}{month}/ec.oper.an.pl.128_{v_num}_{variable}.regn1280uv.{year}{month}{day}{timeofday}.grb"
+        filename = (
+            f"ec.oper.an.pl/{year}{month}/ec.oper.an.pl.128_{v_num}_{variable}."
+            f"regn1280uv.{year}{month}{day}{timeofday}.grb"
+        )
 
     url = "https://data.rda.ucar.edu/ds113.1/" + filename
     outpath = save_dir / f"{variable}_{year}_{month}_{day}_{timeofday}.grb"
