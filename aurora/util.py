@@ -7,7 +7,8 @@ import requests
 
 def try_download(url: str, outpath: Path):
     """
-    Download a file from a URL to a specified path. If the file already exists and is not empty, skip the download.
+    Download a file from a URL to a specified path. If the file already exists and is not empty,
+    skip the download.
 
     Args:
         url (Path): URL to download the file from.
@@ -25,7 +26,7 @@ def try_download(url: str, outpath: Path):
 
     try:
         response = requests.get(url)
-        response.raise_for_status()  # Raise an exception for HTTP errors (status codes other than 2xx)
+        response.raise_for_status()  # Raise an exception for HTTP errors (status codes != 2xx)
 
         with open(outpath, "wb") as f:
             f.write(response.content)
@@ -47,7 +48,8 @@ def download_hres_rda_surf(
         month (str): Month to download data for.
         day (str): Day to download data for.
         variable (str): Variable to download data for
-        var_dict (dict[str, str]): Dictionary mapping variable names to their corresponding RDA variable numbers. See `docs/example_0.1deg.ipynb` for an example.
+        var_dict (dict[str, str]): Dictionary mapping variables to their corresponding RDA numbers.
+        See `docs/example_0.1deg.ipynb` for an example.
     """
     v_num = var_dict[variable]
     print(f"Downloading {variable} for {year}-{month}-{day}...")
@@ -80,7 +82,8 @@ def download_hres_rda_atmos(
         month (str): Month to download data for.
         day (str): Day to download data for.
         variable (str): Variable to download data for.
-        var_dict (dict[str, str]): Dictionary mapping variable names to their corresponding RDA variable numbers. See `docs/example_0.1deg.ipynb` for an example.
+        var_dict (dict[str, str]): Dictionary mapping variables to their RDA numbers.
+                                   See `docs/example_0.1deg.ipynb` for an example.
         timeofday (str): Time of day to download data for. Format: "00", "06", "12", or "18".
     """
     v_num = var_dict[variable]
