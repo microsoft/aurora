@@ -577,9 +577,9 @@ For convenience, these are also available in
 <p>Aurora 0.1° Fine-Tuned is a high-resolution version of Aurora.</p>
 <section id="id6">
 <h3>Usage<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">AuroraHighRes</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">()</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraHighRes</span><span class="p">()</span>
 <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.1-finetuned.ckpt&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -631,9 +631,9 @@ Therefore, you should use the static variables provided in
 <h3>Notes<a class="headerlink" href="#id9" title="Link to this heading">#</a></h3>
 <p><a class="reference internal" href="#lora-or-no-lora"><span class="std std-ref">Like for Aurora 0.25° Fine-Tuned</span></a>,
 you can turn off LoRA to obtain more realistic predictions at the expensive of slightly higher long-term MSE:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">AuroraHighRes</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Disable LoRA for more realistic samples.</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraHighRes</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Disable LoRA for more realistic samples.</span>
 <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.1-finetuned.ckpt&quot;</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>

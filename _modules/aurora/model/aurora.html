@@ -352,7 +352,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">aurora.model.lora</span> <span class="kn">import</span> <span class="n">LoRAMode</span>
 <span class="kn">from</span> <span class="nn">aurora.model.swin3d</span> <span class="kn">import</span> <span class="n">Swin3DTransformerBackbone</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;AuroraSmall&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;AuroraSmall&quot;</span><span class="p">,</span> <span class="s2">&quot;AuroraHighRes&quot;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="Aurora">
@@ -406,14 +406,14 @@ document.write(`
 <span class="sd">            window_size (tuple[int, int, int], optional): Vertical height, height, and width of the</span>
 <span class="sd">                window of the underlying Swin transformer.</span>
 <span class="sd">            encoder_depths (tuple[int, ...], optional): Number of blocks in each encoder layer.</span>
-<span class="sd">            encoder_num_heads (tuple[int, ...], optional) Number of attention heads in each encoder</span>
+<span class="sd">            encoder_num_heads (tuple[int, ...], optional): Number of attention heads in each encoder</span>
 <span class="sd">                layer. The dimensionality doubles after every layer. To keep the dimensionality of</span>
 <span class="sd">                every head constant, you want to double the number of heads after every layer. The</span>
 <span class="sd">                dimensionality of attention head of the first layer is determined by `embed_dim`</span>
 <span class="sd">                divided by the value here. For all cases except one, this is equal to `64`.</span>
 <span class="sd">            decoder_depths (tuple[int, ...], optional): Number of blocks in each decoder layer.</span>
 <span class="sd">                Generally, you want this to be the reversal of `encoder_depths`.</span>
-<span class="sd">            decoder_num_heads (tuple[int, ...], optional) Number of attention heads in each decoder</span>
+<span class="sd">            decoder_num_heads (tuple[int, ...], optional): Number of attention heads in each decoder</span>
 <span class="sd">                layer. Generally, you want this to be the reversal of `encoder_num_heads`.</span>
 <span class="sd">            latent_levels (int, optional): Number of latent pressure levels.</span>
 <span class="sd">            patch_size (int, optional): Patch size.</span>
@@ -600,6 +600,12 @@ document.write(`
     <span class="n">embed_dim</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
     <span class="n">num_heads</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
     <span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">AuroraHighRes</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+    <span class="n">Aurora</span><span class="p">,</span>
+    <span class="n">encoder_depths</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+    <span class="n">decoder_depths</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
 

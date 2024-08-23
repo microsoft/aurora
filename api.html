@@ -547,13 +547,15 @@ model. The model is sensitive to the order of <cite>atmos-vars</cite>!</p></li>
 <li><p><strong>window_size</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>]</em><em>, </em><em>optional</em>) – Vertical height, height, and width of the
 window of the underlying Swin transformer.</p></li>
 <li><p><strong>encoder_depths</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – Number of blocks in each encoder layer.</p></li>
-<li><p><strong>encoder_num_heads</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – layer. The dimensionality doubles after every layer. To keep the dimensionality of
+<li><p><strong>encoder_num_heads</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – Number of attention heads in each encoder
+layer. The dimensionality doubles after every layer. To keep the dimensionality of
 every head constant, you want to double the number of heads after every layer. The
 dimensionality of attention head of the first layer is determined by <cite>embed_dim</cite>
 divided by the value here. For all cases except one, this is equal to <cite>64</cite>.</p></li>
 <li><p><strong>decoder_depths</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – Number of blocks in each decoder layer.
 Generally, you want this to be the reversal of <cite>encoder_depths</cite>.</p></li>
-<li><p><strong>decoder_num_heads</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – layer. Generally, you want this to be the reversal of <cite>encoder_num_heads</cite>.</p></li>
+<li><p><strong>decoder_num_heads</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – Number of attention heads in each decoder
+layer. Generally, you want this to be the reversal of <cite>encoder_num_heads</cite>.</p></li>
 <li><p><strong>latent_levels</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of latent pressure levels.</p></li>
 <li><p><strong>patch_size</strong> (<em>int</em><em>, </em><em>optional</em>) – Patch size.</p></li>
 <li><p><strong>embed_dim</strong> (<em>int</em><em>, </em><em>optional</em>) – Patch embedding dimension.</p></li>

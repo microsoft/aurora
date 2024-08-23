@@ -127,9 +127,9 @@ Aurora 0.1° Fine-Tuned is a high-resolution version of Aurora.
 ### Usage
 
 ```python
-from aurora import Aurora
+from aurora import AuroraHighRes
 
-model = Aurora()
+model = AuroraHighRes()
 model.load_checkpoint("microsoft/aurora", "aurora-0.1-finetuned.ckpt")
 ```
 
@@ -170,8 +170,8 @@ Therefore, you should use the static variables provided in
 you can turn off LoRA to obtain more realistic predictions at the expensive of slightly higher long-term MSE:
 
 ```python
-from aurora import Aurora
+from aurora import AuroraHighRes
 
-model = Aurora(use_lora=False)  # Disable LoRA for more realistic samples.
+model = AuroraHighRes(use_lora=False)  # Disable LoRA for more realistic samples.
 model.load_checkpoint("microsoft/aurora", "aurora-0.1-finetuned.ckpt", strict=False)
 ```
