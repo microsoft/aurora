@@ -35,7 +35,7 @@ def try_download(url: Path, outpath: Path):
 
 def download_hres_rda_surf(save_dir: Path, year: str, month: str, day: str, variable: str, var_dict: dict[str, str]):
     """
-    Download IFS HRES 0.1 deg surface data from the RDA website: https://rda.ucar.edu/datasets/d113001/#
+    Download IFS HRES 0.1 deg surface data from the RDA website: https://rda.ucar.edu/datasets/d113001/# 
     
     Args:
         save_dir (Path): Path to save the downloaded files to.
