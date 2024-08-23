@@ -11,8 +11,8 @@ Our hope is that Aurora generally produces sensible predictions.
 However, there is no guarantee that it will.
 
 If you require optimal performance,
-then the data you use needs to be exactly right.
-This means that you should use provide
+then the data that you use needs to be exactly right.
+This means that you should provide
 exactly the right variables
 at exactly the right pressure levels
 from exactly the right source.
