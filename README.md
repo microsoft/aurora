@@ -134,6 +134,7 @@ A series of additional verification tests are needed before it could become oper
 ### Data
 The models included in the code have been trained on a variety of publicly available data.
 A description of all data, including download links, can be found in [Supplementary C of the paper](https://arxiv.org/pdf/2405.13063).
+The checkpoints include data from ERA5, CMCC, IFS-HR, HRES T0, GFS T0 analysis, and GFS forecasts.
 
 ### Evaluations
 All versions of Aurora were extensively evaluated by evaluating predictions on data not seen during training.
