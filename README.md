@@ -122,14 +122,14 @@ This code has not been developed nor tested for non-academic purposes and hence 
 
 ### Limitations
 Although Aurora was trained to accurately predict future weather and air pollution,
-Aurora is based on neural networks, which means that there are no strict guarantees that predicts will always be accurate.
+Aurora is based on neural networks, which means that there are no strict guarantees that predictions will always be accurate.
 Altering the inputs, providing a sample that was not in the training set,
 or even providing a sample that was in the training set but is simply unlucky may result in arbitrarily poor predictions.
 In addition, even though Aurora was trained on a wide variety of data sets,
 it is possible that Aurora inherits biases present in any one of those data sets.
 A forecasting system like Aurora is only one piece of the puzzle in a weather prediction pipeline,
-and its outputs are not meant to be directly used by people or business to plan their operations.
-A series of additional verification tests are needed before it could become operationally useful.
+and its outputs are not meant to be directly used by people or businesses to plan their operations.
+A series of additional verification tests are needed before it can become operationally useful.
 
 ### Data
 The models included in the code have been trained on a variety of publicly available data.
