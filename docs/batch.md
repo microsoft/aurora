@@ -76,7 +76,7 @@ The following static variables are allowed:
 
 ## `Batch.atmos_vars`
 
-`Batch.static_vars` is a dictionary mapping names of atmospheric variables to the
+`Batch.atmos_vars` is a dictionary mapping names of atmospheric variables to the
 numerical values of the variables.
 The atmospheric variables must be of the form `(b, t, c, h, w)` where `b` is the batch size,
 `t` the history dimension, `c` the number of pressure levels, `h` the number of latitudes,
