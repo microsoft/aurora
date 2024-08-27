@@ -61,6 +61,12 @@ Install with `pip`:
 pip install microsoft-aurora
 ```
 
+Or with `conda` / `mamba`:
+
+```bash
+mamba install microsoft-aurora -c conda-forge
+```
+
 Run the pretrained small model on random data:
 
 ```python
