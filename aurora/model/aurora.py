@@ -253,6 +253,7 @@ AuroraSmall = partial(
 
 AuroraHighRes = partial(
     Aurora,
+    patch_size=10,
     encoder_depths=(6, 8, 8),
     decoder_depths=(8, 8, 6),
 )
