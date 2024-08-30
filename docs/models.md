@@ -158,11 +158,21 @@ For optimal performance, the model requires the following variables and pressure
 ### Static Variables
 
 Aurora 0.1° Fine-Tuned requires
-[static variables from IFS HRES analysis](https://rda.ucar.edu/datasets/ds113.1/).
-However, due to the way the model was trained,
-the model requires these variables to be scaled slightly differently.
-Therefore, you should use the static variables provided in
-[the HuggingFace repository](https://huggingface.co/microsoft/aurora/blob/main/aurora-0.1-static.pickle).
+[static variables from IFS HRES analysis](https://rda.ucar.edu/datasets/ds113.1/) regridded
+to 0.1° resolution.
+Because of differences between implementations of regridding methods, the resulting static
+variables might not be exactly equal to the ones we used during training.
+For this reason we also uploaded
+[the exact static variables which we used during training](https://huggingface.co/microsoft/aurora/blob/main/aurora-0.1-static.pickle).
+To use these, you must remove an exception to the normalisation by instantiating
+the model in the following way:
+
+```python
+from aurora import AuroraHighRes
+
+model = AuroraHighRes(surf_stats=None)  # Use static variables from HF repo.
+model.load_checkpoint("microsoft/aurora", "aurora-0.1-finetuned.ckpt")
+```
 
 ### Notes
 

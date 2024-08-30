@@ -3,6 +3,7 @@
 import dataclasses
 from datetime import timedelta
 from functools import partial
+from typing import Optional
 
 import torch
 from huggingface_hub import hf_hub_download
@@ -47,6 +48,7 @@ class Aurora(torch.nn.Module):
         use_lora: bool = True,
         lora_steps: int = 40,
         lora_mode: LoRAMode = "single",
+        surf_stats: Optional[dict[str, tuple[float, float]]] = None,
     ) -> None:
         """Construct an instance of the model.
 
@@ -95,11 +97,15 @@ class Aurora(torch.nn.Module):
             lora_mode (str, optional): LoRA mode. `"single"` uses the same LoRA for all roll-out
                 steps, and `"all"` uses a different LoRA for every roll-out step. Defaults to
                 `"single"`.
+            surf_stats (dict[str, tuple[float, float]], optional): For these surface-level
+                variables, adjust the normalisation to the given tuple consisting of a new location
+                and scale.
         """
         super().__init__()
         self.surf_vars = surf_vars
         self.atmos_vars = atmos_vars
         self.patch_size = patch_size
+        self.surf_stats = surf_stats or dict()
 
         self.encoder = Perceiver3DEncoder(
             surf_vars=surf_vars,
@@ -162,7 +168,7 @@ class Aurora(torch.nn.Module):
         # Get the first parameter. We'll derive the data type and device from this parameter.
         p = next(self.parameters())
         batch = batch.type(p.dtype)
-        batch = batch.normalise()
+        batch = batch.normalise(surf_stats=self.surf_stats)
         batch = batch.crop(patch_size=self.patch_size)
         batch = batch.to(p.device)
 
@@ -211,7 +217,7 @@ class Aurora(torch.nn.Module):
             atmos_vars={k: v[:, None] for k, v in pred.atmos_vars.items()},
         )
 
-        pred = pred.unnormalise()
+        pred = pred.unnormalise(surf_stats=self.surf_stats)
 
         return pred
 
@@ -256,4 +262,6 @@ AuroraHighRes = partial(
     patch_size=10,
     encoder_depths=(6, 8, 8),
     decoder_depths=(8, 8, 6),
+    # One particular static variable requires a different normalisation.
+    surf_stats={"z": (-3.270407e03, 6.540335e04)},
 )
