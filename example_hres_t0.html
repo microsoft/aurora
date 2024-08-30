@@ -466,12 +466,13 @@ Atmos-level variables downloaded!
 <section id="downloading-static-variables-from-era5-data">
 <h2>Downloading Static Variables from ERA5 Data<a class="headerlink" href="#downloading-static-variables-from-era5-data" title="Link to this heading">#</a></h2>
 <p>The static variables are not available in WeatherBench2, so we need to download them from ERA5, just like we did <a class="reference internal" href="#example_era5#downloading-the-data"><span class="xref myst">in the example for ERA5</span></a>.
-To do so, register an account with the <a class="reference external" href="https://cds.climate.copernicus.eu/">Climate Data Store</a> and create <code class="docutils literal notranslate"><span class="pre">$HOME/.cdsapirc</span></code> with the following content:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">url</span><span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">cds</span><span class="o">.</span><span class="n">climate</span><span class="o">.</span><span class="n">copernicus</span><span class="o">.</span><span class="n">eu</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v2</span>
-<span class="n">key</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">UID</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">API</span> <span class="n">key</span><span class="o">&gt;</span>
+To do so, register an account with the <a class="reference external" href="https://cds-beta.climate.copernicus.eu/">Climate Data Store</a> and create <code class="docutils literal notranslate"><span class="pre">$HOME/.cdsapirc</span></code> with the following content:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">url</span><span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">cds</span><span class="o">-</span><span class="n">beta</span><span class="o">.</span><span class="n">climate</span><span class="o">.</span><span class="n">copernicus</span><span class="o">.</span><span class="n">eu</span><span class="o">/</span><span class="n">api</span>
+<span class="n">key</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">API</span> <span class="n">key</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>You can find your UID and API key on your account page.</p>
+<p>You can find your API key on your account page.</p>
+<p>In order to be able to download ERA5 data, you need to accept the terms of use in the <a class="reference external" href="https://cds-beta.climate.copernicus.eu/datasets/reanalysis-era5-single-levels?tab=download">dataset page</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
@@ -577,8 +578,8 @@ To do so, register an account with the <a class="reference external" href="https
         <span class="c1"># Converting to `datetime64[s]` ensures that the output of `tolist()` gives</span>
         <span class="c1"># `datetime.datetime`s. Note that this needs to be a tuple of length one:</span>
         <span class="c1"># one value for every batch element.</span>
-        <span class="n">time</span><span class="o">=</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;datetime64[s]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="n">i</span><span class="p">],),</span>
-        <span class="n">atmos_levels</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">level</span><span class="p">)</span> <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="n">atmos_vars_ds</span><span class="o">.</span><span class="n">level</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="n">time</span><span class="o">=</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">valid_time</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;datetime64[s]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="n">i</span><span class="p">],),</span>
+        <span class="n">atmos_levels</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">level</span><span class="p">)</span> <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="n">atmos_vars_ds</span><span class="o">.</span><span class="n">pressure_level</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
     <span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
