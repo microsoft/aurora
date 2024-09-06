@@ -1,8 +1,16 @@
+"""Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
+
 import os
 import time
 from pathlib import Path
 
 import requests
+
+__all__ = [
+    "try_download",
+    "download_hres_rda_surf",
+    "download_hres_rda_atmos",
+]
 
 
 def try_download(url: str, outpath: Path):
