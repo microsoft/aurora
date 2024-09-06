@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Beware! &#8212; Aurora: A Foundation Model of the Atmosphere</title>
+    <title>Plugin for ECMWF’s ai-models &#8212; Aurora: A Foundation Model of the Atmosphere</title>
   
   
   
@@ -57,11 +57,11 @@
     <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'beware';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'ai_models_plugin';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Fine-Tuning" href="finetuning.html" />
-    <link rel="prev" title="Available Models" href="models.html" />
+    <link rel="next" title="Application Programming Interface" href="api.html" />
+    <link rel="prev" title="Example: Predictions for HRES T0" href="example_hres_t0.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -183,11 +183,11 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="batch.html">Form of a Batch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="models.html">Available Models</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Beware!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="beware.html">Beware!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Fine-Tuning</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_era5.html">Example: Predictions for ERA5</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_hres_t0.html">Example: Predictions for HRES T0</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ai_models_plugin.html">Plugin for ECMWF’s <code class="docutils literal notranslate"><span class="pre">ai-models</span></code></a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Plugin for ECMWF’s <code class="docutils literal notranslate"><span class="pre">ai-models</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">Application Programming Interface</a></li>
 </ul>
 
@@ -260,7 +260,7 @@
       
       
       
-      <li><a href="https://github.com/microsoft/aurora/issues/new?title=Issue%20on%20page%20%2Fbeware.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/microsoft/aurora/issues/new?title=Issue%20on%20page%20%2Fai_models_plugin.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -290,7 +290,7 @@
       
       
       
-      <li><a href="_sources/beware.md" target="_blank"
+      <li><a href="_sources/ai_models_plugin.md" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -361,9 +361,7 @@ document.write(`
   </button>
 `);
 </script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="fa-solid fa-list"></span>
-</button>
+
 </div></div>
       
     </div>
@@ -374,23 +372,11 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Beware!</h1>
+    <h1>Plugin for ECMWF’s ai-models</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
             
-            <div>
-                <h2> Contents </h2>
-            </div>
-            <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sensitivity-to-data">Sensitivity to Data</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hres-ifs-t0-versus-hres-ifs-analysis">HRES IFS T0 Versus HRES IFS Analysis</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deterministic-and-reproducible-output">Deterministic and Reproducible Output</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-a-checkpoint-onto-an-extended-model">Loading a Checkpoint Onto an Extended Model</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#extending-the-model-with-new-surface-level-variables">Extending the Model with New Surface-Level Variables</a></li>
-</ul>
-            </nav>
         </div>
     </div>
 </div>
@@ -400,56 +386,22 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="beware">
-<h1>Beware!<a class="headerlink" href="#beware" title="Link to this heading">#</a></h1>
-<p>When using Aurora, there are a few things to watch out for.</p>
-<p>Did you experience an issue that should be listed here, but currently is not?
-Please let us know by <a class="reference external" href="https://github.com/microsoft/aurora/issues/new">opening an issue</a>!</p>
-<section id="sensitivity-to-data">
-<h2>Sensitivity to Data<a class="headerlink" href="#sensitivity-to-data" title="Link to this heading">#</a></h2>
-<p>Our hope is that Aurora generally produces sensible predictions.
-However, there is no guarantee that it will.</p>
-<p>If you require optimal performance,
-then the data that you use needs to be exactly right.
-This means that you should provide
-exactly the right variables
-at exactly the right pressure levels
-from exactly the right source.</p>
-</section>
-<section id="hres-ifs-t0-versus-hres-ifs-analysis">
-<span id="t0-vs-analysis"></span><h2>HRES IFS T0 Versus HRES IFS Analysis<a class="headerlink" href="#hres-ifs-t0-versus-hres-ifs-analysis" title="Link to this heading">#</a></h2>
-<p>HRES IFS T0 is <em>not</em> the same as HRES IFS analysis.
-Crucially, the analysis product includes an additional surface assimilation step.</p>
-<p>Specific versions of Aurora require specific versions of HRES IFS:
-Aurora 0.25° Fine-Tuned requires IFS HRES T0,
-and Aurora 0.1° Fine-Tuned requires IFS HRES analysis.</p>
-</section>
-<section id="deterministic-and-reproducible-output">
-<h2>Deterministic and Reproducible Output<a class="headerlink" href="#deterministic-and-reproducible-output" title="Link to this heading">#</a></h2>
-<p>If you require deterministic and reproducible output,
-you should do two things:</p>
-<ol class="arabic simple">
-<li><p>Set <code class="docutils literal notranslate"><span class="pre">torch.use_deterministic_algorithms(True)</span></code> to make PyTorch operations deterministic.</p></li>
-<li><p>Set <code class="docutils literal notranslate"><span class="pre">model.eval()</span></code> to disable drop-out.</p></li>
-</ol>
-</section>
-<section id="loading-a-checkpoint-onto-an-extended-model">
-<h2>Loading a Checkpoint Onto an Extended Model<a class="headerlink" href="#loading-a-checkpoint-onto-an-extended-model" title="Link to this heading">#</a></h2>
-<p>If you changed the model and added or removed parameters, you need to set <code class="docutils literal notranslate"><span class="pre">strict=False</span></code> when
-loading a checkpoint <code class="docutils literal notranslate"><span class="pre">Aurora.load_checkpoint(...,</span> <span class="pre">strict=False)</span></code>.
-Importantly, enabling or disabling LoRA for a model that was trained respectively without or
-with LoRA changes the parameters!</p>
-</section>
-<section id="extending-the-model-with-new-surface-level-variables">
-<h2>Extending the Model with New Surface-Level Variables<a class="headerlink" href="#extending-the-model-with-new-surface-level-variables" title="Link to this heading">#</a></h2>
-<p>Whereas we have attempted to design a robust and flexible model,
-inevitably some unfortunate design choices slipped through.</p>
-<p>A notable unfortunate design choice is that extending the model with a new surface-level
-variable breaks compatibility with existing checkpoints.
-It is possible to hack around this in a relatively simple way.
-We are working on a more principled fix.
-Please open an issue if this is a problem for you.</p>
-</section>
+  <section id="plugin-for-ecmwf-s-ai-models">
+<h1>Plugin for ECMWF’s <code class="docutils literal notranslate"><span class="pre">ai-models</span></code><a class="headerlink" href="#plugin-for-ecmwf-s-ai-models" title="Link to this heading">#</a></h1>
+<p>Aurora is a supported model for ECMWF’s
+<a class="reference external" href="https://github.com/ecmwf-lab/ai-models"><code class="docutils literal notranslate"><span class="pre">ai-models</span></code></a>
+through the plugin
+<a class="reference external" href="https://github.com/ecmwf-lab/ai-models-aurora"><code class="docutils literal notranslate"><span class="pre">ai-models-aurora</span></code></a>.
+Install this plugin with <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>ai-models-aurora
+</pre></div>
+</div>
+<p>See
+<a class="reference external" href="https://github.com/ecmwf-lab/ai-models">the documentation of <code class="docutils literal notranslate"><span class="pre">ai-models</span></code></a>
+for more information about <code class="docutils literal notranslate"><span class="pre">ai-models</span></code>
+and see
+<a class="reference external" href="https://github.com/ecmwf-lab/ai-models-aurora">the documentation of <code class="docutils literal notranslate"><span class="pre">ai-models-aurora</span></code></a>
+for more information about the Aurora plugin.</p>
 </section>
 
     <script type="text/x-thebe-config">
@@ -483,20 +435,20 @@ Please open an issue if this is a problem for you.</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="models.html"
+       href="example_hres_t0.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Available Models</p>
+        <p class="prev-next-title">Example: Predictions for HRES T0</p>
       </div>
     </a>
     <a class="right-next"
-       href="finetuning.html"
+       href="api.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Fine-Tuning</p>
+        <p class="prev-next-title">Application Programming Interface</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -506,25 +458,6 @@ Please open an issue if this is a problem for you.</p>
             </div>
             
             
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> Contents
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sensitivity-to-data">Sensitivity to Data</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hres-ifs-t0-versus-hres-ifs-analysis">HRES IFS T0 Versus HRES IFS Analysis</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deterministic-and-reproducible-output">Deterministic and Reproducible Output</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-a-checkpoint-onto-an-extended-model">Loading a Checkpoint Onto an Extended Model</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#extending-the-model-with-new-surface-level-variables">Extending the Model with New Surface-Level Variables</a></li>
-</ul>
-  </nav></div>
-
-</div></div>
               
             
           </div>
