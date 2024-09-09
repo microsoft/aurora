@@ -575,10 +575,23 @@ document.write(`
 <span class="sd">            strict (bool, optional): Error if the model parameters are not exactly equal to the</span>
 <span class="sd">                parameters in the checkpoint. Defaults to `True`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">hf_hub_download</span><span class="p">(</span><span class="n">repo_id</span><span class="o">=</span><span class="n">repo</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_checkpoint_local</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Aurora.load_checkpoint_local">
+<a class="viewcode-back" href="../../../api.html#aurora.Aurora.load_checkpoint_local">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_checkpoint_local</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a checkpoint directly from a file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path (str): Path to the checkpoint.</span>
+<span class="sd">            strict (bool, optional): Error if the model parameters are not exactly equal to the</span>
+<span class="sd">                parameters in the checkpoint. Defaults to `True`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Assume that all parameters are either on the CPU or on the GPU.</span>
         <span class="n">device</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span><span class="o">.</span><span class="n">device</span>
 
-        <span class="n">path</span> <span class="o">=</span> <span class="n">hf_hub_download</span><span class="p">(</span><span class="n">repo_id</span><span class="o">=</span><span class="n">repo</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
         <span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">weights_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># Rename keys to ensure compatibility.</span>
