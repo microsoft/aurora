@@ -19,8 +19,6 @@ from aurora.model.perceiver import MLP, PerceiverResampler
 from aurora.model.posencoding import pos_scale_enc
 from aurora.model.util import (
     check_lat_lon_dtype,
-    create_var_map,
-    get_ids_for_var_map,
     init_weights,
 )
 
@@ -78,8 +76,6 @@ class Perceiver3DEncoder(nn.Module):
 
         # We treat the static variables as surface variables in the model.
         surf_vars = surf_vars + static_vars if static_vars is not None else surf_vars
-        self.surf_var_map = create_var_map(surf_vars)
-        self.atmos_var_map = create_var_map(atmos_vars)
 
         # Latent tokens
         assert latent_levels > 1, "At least two latent levels are required."
@@ -102,10 +98,16 @@ class Perceiver3DEncoder(nn.Module):
         # Patch embeddings
         assert max_history_size > 0, "At least one history step is required."
         self.surf_token_embeds = LevelPatchEmbed(
-            len(surf_vars), patch_size, embed_dim, max_history_size
+            surf_vars,
+            patch_size,
+            embed_dim,
+            max_history_size,
         )
         self.atmos_token_embeds = LevelPatchEmbed(
-            len(atmos_vars), patch_size, embed_dim, max_history_size
+            atmos_vars,
+            patch_size,
+            embed_dim,
+            max_history_size,
         )
 
         # Learnable pressure level aggregation
@@ -194,14 +196,12 @@ class Perceiver3DEncoder(nn.Module):
 
         # Patch embed the surface level.
         x_surf = rearrange(x_surf, "b t v h w -> b v t h w")
-        surf_ids = get_ids_for_var_map(surf_vars, self.surf_var_map, x_surf.device)
-        x_surf = self.surf_token_embeds(x_surf, surf_ids)  # (B, L, D)
+        x_surf = self.surf_token_embeds(x_surf, surf_vars)  # (B, L, D)
         dtype = x_surf.dtype  # When using mixed precision, we need to keep track of the dtype.
 
         # Patch embed the atmospheric levels.
-        atmos_ids = get_ids_for_var_map(atmos_vars, self.atmos_var_map, x_atmos.device)
         x_atmos = rearrange(x_atmos, "b t v c h w -> (b c) v t h w")
-        x_atmos = self.atmos_token_embeds(x_atmos, atmos_ids)
+        x_atmos = self.atmos_token_embeds(x_atmos, atmos_vars)
         x_atmos = rearrange(x_atmos, "(b c) l d -> b c l d", b=B, c=C)
 
         # Add surface level encoding. This helps the model distinguish between surface and

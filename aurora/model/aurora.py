@@ -237,6 +237,54 @@ class Aurora(torch.nn.Module):
                 del d[k]
                 d[k[4:]] = v
 
+        # Convert the ID-based parametrisation to a name-based parametrisation.
+
+        if "encoder.surf_token_embeds.weight" in d:
+            weight = d["encoder.surf_token_embeds.weight"]
+            del d["encoder.surf_token_embeds.weight"]
+
+            assert weight.shape[1] == 4 + 3
+            for i, name in enumerate(("2t", "10u", "10v", "msl", "lsm", "z", "slt")):
+                d[f"encoder.surf_token_embeds.weights.{name}"] = weight[:, [i]]
+
+        if "encoder.atmos_token_embeds.weight" in d:
+            weight = d["encoder.atmos_token_embeds.weight"]
+            del d["encoder.atmos_token_embeds.weight"]
+
+            assert weight.shape[1] == 5
+            for i, name in enumerate(("z", "u", "v", "t", "q")):
+                d[f"encoder.atmos_token_embeds.weights.{name}"] = weight[:, [i]]
+
+        if "decoder.surf_head.weight" in d:
+            weight = d["decoder.surf_head.weight"]
+            bias = d["decoder.surf_head.bias"]
+            del d["decoder.surf_head.weight"]
+            del d["decoder.surf_head.bias"]
+
+            assert weight.shape[0] == 4 * self.patch_size**2
+            assert bias.shape[0] == 4 * self.patch_size**2
+            weight = weight.reshape(self.patch_size**2, 4, -1)
+            bias = bias.reshape(self.patch_size**2, 4)
+
+            for i, name in enumerate(("2t", "10u", "10v", "msl")):
+                d[f"decoder.surf_heads.{name}.weight"] = weight[:, i]
+                d[f"decoder.surf_heads.{name}.bias"] = bias[:, i]
+
+        if "decoder.atmos_head.weight" in d:
+            weight = d["decoder.atmos_head.weight"]
+            bias = d["decoder.atmos_head.bias"]
+            del d["decoder.atmos_head.weight"]
+            del d["decoder.atmos_head.bias"]
+
+            assert weight.shape[0] == 5 * self.patch_size**2
+            assert bias.shape[0] == 5 * self.patch_size**2
+            weight = weight.reshape(self.patch_size**2, 5, -1)
+            bias = bias.reshape(self.patch_size**2, 5)
+
+            for i, name in enumerate(("z", "u", "v", "t", "q")):
+                d[f"decoder.atmos_heads.{name}.weight"] = weight[:, i]
+                d[f"decoder.atmos_heads.{name}.bias"] = bias[:, i]
+
         self.load_state_dict(d, strict=strict)
 
 

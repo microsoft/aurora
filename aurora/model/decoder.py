@@ -11,8 +11,6 @@ from aurora.model.fourier import levels_expansion
 from aurora.model.perceiver import PerceiverResampler
 from aurora.model.util import (
     check_lat_lon_dtype,
-    create_var_map,
-    get_ids_for_var_map,
     init_weights,
     unpatchify,
 )
@@ -60,8 +58,6 @@ class Perceiver3DDecoder(nn.Module):
         self.patch_size = patch_size
         self.surf_vars = surf_vars
         self.atmos_vars = atmos_vars
-        self.surf_var_map = create_var_map(surf_vars)
-        self.atmos_var_map = create_var_map(atmos_vars)
         self.embed_dim = embed_dim
 
         self.level_decoder = PerceiverResampler(
@@ -76,8 +72,12 @@ class Perceiver3DDecoder(nn.Module):
             ln_eps=perceiver_ln_eps,
         )
 
-        self.surf_head = nn.Linear(embed_dim, len(surf_vars) * patch_size**2)
-        self.atmos_head = nn.Linear(embed_dim, len(atmos_vars) * patch_size**2)
+        self.surf_heads = nn.ParameterDict(
+            {name: nn.Linear(embed_dim, patch_size**2) for name in surf_vars}
+        )
+        self.atmos_heads = nn.ParameterDict(
+            {name: nn.Linear(embed_dim, patch_size**2) for name in atmos_vars}
+        )
 
         self.atmos_levels_embed = nn.Linear(embed_dim, embed_dim)
 
@@ -145,10 +145,10 @@ class Perceiver3DDecoder(nn.Module):
             W=patch_res[2],
         )
 
-        # Decode surface vars.
-        x_surf = self.surf_head(x[..., :1, :])  # (B, L, 1, V_S*p*p)
-        surf_var_ids = get_ids_for_var_map(surf_vars, self.surf_var_map, x_surf.device)
-        surf_preds = unpatchify(x_surf, len(self.surf_vars), H, W, self.patch_size)[:, surf_var_ids]
+        # Decode surface vars. Run the head for every surface-level variable.
+        x_surf = torch.stack([self.surf_heads[name](x[..., :1, :]) for name in surf_vars], dim=-1)
+        x_surf = x_surf.reshape(*x_surf.shape[:3], -1)  # (B, L, 1, V_S*p*p)
+        surf_preds = unpatchify(x_surf, len(surf_vars), H, W, self.patch_size)
         surf_preds = surf_preds.squeeze(2)  # (B, V_S, H, W)
 
         # Embed the atmospheric levels.
@@ -162,10 +162,9 @@ class Perceiver3DDecoder(nn.Module):
         x_atmos = self.deaggregate_levels(levels_embed, x[..., 1:, :])  # (B, L, C_A, D)
 
         # Decode the atmospheric vars.
-        x_atmos = self.atmos_head(x_atmos)  # (B, L, C_A, V_A*p*p)
-        atmos_var_ids = get_ids_for_var_map(atmos_vars, self.atmos_var_map, x.device)
-        atmos_preds = unpatchify(x_atmos, len(self.atmos_vars), H, W, self.patch_size)
-        atmos_preds = atmos_preds[:, atmos_var_ids]
+        x_atmos = torch.stack([self.atmos_heads[name](x_atmos) for name in atmos_vars], dim=-1)
+        x_atmos = x_atmos.reshape(*x_atmos.shape[:3], -1)  # (B, L, C_A, V_A*p*p)
+        atmos_preds = unpatchify(x_atmos, len(atmos_vars), H, W, self.patch_size)
 
         return Batch(
             {v: surf_preds[:, i] for i, v in enumerate(surf_vars)},
