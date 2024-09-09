@@ -226,7 +226,7 @@ class Aurora(torch.nn.Module):
                 parameters in the checkpoint. Defaults to `True`.
         """
         path = hf_hub_download(repo_id=repo, filename=name)
-        self.load_checkpoint_local(path)
+        self.load_checkpoint_local(path, strict=strict)
 
     def load_checkpoint_local(self, path: str, strict: bool = True) -> None:
         """Load a checkpoint directly from a file.
