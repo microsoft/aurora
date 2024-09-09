@@ -52,14 +52,11 @@ class Aurora(torch.nn.Module):
 
         Args:
             surf_vars (tuple[str, ...], optional): All surface-level variables supported by the
-                model. The model is sensitive to the order of `surf_vars`! Currently, adding
-                one more variable here causes the model to incorrectly load the static variables.
-                It is possible to hack around this. We are working on a more principled fix. Please
-                open an issue if this is a problem for you.
+                model.
             static_vars (tuple[str, ...], optional): All static variables supported by the
-                model. The model is sensitive to the order of `static_vars`!
+                model.
             atmos_vars (tuple[str, ...], optional): All atmospheric variables supported by the
-                model. The model is sensitive to the order of `atmos-vars`!
+                model.
             window_size (tuple[int, int, int], optional): Vertical height, height, and width of the
                 window of the underlying Swin transformer.
             encoder_depths (tuple[int, ...], optional): Number of blocks in each encoder layer.
@@ -231,7 +228,11 @@ class Aurora(torch.nn.Module):
         path = hf_hub_download(repo_id=repo, filename=name)
         d = torch.load(path, map_location=device, weights_only=True)
 
-        # Rename keys to ensure compatibility.
+        # You can safely ignore all cumbersome processing below. We modified the model after we
+        # trained it. The code below manually adapts the checkpoints, so the checkpoints are
+        # compatible with the new model.
+
+        # Remove possibly prefix from the keys.
         for k, v in list(d.items()):
             if k.startswith("net."):
                 del d[k]
