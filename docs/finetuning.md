@@ -10,6 +10,33 @@ model = Aurora(use_lora=False)  # Model is not fine-tuned.
 model.load_checkpoint("microsoft/aurora", "aurora-0.25-pretrained.ckpt")
 ```
 
+## Computing Gradients
+
+To compute gradients, you will need an A100 with 80 GB of memory.
+In addition, you will need to use [PyTorch AMP](https://pytorch.org/docs/stable/amp.html)
+and gradient checkpointing.
+You can do this as follows:
+
+```python
+from aurora import Aurora
+
+model = Aurora(
+    use_lora=False,  # Model was not fine-tuned.
+    autocast=True,  # Use AMP.
+)
+model.load_checkpoint("microsoft/aurora", "aurora-0.25-pretrained.ckpt")
+
+batch = ...  # Load some data.
+
+model = model.cuda()
+model.train()
+model.configure_activation_checkpointing()
+
+pred = model.forward(batch)
+loss = ...
+loss.backward()
+```
+
 ## Extending Aurora with New Variables
 
 Aurora can be extended with new variables by adjusting the keyword arguments `surf_vars`,
