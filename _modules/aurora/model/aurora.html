@@ -545,7 +545,6 @@ document.write(`
         <span class="p">)</span>
 
         <span class="c1"># Remove batch and history dimension from static variables.</span>
-        <span class="n">B</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="o">.</span><span class="n">values</span><span class="p">()))[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">pred</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
             <span class="n">pred</span><span class="p">,</span>
             <span class="n">static_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">static_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
