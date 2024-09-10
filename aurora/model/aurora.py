@@ -198,7 +198,6 @@ class Aurora(torch.nn.Module):
         )
 
         # Remove batch and history dimension from static variables.
-        B, T = next(iter(batch.surf_vars.values()))[0]
         pred = dataclasses.replace(
             pred,
             static_vars={k: v[0, 0] for k, v in batch.static_vars.items()},
