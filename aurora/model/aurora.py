@@ -1,17 +1,21 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
+import contextlib
 import dataclasses
 from datetime import timedelta
 from functools import partial
 
 import torch
 from huggingface_hub import hf_hub_download
+from torch.distributed.algorithms._checkpoint.checkpoint_wrapper import (
+    apply_activation_checkpointing,
+)
 
 from aurora.batch import Batch
 from aurora.model.decoder import Perceiver3DDecoder
 from aurora.model.encoder import Perceiver3DEncoder
 from aurora.model.lora import LoRAMode
-from aurora.model.swin3d import Swin3DTransformerBackbone
+from aurora.model.swin3d import BasicLayer3D, Swin3DTransformerBackbone
 
 __all__ = ["Aurora", "AuroraSmall", "AuroraHighRes"]
 
@@ -47,6 +51,7 @@ class Aurora(torch.nn.Module):
         use_lora: bool = True,
         lora_steps: int = 40,
         lora_mode: LoRAMode = "single",
+        autocast: bool = False,
     ) -> None:
         """Construct an instance of the model.
 
@@ -92,11 +97,14 @@ class Aurora(torch.nn.Module):
             lora_mode (str, optional): LoRA mode. `"single"` uses the same LoRA for all roll-out
                 steps, and `"all"` uses a different LoRA for every roll-out step. Defaults to
                 `"single"`.
+            autocast (bool, optional): Use `torch.autocast` to reduce memory usage. Defaults to
+                `False`.
         """
         super().__init__()
         self.surf_vars = surf_vars
         self.atmos_vars = atmos_vars
         self.patch_size = patch_size
+        self.autocast = autocast
 
         self.encoder = Perceiver3DEncoder(
             surf_vars=surf_vars,
@@ -181,12 +189,13 @@ class Aurora(torch.nn.Module):
             batch,
             lead_time=timedelta(hours=6),
         )
-        x = self.backbone(
-            x,
-            lead_time=timedelta(hours=6),
-            patch_res=patch_res,
-            rollout_step=batch.metadata.rollout_step,
-        )
+        with torch.autocast(device_type="cuda") if self.autocast else contextlib.nullcontext():
+            x = self.backbone(
+                x,
+                lead_time=timedelta(hours=6),
+                patch_res=patch_res,
+                rollout_step=batch.metadata.rollout_step,
+            )
         pred = self.decoder(
             x,
             batch,
@@ -296,6 +305,13 @@ class Aurora(torch.nn.Module):
                 d[f"decoder.atmos_heads.{name}.bias"] = bias[:, i]
 
         self.load_state_dict(d, strict=strict)
+
+    def configure_activation_checkpointing(self):
+        """Configure activation checkpointing.
+
+        This is required in order to compute gradients without running out of memory.
+        """
+        apply_activation_checkpointing(self, check_fn=lambda x: isinstance(x, BasicLayer3D))
 
 
 AuroraSmall = partial(
