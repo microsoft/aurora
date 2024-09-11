@@ -69,7 +69,7 @@ scales["new_atmos_var"] = 1.0
 ## Other Model Extensions
 
 It is possible to extend to model in any way you like.
-If you do this, you will likely you add or remove parameters.
+If you do this, you will likely add or remove parameters.
 Then `Aurora.load_checkpoint` will error,
 because the existing checkpoint now mismatches with the model's parameters.
 Simply set `Aurora.load_checkpoint(..., strict=False)` to ignore the mismatches:
