@@ -340,18 +340,22 @@ document.write(`
   <h1>Source code for aurora.model.aurora</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Copyright (c) Microsoft Corporation. Licensed under the MIT license.&quot;&quot;&quot;</span>
 
+<span class="kn">import</span> <span class="nn">contextlib</span>
 <span class="kn">import</span> <span class="nn">dataclasses</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">huggingface_hub</span> <span class="kn">import</span> <span class="n">hf_hub_download</span>
+<span class="kn">from</span> <span class="nn">torch.distributed.algorithms._checkpoint.checkpoint_wrapper</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">apply_activation_checkpointing</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">aurora.batch</span> <span class="kn">import</span> <span class="n">Batch</span>
 <span class="kn">from</span> <span class="nn">aurora.model.decoder</span> <span class="kn">import</span> <span class="n">Perceiver3DDecoder</span>
 <span class="kn">from</span> <span class="nn">aurora.model.encoder</span> <span class="kn">import</span> <span class="n">Perceiver3DEncoder</span>
 <span class="kn">from</span> <span class="nn">aurora.model.lora</span> <span class="kn">import</span> <span class="n">LoRAMode</span>
-<span class="kn">from</span> <span class="nn">aurora.model.swin3d</span> <span class="kn">import</span> <span class="n">Swin3DTransformerBackbone</span>
+<span class="kn">from</span> <span class="nn">aurora.model.swin3d</span> <span class="kn">import</span> <span class="n">BasicLayer3D</span><span class="p">,</span> <span class="n">Swin3DTransformerBackbone</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;AuroraSmall&quot;</span><span class="p">,</span> <span class="s2">&quot;AuroraHighRes&quot;</span><span class="p">]</span>
 
@@ -391,6 +395,7 @@ document.write(`
         <span class="n">use_lora</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">lora_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span>
         <span class="n">lora_mode</span><span class="p">:</span> <span class="n">LoRAMode</span> <span class="o">=</span> <span class="s2">&quot;single&quot;</span><span class="p">,</span>
+        <span class="n">autocast</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct an instance of the model.</span>
 
@@ -436,11 +441,14 @@ document.write(`
 <span class="sd">            lora_mode (str, optional): LoRA mode. `&quot;single&quot;` uses the same LoRA for all roll-out</span>
 <span class="sd">                steps, and `&quot;all&quot;` uses a different LoRA for every roll-out step. Defaults to</span>
 <span class="sd">                `&quot;single&quot;`.</span>
+<span class="sd">            autocast (bool, optional): Use `torch.autocast` to reduce memory usage. Defaults to</span>
+<span class="sd">                `False`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">surf_vars</span> <span class="o">=</span> <span class="n">surf_vars</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">atmos_vars</span> <span class="o">=</span> <span class="n">atmos_vars</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span> <span class="o">=</span> <span class="n">patch_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">autocast</span> <span class="o">=</span> <span class="n">autocast</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">Perceiver3DEncoder</span><span class="p">(</span>
             <span class="n">surf_vars</span><span class="o">=</span><span class="n">surf_vars</span><span class="p">,</span>
@@ -528,12 +536,13 @@ document.write(`
             <span class="n">batch</span><span class="p">,</span>
             <span class="n">lead_time</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">6</span><span class="p">),</span>
         <span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="p">(</span>
-            <span class="n">x</span><span class="p">,</span>
-            <span class="n">lead_time</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">6</span><span class="p">),</span>
-            <span class="n">patch_res</span><span class="o">=</span><span class="n">patch_res</span><span class="p">,</span>
-            <span class="n">rollout_step</span><span class="o">=</span><span class="n">batch</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">rollout_step</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autocast</span><span class="p">(</span><span class="n">device_type</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">autocast</span> <span class="k">else</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">nullcontext</span><span class="p">():</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">,</span>
+                <span class="n">lead_time</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">6</span><span class="p">),</span>
+                <span class="n">patch_res</span><span class="o">=</span><span class="n">patch_res</span><span class="p">,</span>
+                <span class="n">rollout_step</span><span class="o">=</span><span class="n">batch</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">rollout_step</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="n">pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span>
             <span class="n">x</span><span class="p">,</span>
             <span class="n">batch</span><span class="p">,</span>
@@ -649,6 +658,16 @@ document.write(`
                 <span class="n">d</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;decoder.atmos_heads.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.bias&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bias</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Aurora.configure_activation_checkpointing">
+<a class="viewcode-back" href="../../../api.html#aurora.Aurora.configure_activation_checkpointing">[docs]</a>
+    <span class="k">def</span> <span class="nf">configure_activation_checkpointing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure activation checkpointing.</span>
+
+<span class="sd">        This is required in order to compute gradients without running out of memory.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">apply_activation_checkpointing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">BasicLayer3D</span><span class="p">))</span></div>
 </div>
 
 
