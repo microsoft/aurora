@@ -361,7 +361,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -377,6 +379,15 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#extending-aurora-with-new-variables">Extending Aurora with New Variables</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-model-extensions">Other Model Extensions</a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -388,21 +399,50 @@ document.write(`
                   
   <section id="fine-tuning">
 <h1>Fine-Tuning<a class="headerlink" href="#fine-tuning" title="Link to this heading">#</a></h1>
-<p>If you wish to fine-tune Aurora for you specific application,
-you should use the pretrained version:</p>
+<p>Generally, if you wish to fine-tune Aurora for a specific application,
+you should build on the pretrained version:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Model is not fine-tuned.</span>
 <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>You are also free to extend the model for your particular use case.
-In that case, it might be that you add or remove parameters.
+<section id="extending-aurora-with-new-variables">
+<h2>Extending Aurora with New Variables<a class="headerlink" href="#extending-aurora-with-new-variables" title="Link to this heading">#</a></h2>
+<p>Aurora can be extended with new variables by adjusting the keyword arguments <code class="docutils literal notranslate"><span class="pre">surf_vars</span></code>,
+<code class="docutils literal notranslate"><span class="pre">static_vars</span></code>, and <code class="docutils literal notranslate"><span class="pre">atmos_vars</span></code>.
+When you add a new variable, you also need to set the normalisation statistics.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
+<span class="kn">from</span> <span class="nn">aurora.normalisation</span> <span class="kn">import</span> <span class="n">locations</span><span class="p">,</span> <span class="n">scales</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span>
+    <span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">surf_vars</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;2t&quot;</span><span class="p">,</span> <span class="s2">&quot;10u&quot;</span><span class="p">,</span> <span class="s2">&quot;10v&quot;</span><span class="p">,</span> <span class="s2">&quot;msl&quot;</span><span class="p">,</span> <span class="s2">&quot;new_surf_var&quot;</span><span class="p">),</span>
+    <span class="n">static_vars</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;lsm&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;slt&quot;</span><span class="p">,</span> <span class="s2">&quot;new_static_var&quot;</span><span class="p">),</span>
+    <span class="n">atmos_vars</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">,</span> <span class="s2">&quot;new_atmos_var&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">)</span>
+
+<span class="c1"># Normalisation means:</span>
+<span class="n">locations</span><span class="p">[</span><span class="s2">&quot;new_surf_var&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="n">locations</span><span class="p">[</span><span class="s2">&quot;new_static_var&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="n">locations</span><span class="p">[</span><span class="s2">&quot;new_atmos_var&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+<span class="c1"># Normalisation standard deviations:</span>
+<span class="n">scales</span><span class="p">[</span><span class="s2">&quot;new_surf_var&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">scales</span><span class="p">[</span><span class="s2">&quot;new_static_var&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">scales</span><span class="p">[</span><span class="s2">&quot;new_atmos_var&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+</pre></div>
+</div>
+</section>
+<section id="other-model-extensions">
+<h2>Other Model Extensions<a class="headerlink" href="#other-model-extensions" title="Link to this heading">#</a></h2>
+<p>It is possible to extend to model in any way you like.
+If you do this, you will likely add or remove parameters.
 Then <code class="docutils literal notranslate"><span class="pre">Aurora.load_checkpoint</span></code> will error,
 because the existing checkpoint now mismatches with the model’s parameters.
-Simply set <code class="docutils literal notranslate"><span class="pre">Aurora.load_checkpoint(...,</span> <span class="pre">strict=False)</span></code>:</p>
+Simply set <code class="docutils literal notranslate"><span class="pre">Aurora.load_checkpoint(...,</span> <span class="pre">strict=False)</span></code> to ignore the mismatches:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
-
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 
@@ -411,7 +451,7 @@ Simply set <code class="docutils literal notranslate"><span class="pre">Aurora.l
 <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>More instructions coming soon!</p>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -468,6 +508,22 @@ Simply set <code class="docutils literal notranslate"><span class="pre">Aurora.l
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#extending-aurora-with-new-variables">Extending Aurora with New Variables</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-model-extensions">Other Model Extensions</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

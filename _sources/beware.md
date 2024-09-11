@@ -42,14 +42,3 @@ If you changed the model and added or removed parameters, you need to set `stric
 loading a checkpoint `Aurora.load_checkpoint(..., strict=False)`.
 Importantly, enabling or disabling LoRA for a model that was trained respectively without or
 with LoRA changes the parameters!
-
-## Extending the Model with New Surface-Level Variables
-
-Whereas we have attempted to design a robust and flexible model,
-inevitably some unfortunate design choices slipped through.
-
-A notable unfortunate design choice is that extending the model with a new surface-level
-variable breaks compatibility with existing checkpoints.
-It is possible to hack around this in a relatively simple way.
-We are working on a more principled fix.
-Please open an issue if this is a problem for you.

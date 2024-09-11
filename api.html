@@ -539,14 +539,11 @@ separate LoRA for every roll-out step. Generally, you are safe to ignore this fi
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>surf_vars</strong> (<em>tuple</em><em>[</em><em>str</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – All surface-level variables supported by the
-model. The model is sensitive to the order of <cite>surf_vars</cite>! Currently, adding
-one more variable here causes the model to incorrectly load the static variables.
-It is possible to hack around this. We are working on a more principled fix. Please
-open an issue if this is a problem for you.</p></li>
+model.</p></li>
 <li><p><strong>static_vars</strong> (<em>tuple</em><em>[</em><em>str</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – All static variables supported by the
-model. The model is sensitive to the order of <cite>static_vars</cite>!</p></li>
+model.</p></li>
 <li><p><strong>atmos_vars</strong> (<em>tuple</em><em>[</em><em>str</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – All atmospheric variables supported by the
-model. The model is sensitive to the order of <cite>atmos-vars</cite>!</p></li>
+model.</p></li>
 <li><p><strong>window_size</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>]</em><em>, </em><em>optional</em>) – Vertical height, height, and width of the
 window of the underlying Swin transformer.</p></li>
 <li><p><strong>encoder_depths</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – Number of blocks in each encoder layer.</p></li>
