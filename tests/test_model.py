@@ -144,3 +144,13 @@ def test_aurora_small() -> None:
     np.testing.assert_allclose(pred.metadata.lat, test_output["metadata"]["lat"])
     assert pred.metadata.atmos_levels == tuple(test_output["metadata"]["atmos_levels"])
     assert pred.metadata.time == tuple(test_output["metadata"]["time"])
+
+
+def test_aurora_small_decoder_init() -> None:
+    model = AuroraSmall(use_lora=True)
+
+    # Check that the decoder heads are properly initialised. The biases should be zero, but the
+    # weights shouldn't.
+    for layer in [*model.decoder.surf_heads.values(), *model.decoder.atmos_heads.values()]:
+        assert not torch.all(layer.weight == 0)
+        assert torch.all(layer.bias == 0)

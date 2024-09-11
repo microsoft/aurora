@@ -52,14 +52,11 @@ class Aurora(torch.nn.Module):
 
         Args:
             surf_vars (tuple[str, ...], optional): All surface-level variables supported by the
-                model. The model is sensitive to the order of `surf_vars`! Currently, adding
-                one more variable here causes the model to incorrectly load the static variables.
-                It is possible to hack around this. We are working on a more principled fix. Please
-                open an issue if this is a problem for you.
+                model.
             static_vars (tuple[str, ...], optional): All static variables supported by the
-                model. The model is sensitive to the order of `static_vars`!
+                model.
             atmos_vars (tuple[str, ...], optional): All atmospheric variables supported by the
-                model. The model is sensitive to the order of `atmos-vars`!
+                model.
             window_size (tuple[int, int, int], optional): Vertical height, height, and width of the
                 window of the underlying Swin transformer.
             encoder_depths (tuple[int, ...], optional): Number of blocks in each encoder layer.
@@ -240,11 +237,63 @@ class Aurora(torch.nn.Module):
 
         d = torch.load(path, map_location=device, weights_only=True)
 
-        # Rename keys to ensure compatibility.
+        # You can safely ignore all cumbersome processing below. We modified the model after we
+        # trained it. The code below manually adapts the checkpoints, so the checkpoints are
+        # compatible with the new model.
+
+        # Remove possibly prefix from the keys.
         for k, v in list(d.items()):
             if k.startswith("net."):
                 del d[k]
                 d[k[4:]] = v
+
+        # Convert the ID-based parametrisation to a name-based parametrisation.
+
+        if "encoder.surf_token_embeds.weight" in d:
+            weight = d["encoder.surf_token_embeds.weight"]
+            del d["encoder.surf_token_embeds.weight"]
+
+            assert weight.shape[1] == 4 + 3
+            for i, name in enumerate(("2t", "10u", "10v", "msl", "lsm", "z", "slt")):
+                d[f"encoder.surf_token_embeds.weights.{name}"] = weight[:, [i]]
+
+        if "encoder.atmos_token_embeds.weight" in d:
+            weight = d["encoder.atmos_token_embeds.weight"]
+            del d["encoder.atmos_token_embeds.weight"]
+
+            assert weight.shape[1] == 5
+            for i, name in enumerate(("z", "u", "v", "t", "q")):
+                d[f"encoder.atmos_token_embeds.weights.{name}"] = weight[:, [i]]
+
+        if "decoder.surf_head.weight" in d:
+            weight = d["decoder.surf_head.weight"]
+            bias = d["decoder.surf_head.bias"]
+            del d["decoder.surf_head.weight"]
+            del d["decoder.surf_head.bias"]
+
+            assert weight.shape[0] == 4 * self.patch_size**2
+            assert bias.shape[0] == 4 * self.patch_size**2
+            weight = weight.reshape(self.patch_size**2, 4, -1)
+            bias = bias.reshape(self.patch_size**2, 4)
+
+            for i, name in enumerate(("2t", "10u", "10v", "msl")):
+                d[f"decoder.surf_heads.{name}.weight"] = weight[:, i]
+                d[f"decoder.surf_heads.{name}.bias"] = bias[:, i]
+
+        if "decoder.atmos_head.weight" in d:
+            weight = d["decoder.atmos_head.weight"]
+            bias = d["decoder.atmos_head.bias"]
+            del d["decoder.atmos_head.weight"]
+            del d["decoder.atmos_head.bias"]
+
+            assert weight.shape[0] == 5 * self.patch_size**2
+            assert bias.shape[0] == 5 * self.patch_size**2
+            weight = weight.reshape(self.patch_size**2, 5, -1)
+            bias = bias.reshape(self.patch_size**2, 5)
+
+            for i, name in enumerate(("z", "u", "v", "t", "q")):
+                d[f"decoder.atmos_heads.{name}.weight"] = weight[:, i]
+                d[f"decoder.atmos_heads.{name}.bias"] = bias[:, i]
 
         self.load_state_dict(d, strict=strict)
 
