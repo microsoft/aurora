@@ -22,3 +22,6 @@ Models
 
 .. autoclass:: aurora.AuroraSmall
     :members:
+
+.. autoclass:: aurora.AuroraHighRes
+    :members:

@@ -1,19 +1,23 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
+import contextlib
 import dataclasses
 from datetime import timedelta
 from functools import partial
 
 import torch
 from huggingface_hub import hf_hub_download
+from torch.distributed.algorithms._checkpoint.checkpoint_wrapper import (
+    apply_activation_checkpointing,
+)
 
 from aurora.batch import Batch
 from aurora.model.decoder import Perceiver3DDecoder
 from aurora.model.encoder import Perceiver3DEncoder
 from aurora.model.lora import LoRAMode
-from aurora.model.swin3d import Swin3DTransformerBackbone
+from aurora.model.swin3d import BasicLayer3D, Swin3DTransformerBackbone
 
-__all__ = ["Aurora", "AuroraSmall"]
+__all__ = ["Aurora", "AuroraSmall", "AuroraHighRes"]
 
 
 class Aurora(torch.nn.Module):
@@ -47,30 +51,28 @@ class Aurora(torch.nn.Module):
         use_lora: bool = True,
         lora_steps: int = 40,
         lora_mode: LoRAMode = "single",
+        autocast: bool = False,
     ) -> None:
         """Construct an instance of the model.
 
         Args:
             surf_vars (tuple[str, ...], optional): All surface-level variables supported by the
-                model. The model is sensitive to the order of `surf_vars`! Currently, adding
-                one more variable here causes the model to incorrectly load the static variables.
-                It is possible to hack around this. We are working on a more principled fix. Please
-                open an issue if this is a problem for you.
+                model.
             static_vars (tuple[str, ...], optional): All static variables supported by the
-                model. The model is sensitive to the order of `static_vars`!
+                model.
             atmos_vars (tuple[str, ...], optional): All atmospheric variables supported by the
-                model. The model is sensitive to the order of `atmos-vars`!
+                model.
             window_size (tuple[int, int, int], optional): Vertical height, height, and width of the
                 window of the underlying Swin transformer.
             encoder_depths (tuple[int, ...], optional): Number of blocks in each encoder layer.
-            encoder_num_heads (tuple[int, ...], optional) Number of attention heads in each encoder
+            encoder_num_heads (tuple[int, ...], optional): Number of attention heads in each encoder
                 layer. The dimensionality doubles after every layer. To keep the dimensionality of
                 every head constant, you want to double the number of heads after every layer. The
                 dimensionality of attention head of the first layer is determined by `embed_dim`
                 divided by the value here. For all cases except one, this is equal to `64`.
             decoder_depths (tuple[int, ...], optional): Number of blocks in each decoder layer.
                 Generally, you want this to be the reversal of `encoder_depths`.
-            decoder_num_heads (tuple[int, ...], optional) Number of attention heads in each decoder
+            decoder_num_heads (tuple[int, ...], optional): Number of attention heads in each decoder
                 layer. Generally, you want this to be the reversal of `encoder_num_heads`.
             latent_levels (int, optional): Number of latent pressure levels.
             patch_size (int, optional): Patch size.
@@ -95,11 +97,14 @@ class Aurora(torch.nn.Module):
             lora_mode (str, optional): LoRA mode. `"single"` uses the same LoRA for all roll-out
                 steps, and `"all"` uses a different LoRA for every roll-out step. Defaults to
                 `"single"`.
+            autocast (bool, optional): Use `torch.autocast` to reduce memory usage. Defaults to
+                `False`.
         """
         super().__init__()
         self.surf_vars = surf_vars
         self.atmos_vars = atmos_vars
         self.patch_size = patch_size
+        self.autocast = autocast
 
         self.encoder = Perceiver3DEncoder(
             surf_vars=surf_vars,
@@ -184,12 +189,13 @@ class Aurora(torch.nn.Module):
             batch,
             lead_time=timedelta(hours=6),
         )
-        x = self.backbone(
-            x,
-            lead_time=timedelta(hours=6),
-            patch_res=patch_res,
-            rollout_step=batch.metadata.rollout_step,
-        )
+        with torch.autocast(device_type="cuda") if self.autocast else contextlib.nullcontext():
+            x = self.backbone(
+                x,
+                lead_time=timedelta(hours=6),
+                patch_res=patch_res,
+                rollout_step=batch.metadata.rollout_step,
+            )
         pred = self.decoder(
             x,
             batch,
@@ -198,7 +204,6 @@ class Aurora(torch.nn.Module):
         )
 
         # Remove batch and history dimension from static variables.
-        B, T = next(iter(batch.surf_vars.values()))[0]
         pred = dataclasses.replace(
             pred,
             static_vars={k: v[0, 0] for k, v in batch.static_vars.items()},
@@ -225,19 +230,88 @@ class Aurora(torch.nn.Module):
             strict (bool, optional): Error if the model parameters are not exactly equal to the
                 parameters in the checkpoint. Defaults to `True`.
         """
+        path = hf_hub_download(repo_id=repo, filename=name)
+        self.load_checkpoint_local(path, strict=strict)
+
+    def load_checkpoint_local(self, path: str, strict: bool = True) -> None:
+        """Load a checkpoint directly from a file.
+
+        Args:
+            path (str): Path to the checkpoint.
+            strict (bool, optional): Error if the model parameters are not exactly equal to the
+                parameters in the checkpoint. Defaults to `True`.
+        """
         # Assume that all parameters are either on the CPU or on the GPU.
         device = next(self.parameters()).device
 
-        path = hf_hub_download(repo_id=repo, filename=name)
         d = torch.load(path, map_location=device, weights_only=True)
 
-        # Rename keys to ensure compatibility.
+        # You can safely ignore all cumbersome processing below. We modified the model after we
+        # trained it. The code below manually adapts the checkpoints, so the checkpoints are
+        # compatible with the new model.
+
+        # Remove possibly prefix from the keys.
         for k, v in list(d.items()):
             if k.startswith("net."):
                 del d[k]
                 d[k[4:]] = v
 
+        # Convert the ID-based parametrisation to a name-based parametrisation.
+
+        if "encoder.surf_token_embeds.weight" in d:
+            weight = d["encoder.surf_token_embeds.weight"]
+            del d["encoder.surf_token_embeds.weight"]
+
+            assert weight.shape[1] == 4 + 3
+            for i, name in enumerate(("2t", "10u", "10v", "msl", "lsm", "z", "slt")):
+                d[f"encoder.surf_token_embeds.weights.{name}"] = weight[:, [i]]
+
+        if "encoder.atmos_token_embeds.weight" in d:
+            weight = d["encoder.atmos_token_embeds.weight"]
+            del d["encoder.atmos_token_embeds.weight"]
+
+            assert weight.shape[1] == 5
+            for i, name in enumerate(("z", "u", "v", "t", "q")):
+                d[f"encoder.atmos_token_embeds.weights.{name}"] = weight[:, [i]]
+
+        if "decoder.surf_head.weight" in d:
+            weight = d["decoder.surf_head.weight"]
+            bias = d["decoder.surf_head.bias"]
+            del d["decoder.surf_head.weight"]
+            del d["decoder.surf_head.bias"]
+
+            assert weight.shape[0] == 4 * self.patch_size**2
+            assert bias.shape[0] == 4 * self.patch_size**2
+            weight = weight.reshape(self.patch_size**2, 4, -1)
+            bias = bias.reshape(self.patch_size**2, 4)
+
+            for i, name in enumerate(("2t", "10u", "10v", "msl")):
+                d[f"decoder.surf_heads.{name}.weight"] = weight[:, i]
+                d[f"decoder.surf_heads.{name}.bias"] = bias[:, i]
+
+        if "decoder.atmos_head.weight" in d:
+            weight = d["decoder.atmos_head.weight"]
+            bias = d["decoder.atmos_head.bias"]
+            del d["decoder.atmos_head.weight"]
+            del d["decoder.atmos_head.bias"]
+
+            assert weight.shape[0] == 5 * self.patch_size**2
+            assert bias.shape[0] == 5 * self.patch_size**2
+            weight = weight.reshape(self.patch_size**2, 5, -1)
+            bias = bias.reshape(self.patch_size**2, 5)
+
+            for i, name in enumerate(("z", "u", "v", "t", "q")):
+                d[f"decoder.atmos_heads.{name}.weight"] = weight[:, i]
+                d[f"decoder.atmos_heads.{name}.bias"] = bias[:, i]
+
         self.load_state_dict(d, strict=strict)
+
+    def configure_activation_checkpointing(self):
+        """Configure activation checkpointing.
+
+        This is required in order to compute gradients without running out of memory.
+        """
+        apply_activation_checkpointing(self, check_fn=lambda x: isinstance(x, BasicLayer3D))
 
 
 AuroraSmall = partial(
@@ -249,4 +323,11 @@ AuroraSmall = partial(
     embed_dim=256,
     num_heads=8,
     use_lora=False,
+)
+
+AuroraHighRes = partial(
+    Aurora,
+    patch_size=10,
+    encoder_depths=(6, 8, 8),
+    decoder_depths=(8, 8, 6),
 )

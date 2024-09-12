@@ -9,8 +9,6 @@ from torch import nn
 
 __all__ = [
     "unpatchify",
-    "create_var_map",
-    "get_ids_for_var_map",
     "check_lat_lon_dtype",
     "maybe_adjust_windows",
     "init_weights",
@@ -41,37 +39,6 @@ def unpatchify(x: torch.Tensor, V: int, H: int, W: int, P: int) -> torch.Tensor:
     x = rearrange(x, "B H W C P1 P2 V -> B V C H P1 W P2")
     x = x.reshape(shape=(B, V, C, H * P, W * P))
     return x
-
-
-def create_var_map(variables: tuple[str, ...]) -> dict[str, int]:
-    """Create dictionary where the keys are variable names and values are unique IDs.
-
-    Args:
-        variables (tuple[str, ...]): Variable strings.
-
-    Returns:
-        dict[str, int]: Variable map dictionary.
-    """
-    return {v: i for i, v in enumerate(variables)}
-
-
-def get_ids_for_var_map(
-    variables: tuple,
-    var_maps: dict,
-    device: torch.cuda.device,
-) -> torch.Tensor:
-    """Construct a tensor of variable IDs after retrieving those from a variable map created with
-    :func:`.create_var_map`.
-
-    Args:
-        variables (tuples[str, ...]): Variables to retrieve the IDs for.
-        var_maps (dict[str, int]): Variable map constructed with :func:`.create_var_map`.
-        device (torch.cuda.device): Device.
-
-    Returns:
-        torch.Tensor: Tensor of variable IDs found in `var_map`.
-    """
-    return torch.tensor([var_maps[v] for v in variables], device=device)
 
 
 def check_lat_lon_dtype(lat: torch.Tensor, lon: torch.Tensor) -> None:
