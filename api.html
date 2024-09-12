@@ -387,6 +387,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Batch"><code class="docutils literal notranslate"><span class="pre">Batch</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Batch.crop"><code class="docutils literal notranslate"><span class="pre">Batch.crop()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Batch.normalise"><code class="docutils literal notranslate"><span class="pre">Batch.normalise()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Batch.regrid"><code class="docutils literal notranslate"><span class="pre">Batch.regrid()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Batch.spatial_shape"><code class="docutils literal notranslate"><span class="pre">Batch.spatial_shape</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Batch.to"><code class="docutils literal notranslate"><span class="pre">Batch.to()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Batch.type"><code class="docutils literal notranslate"><span class="pre">Batch.type()</span></code></a></li>
@@ -454,6 +455,14 @@ document.write(`
 <dt class="sig sig-object py" id="aurora.Batch.normalise">
 <span class="sig-name descname"><span class="pre">normalise</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#aurora.Batch" title="aurora.batch.Batch"><span class="pre">Batch</span></a></span></span><a class="reference internal" href="_modules/aurora/batch.html#Batch.normalise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora.Batch.normalise" title="Link to this definition">#</a></dt>
 <dd><p>Normalise all variables in the batch.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora.Batch.regrid">
+<span class="sig-name descname"><span class="pre">regrid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#aurora.Batch" title="aurora.batch.Batch"><span class="pre">Batch</span></a></span></span><a class="reference internal" href="_modules/aurora/batch.html#Batch.regrid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora.Batch.regrid" title="Link to this definition">#</a></dt>
+<dd><p>Regrid the batch to a <cite>res</cite> degrees resolution.</p>
+<p>This results in <cite>float32</cite> data on the CPU.</p>
+<p>This function is not optimised for either speed or accuracy. Use at your own risk.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -722,6 +731,7 @@ parameters in the checkpoint. Defaults to <cite>True</cite>.</p></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Batch"><code class="docutils literal notranslate"><span class="pre">Batch</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Batch.crop"><code class="docutils literal notranslate"><span class="pre">Batch.crop()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Batch.normalise"><code class="docutils literal notranslate"><span class="pre">Batch.normalise()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Batch.regrid"><code class="docutils literal notranslate"><span class="pre">Batch.regrid()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Batch.spatial_shape"><code class="docutils literal notranslate"><span class="pre">Batch.spatial_shape</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Batch.to"><code class="docutils literal notranslate"><span class="pre">Batch.to()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Batch.type"><code class="docutils literal notranslate"><span class="pre">Batch.type()</span></code></a></li>
