@@ -1,95 +1,17 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
-import pickle
-from datetime import datetime
-from typing import TypedDict
-
 import numpy as np
 import torch
-from huggingface_hub import hf_hub_download
-from scipy.interpolate import RegularGridInterpolator as RGI
 
-from aurora import AuroraSmall, Batch, Metadata
+from tests.conftest import SavedBatch
 
-
-class SavedMetadata(TypedDict):
-    """Type of metadata of a saved test batch."""
-
-    lat: np.ndarray
-    lon: np.ndarray
-    time: list[datetime]
-    atmos_levels: list[int | float]
+from aurora import AuroraSmall, Batch
 
 
-class SavedBatch(TypedDict):
-    """Type of a saved test batch."""
+def test_aurora_small(test_input_output: tuple[Batch, SavedBatch]) -> None:
+    batch, test_output = test_input_output
 
-    surf_vars: dict[str, np.ndarray]
-    static_vars: dict[str, np.ndarray]
-    atmos_vars: dict[str, np.ndarray]
-    metadata: SavedMetadata
-
-
-def test_aurora_small() -> None:
     model = AuroraSmall(use_lora=True)
-
-    # Load test input.
-    path = hf_hub_download(
-        repo_id="microsoft/aurora",
-        filename="aurora-0.25-small-pretrained-test-input.pickle",
-    )
-    with open(path, "rb") as f:
-        test_input: SavedBatch = pickle.load(f)
-
-    # Load test output.
-    path = hf_hub_download(
-        repo_id="microsoft/aurora",
-        filename="aurora-0.25-small-pretrained-test-output.pickle",
-    )
-    with open(path, "rb") as f:
-        test_output: SavedBatch = pickle.load(f)
-
-    # Load static variables.
-    path = hf_hub_download(
-        repo_id="microsoft/aurora",
-        filename="aurora-0.25-static.pickle",
-    )
-    with open(path, "rb") as f:
-        static_vars: dict[str, np.ndarray] = pickle.load(f)
-
-    def interpolate(v: np.ndarray) -> np.ndarray:
-        """Interpolate a static variable `v` to the grid of the test data."""
-        rgi = RGI(
-            (
-                np.linspace(90, -90, v.shape[0]),
-                np.linspace(0, 360, v.shape[1], endpoint=False),
-            ),
-            v,
-            method="linear",
-            bounds_error=False,
-        )
-        lat_new, lon_new = np.meshgrid(
-            test_input["metadata"]["lat"],
-            test_input["metadata"]["lon"],
-            indexing="ij",
-            sparse=True,
-        )
-        return rgi((lat_new, lon_new))
-
-    static_vars = {k: interpolate(v) for k, v in static_vars.items()}
-
-    # Construct a proper batch from the test input.
-    batch = Batch(
-        surf_vars={k: torch.from_numpy(v) for k, v in test_input["surf_vars"].items()},
-        static_vars={k: torch.from_numpy(v) for k, v in static_vars.items()},
-        atmos_vars={k: torch.from_numpy(v) for k, v in test_input["atmos_vars"].items()},
-        metadata=Metadata(
-            lat=torch.from_numpy(test_input["metadata"]["lat"]),
-            lon=torch.from_numpy(test_input["metadata"]["lon"]),
-            atmos_levels=tuple(test_input["metadata"]["atmos_levels"]),
-            time=tuple(test_input["metadata"]["time"]),
-        ),
-    )
 
     # Load the checkpoint and run the model.
     model.load_checkpoint(
@@ -130,7 +52,7 @@ def test_aurora_small() -> None:
     for k in pred.static_vars:
         assert_approx_equality(
             pred.static_vars[k].numpy(),
-            static_vars[k],
+            batch.static_vars[k].numpy(),
             1e-10,  # These should be exactly equal.
         )
     for k in pred.atmos_vars:
