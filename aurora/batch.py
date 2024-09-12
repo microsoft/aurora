@@ -2,9 +2,12 @@
 
 import dataclasses
 from datetime import datetime
+from functools import partial
 from typing import Callable
 
+import numpy as np
 import torch
+from scipy.interpolate import RegularGridInterpolator as RGI
 
 from aurora.normalisation import (
     normalise_atmos_var,
@@ -145,3 +148,101 @@ class Batch:
     def type(self, t: type) -> "Batch":
         """Convert everything to type `t`."""
         return self._fmap(lambda x: x.type(t))
+
+    def regrid(self, res: float) -> "Batch":
+        """Regrid the batch to a `res` degrees resolution.
+
+        This results in `float32` data on the CPU.
+
+        This function is not optimised for either speed or accuracy. Use at your own risk.
+        """
+
+        shape = (round(180 / res) + 1, round(360 / res))
+        lat_new = torch.from_numpy(np.linspace(90, -90, shape[0]))
+        lon_new = torch.from_numpy(np.linspace(0, 360, shape[1], endpoint=False))
+        interpolate_res = partial(
+            interpolate,
+            lat=self.metadata.lat,
+            lon=self.metadata.lon,
+            lat_new=lat_new,
+            lon_new=lon_new,
+        )
+
+        return Batch(
+            surf_vars={k: interpolate_res(v) for k, v in self.surf_vars.items()},
+            static_vars={k: interpolate_res(v) for k, v in self.static_vars.items()},
+            atmos_vars={k: interpolate_res(v) for k, v in self.atmos_vars.items()},
+            metadata=Metadata(
+                lat=lat_new,
+                lon=lon_new,
+                atmos_levels=self.metadata.atmos_levels,
+                time=self.metadata.time,
+                rollout_step=self.metadata.rollout_step,
+            ),
+        )
+
+
+def interpolate(
+    v: torch.Tensor,
+    lat: torch.Tensor,
+    lon: torch.Tensor,
+    lat_new: torch.Tensor,
+    lon_new: torch.Tensor,
+) -> torch.Tensor:
+    """Interpolate a variable `v` with latitudes `lat` and longitudes `lon` to new latitudes
+    `lat_new` and new longitudes `lon_new`."""
+    # Perform the interpolation in double precision.
+    return torch.from_numpy(
+        interpolate_numpy(
+            v.double().numpy(),
+            lat.double().numpy(),
+            lon.double().numpy(),
+            lat_new.double().numpy(),
+            lon_new.double().numpy(),
+        )
+    ).float()
+
+
+def interpolate_numpy(
+    v: np.ndarray,
+    lat: np.ndarray,
+    lon: np.ndarray,
+    lat_new: np.ndarray,
+    lon_new: np.ndarray,
+) -> np.ndarray:
+    """Like :func:`.interpolate`, but for NumPy tensors."""
+
+    # Implement periodic longitudes in `lon`.
+    assert (np.diff(lon) > 0).all()
+    lon = np.concatenate((lon[-1:] - 360, lon, lon[:1] + 360))
+
+    # Merge all batch dimensions into one.
+    batch_shape = v.shape[:-2]
+    v = v.reshape(-1, *v.shape[-2:])
+
+    # Loop over all batch elements.
+    vs_regridded = []
+    for vi in v:
+        # Implement periodic longitudes in `vi`.
+        vi = np.concatenate((vi[:, -1:], vi, vi[:, :1]), axis=1)
+
+        rgi = RGI(
+            (lat, lon),
+            vi,
+            method="linear",
+            bounds_error=False,  # Allow out of bounds, for the latitudes.
+            fill_value=None,  # Extrapolate latitudes if they are out of bounds.
+        )
+        lat_new_grid, lon_new_grid = np.meshgrid(
+            lat_new,
+            lon_new,
+            indexing="ij",
+            sparse=True,
+        )
+        vs_regridded.append(rgi((lat_new_grid, lon_new_grid)))
+
+    # Recreate the batch dimensions.
+    v_regridded = np.stack(vs_regridded, axis=0)
+    v_regridded = v_regridded.reshape(*batch_shape, lat_new.shape[0], lon_new.shape[0])
+
+    return v_regridded
