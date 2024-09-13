@@ -4,9 +4,7 @@ import os
 import time
 from pathlib import Path
 
-import numpy as np
 import requests
-import scipy.interpolate.RegularGridInterpolator as RGI
 
 __all__ = [
     "try_download",
@@ -151,33 +149,3 @@ def download_hres_rda_static(
     start_time = time.time()
     try_download(url, outpath)
     print(f"Downloaded {filename} to {outpath} in {time.time() - start_time:.2f} seconds.")
-
-
-def interpolate(
-    v: np.ndarray,
-    lat: np.ndarray,
-    lon: np.ndarray,
-    res: float,
-) -> np.ndarray:
-    """Interpolate a variable `v` with latitudes `lat` and longitudes `lon` to resolution `res`."""
-    shape = (round(180 / res) + 1, round(360 / res))
-
-    # Implement periodic longitudes.
-    assert (np.diff(lon) > 0).all()
-    lon = np.concatenate((lon[-1:] - 360, lon, lon[:1] + 360))
-    v = np.concatenate((v[:, -1:], v, v[:, :1]), axis=1)
-
-    rgi = RGI(
-        (lat, lon),
-        v,
-        method="linear",
-        bounds_error=False,  # Allow out of bounds, for the latitudes.
-        fill_value=None,  # Extrapolate latitudes if they are out of bounds.
-    )
-    lat_new, lon_new = np.meshgrid(
-        np.linspace(90, -90, shape[0]),
-        np.linspace(0, 360, shape[1], endpoint=False),
-        indexing="ij",
-        sparse=True,
-    )
-    return rgi((lat_new, lon_new))
