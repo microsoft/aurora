@@ -158,9 +158,6 @@ class Aurora(torch.nn.Module):
         Args:
             batch (:class:`Batch`): Batch to run the model on.
 
-        Raises:
-            ValueError: If no metric is provided.
-
         Returns:
             :class:`Batch`: Prediction for the batch.
         """
