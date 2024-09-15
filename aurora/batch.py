@@ -75,11 +75,23 @@ class Batch:
         """Get the spatial shape from an arbitrary surface-level variable."""
         return next(iter(self.surf_vars.values())).shape[-2:]
 
-    def normalise(self) -> "Batch":
-        """Normalise all variables in the batch."""
+    def normalise(self, surf_stats: dict[str, tuple[float, float]]) -> "Batch":
+        """Normalise all variables in the batch.
+
+        Args:
+            surf_stats (dict[str, tuple[float, float]]): For these surface-level variables, adjust
+                the normalisation to the given tuple consisting of a new location and scale.
+
+        Returns:
+            :class:`.Batch`: Normalised batch.
+        """
         return Batch(
-            surf_vars={k: normalise_surf_var(v, k) for k, v in self.surf_vars.items()},
-            static_vars={k: normalise_surf_var(v, k) for k, v in self.static_vars.items()},
+            surf_vars={
+                k: normalise_surf_var(v, k, stats=surf_stats) for k, v in self.surf_vars.items()
+            },
+            static_vars={
+                k: normalise_surf_var(v, k, stats=surf_stats) for k, v in self.static_vars.items()
+            },
             atmos_vars={
                 k: normalise_atmos_var(v, k, self.metadata.atmos_levels)
                 for k, v in self.atmos_vars.items()
@@ -87,11 +99,23 @@ class Batch:
             metadata=self.metadata,
         )
 
-    def unnormalise(self) -> "Batch":
-        """Unnormalise all variables in the batch."""
+    def unnormalise(self, surf_stats: dict[str, tuple[float, float]]) -> "Batch":
+        """Unnormalise all variables in the batch.
+
+        Args:
+            surf_stats (dict[str, tuple[float, float]]): For these surface-level variables, adjust
+                the normalisation to the given tuple consisting of a new location and scale.
+
+        Returns:
+            :class:`.Batch`: Unnormalised batch.
+        """
         return Batch(
-            surf_vars={k: unnormalise_surf_var(v, k) for k, v in self.surf_vars.items()},
-            static_vars={k: unnormalise_surf_var(v, k) for k, v in self.static_vars.items()},
+            surf_vars={
+                k: unnormalise_surf_var(v, k, stats=surf_stats) for k, v in self.surf_vars.items()
+            },
+            static_vars={
+                k: unnormalise_surf_var(v, k, stats=surf_stats) for k, v in self.static_vars.items()
+            },
             atmos_vars={
                 k: unnormalise_atmos_var(v, k, self.metadata.atmos_levels)
                 for k, v in self.atmos_vars.items()

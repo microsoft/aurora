@@ -1,6 +1,7 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
 from functools import partial
+from typing import Optional
 
 import torch
 
@@ -15,11 +16,15 @@ __all__ = [
 def normalise_surf_var(
     x: torch.Tensor,
     name: str,
+    stats: Optional[dict[str, tuple[float, float]]] = None,
     unnormalise: bool = False,
 ) -> torch.Tensor:
     """Normalise a surface-level variable."""
-    location = locations[name]
-    scale = scales[name]
+    if stats and name in stats:
+        location, scale = stats[name]
+    else:
+        location = locations[name]
+        scale = scales[name]
     if unnormalise:
         return x * scale + location
     else:
