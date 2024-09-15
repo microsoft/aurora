@@ -342,6 +342,7 @@ document.write(`
 
 <span class="kn">import</span> <span class="nn">contextlib</span>
 <span class="kn">import</span> <span class="nn">dataclasses</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
@@ -455,6 +456,14 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span> <span class="o">=</span> <span class="n">patch_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">surf_stats</span> <span class="o">=</span> <span class="n">surf_stats</span> <span class="ow">or</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">autocast</span> <span class="o">=</span> <span class="n">autocast</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">surf_stats</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The normalisation statics for the following surface-level variables are manually &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;adjusted: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">surf_stats</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="si">}</span><span class="s2">. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Please ensure that this is right!&quot;</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">Perceiver3DEncoder</span><span class="p">(</span>
             <span class="n">surf_vars</span><span class="o">=</span><span class="n">surf_vars</span><span class="p">,</span>
