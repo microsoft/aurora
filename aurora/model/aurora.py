@@ -2,6 +2,7 @@
 
 import contextlib
 import dataclasses
+import warnings
 from datetime import timedelta
 from functools import partial
 from typing import Optional
@@ -111,6 +112,14 @@ class Aurora(torch.nn.Module):
         self.patch_size = patch_size
         self.surf_stats = surf_stats or dict()
         self.autocast = autocast
+
+        if self.surf_stats:
+            warnings.warn(
+                f"The normalisation statics for the following surface-level variables are manually "
+                f"adjusted: {', '.join(sorted(self.surf_stats.keys()))}. "
+                f"Please ensure that this is right!",
+                stacklevel=2,
+            )
 
         self.encoder = Perceiver3DEncoder(
             surf_vars=surf_vars,
