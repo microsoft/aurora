@@ -33,6 +33,7 @@ dynamic = ["version"]
 requires-python = ">=3.10"
 dependencies = [
     "numpy",
+    "scipy",
     "torch",
     "einops",
     "timm==0.6.13",

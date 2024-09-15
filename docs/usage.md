@@ -8,6 +8,12 @@ For the latest official release, install the `pip` package:
 pip install microsoft-aurora
 ```
 
+Or install from conda-forge with `conda` / `mamba`:
+
+```bash
+mamba install microsoft-aurora -c conda-forge
+```
+
 You can also install directly from GitHub:
 
 ```bash
