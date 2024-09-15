@@ -8,5 +8,6 @@ chapters:
 - file: finetuning
 - file: example_era5
 - file: example_hres_t0
+- file: example_hres_0.1
 - file: ai_models_plugin
 - file: api
