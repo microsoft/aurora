@@ -53,7 +53,7 @@ model = Aurora(
     static_vars=("lsm", "z", "slt", "new_static_var"),
     atmos_vars=("z", "u", "v", "t", "q", "new_atmos_var"),
 )
-model.load_checkpoint("microsoft/aurora", "aurora-0.25-pretrained.ckpt")
+model.load_checkpoint("microsoft/aurora", "aurora-0.25-pretrained.ckpt", strict=False)
 
 # Normalisation means:
 locations["new_surf_var"] = 0.0
