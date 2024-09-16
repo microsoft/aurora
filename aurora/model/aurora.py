@@ -112,6 +112,7 @@ class Aurora(torch.nn.Module):
         self.patch_size = patch_size
         self.surf_stats = surf_stats or dict()
         self.autocast = autocast
+        self.max_history_size = max_history_size
 
         if self.surf_stats:
             warnings.warn(
@@ -269,22 +270,31 @@ class Aurora(torch.nn.Module):
                 d[k[4:]] = v
 
         # Convert the ID-based parametrisation to a name-based parametrisation.
-
         if "encoder.surf_token_embeds.weight" in d:
             weight = d["encoder.surf_token_embeds.weight"]
             del d["encoder.surf_token_embeds.weight"]
-
+        
             assert weight.shape[1] == 4 + 3
             for i, name in enumerate(("2t", "10u", "10v", "msl", "lsm", "z", "slt")):
-                d[f"encoder.surf_token_embeds.weights.{name}"] = weight[:, [i]]
-
+                # Initialize the new weight tensor with zeros
+                new_weight = torch.zeros((weight.shape[0], 1, self.max_history_size, weight.shape[3], weight.shape[4]))
+                # Copy the existing weights to the new tensor my duplicating the histories provided in to any new history dimensions
+                for j in range(new_weight.shape[2]):
+                    new_weight[:, :, j, :, :] = weight[:, [i], j % weight.shape[2], :, :]
+                d[f"encoder.surf_token_embeds.weights.{name}"] = new_weight
+    
         if "encoder.atmos_token_embeds.weight" in d:
             weight = d["encoder.atmos_token_embeds.weight"]
             del d["encoder.atmos_token_embeds.weight"]
-
+        
             assert weight.shape[1] == 5
             for i, name in enumerate(("z", "u", "v", "t", "q")):
-                d[f"encoder.atmos_token_embeds.weights.{name}"] = weight[:, [i]]
+                # Initialize the new weight tensor with zeros
+                new_weight = torch.zeros((weight.shape[0], 1, self.max_history_size, weight.shape[3], weight.shape[4]))
+                # Copy the existing weights to the new tensor my duplicating the histories provided in to any new history dimensions
+                for j in range(new_weight.shape[2]):
+                    new_weight[:, :, j, :, :] = weight[:, [i], j % weight.shape[2], :, :]
+                d[f"encoder.atmos_token_embeds.weights.{name}"] = new_weight
 
         if "decoder.surf_head.weight" in d:
             weight = d["decoder.surf_head.weight"]
