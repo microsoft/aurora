@@ -622,21 +622,30 @@ but performance may be significantly affected.
 </section>
 <section id="id8">
 <h3>Static Variables<a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
-<p>Aurora 0.1° Fine-Tuned requires
+<p>Due to differences between implementations of regridding methods, it is recommended to use
+<a class="reference external" href="https://huggingface.co/microsoft/aurora/blob/main/aurora-0.1-static.pickle">the exact static variables which we used during training</a>.</p>
+<p>It is also possible to use the
 <a class="reference external" href="https://rda.ucar.edu/datasets/ds113.1/">static variables from IFS HRES analysis</a> regridded
 to 0.1° resolution.
-Because of differences between implementations of regridding methods, the resulting static
-variables might not be exactly equal to the ones we used during training.
-For this reason we also uploaded
-<a class="reference external" href="https://huggingface.co/microsoft/aurora/blob/main/aurora-0.1-static.pickle">the exact static variables which we used during training</a>.
-To use these, you must remove an exception to the normalisation by instantiating
-the model in the following way:</p>
+However, these static variables will not be exactly equal to the ones we used, which might impact
+performance.
+If you download the static variables yourself, you must adjust the normalisation statistics.
+You can do that in the following way:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">AuroraHighRes</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraHighRes</span><span class="p">(</span><span class="n">surf_stats</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># Use static variables from HF repo.</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraHighRes</span><span class="p">(</span>
+    <span class="c1"># Use manually downloaded and regridded static variables.</span>
+    <span class="n">surf_stats</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">3.270407e03</span><span class="p">,</span> <span class="mf">6.540335e04</span><span class="p">)},</span>
+<span class="p">)</span>
+
 <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.1-finetuned.ckpt&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>The specific values above should work reasonably.</p>
+<!-- Jupyter book complains that the below link doesn't work, but it does. -->
+<p>See <a class="reference internal" href="api.html#aurora.Aurora.__init__"><span class="std std-ref">the API</span></a> for a description of <code class="docutils literal notranslate"><span class="pre">surf_vars</span></code>.
+Generally, the first value in the tuple should be <code class="docutils literal notranslate"><span class="pre">min(static_z)</span></code>
+and the second value <code class="docutils literal notranslate"><span class="pre">max(static_z)</span> <span class="pre">-</span> <span class="pre">min(static_z)</span></code>.</p>
 </section>
 <section id="id9">
 <h3>Notes<a class="headerlink" href="#id9" title="Link to this heading">#</a></h3>
