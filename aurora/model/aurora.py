@@ -342,6 +342,4 @@ AuroraHighRes = partial(
     patch_size=10,
     encoder_depths=(6, 8, 8),
     decoder_depths=(8, 8, 6),
-    # One particular static variable requires a different normalisation.
-    surf_stats={"z": (-3.270407e03, 6.540335e04)},
 )

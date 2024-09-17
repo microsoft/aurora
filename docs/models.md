@@ -157,22 +157,34 @@ For optimal performance, the model requires the following variables and pressure
 
 ### Static Variables
 
-Aurora 0.1° Fine-Tuned requires
+
+Due to differences between implementations of regridding methods, it is recommended to use
+[the exact static variables which we used during training](https://huggingface.co/microsoft/aurora/blob/main/aurora-0.1-static.pickle).
+
+It is also possible to use the
 [static variables from IFS HRES analysis](https://rda.ucar.edu/datasets/ds113.1/) regridded
 to 0.1° resolution.
-Because of differences between implementations of regridding methods, the resulting static
-variables might not be exactly equal to the ones we used during training.
-For this reason we also uploaded
-[the exact static variables which we used during training](https://huggingface.co/microsoft/aurora/blob/main/aurora-0.1-static.pickle).
-To use these, you must remove an exception to the normalisation by instantiating
-the model in the following way:
+However, these static variables will not be exactly equal to the ones we used, which might impact
+performance.
+If you download the static variables yourself, you must adjust the normalisation statistics.
+You can do that in the following way:
 
 ```python
 from aurora import AuroraHighRes
 
-model = AuroraHighRes(surf_stats=None)  # Use static variables from HF repo.
+model = AuroraHighRes(
+    # Use manually downloaded and regridded static variables.
+    surf_stats={"z": (-3.270407e03, 6.540335e04)},
+)
+
 model.load_checkpoint("microsoft/aurora", "aurora-0.1-finetuned.ckpt")
 ```
+
+The specific values above should work reasonably.
+<!-- Jupyter book complains that the below link doesn't work, but it does. -->
+See [the API](api.rst#aurora.Aurora.__init__) for a description of `surf_vars`.
+Generally, the first value in the tuple should be `min(static_z)`
+and the second value `max(static_z) - min(static_z)`.
 
 ### Notes
 
