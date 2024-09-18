@@ -5,7 +5,7 @@ import dataclasses
 import warnings
 from datetime import timedelta
 from functools import partial
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
 import torch
 from huggingface_hub import hf_hub_download
@@ -233,7 +233,7 @@ class Aurora(torch.nn.Module):
 
         return pred
 
-    def load_checkpoint(self, repo: str, name: str, strict: bool = True, adapt_fn: Callable[[Any], Any] = 'default', adapt_history: Callable[[Any], Any] = 'default') -> None:
+    def load_checkpoint(self, repo: str, name: str, strict: bool = True) -> None:
         """Load a checkpoint from HuggingFace.
 
         Args:
@@ -242,51 +242,87 @@ class Aurora(torch.nn.Module):
                 `checkpoint.cpkt`.
             strict (bool, optional): Error if the model parameters are not exactly equal to the
                 parameters in the checkpoint. Defaults to `True`.
-            adapt_fn (Callable[[Any], Any], optional): Function to adapt the checkpoint to the current model.
-                Defaults to `self.adapt_checkpoint`. Pass `None` to skip adaptation.
-            adapt_history (Callable[[Any], Any], optional): Function to fill the history of the checkpoint when 
-                Model is larger than checkpoint. Defaults to `self.adapt_checkpoint_max_history_size`. Pass `None` to skip adaptation.
         """
-        if adapt_fn == 'default':
-            adapt_fn = self.adapt_checkpoint
-        
-        if adapt_history == 'default':
-            adapt_history = self.adapt_checkpoint_max_history_size
-
         path = hf_hub_download(repo_id=repo, filename=name)
-        self.load_checkpoint_local(path, strict=strict, adapt_fn=adapt_fn, adapt_history=adapt_history)
+        self.load_checkpoint_local(path, strict=strict)
 
-    def load_checkpoint_local(self, path: str, strict: bool = True, adapt_fn: Callable[[Any], Any] = 'default', adapt_history: Callable[[Any], Any] = 'default') -> None:
+    def load_checkpoint_local(self, path: str, strict: bool = True) -> None:
         """Load a checkpoint directly from a file.
 
         Args:
             path (str): Path to the checkpoint.
             strict (bool, optional): Error if the model parameters are not exactly equal to the
                 parameters in the checkpoint. Defaults to `True`.
-            adapt_fn (Callable[[Any], Any], optional): Function to adapt the checkpoint to the current model.
-                Defaults to `self.adapt_checkpoint`. Pass `None` to skip adaptation.
-            adapt_history (Callable[[Any], Any], optional): Function to fill the history of the checkpoint when 
-                Model is larger than checkpoint. Defaults to `self.adapt_checkpoint_max_history_size`. Pass `None` to skip adaptation.
         """
-        if adapt_fn == 'default':
-            adapt_fn = self.adapt_checkpoint
-
-        if adapt_history == 'default':
-            adapt_history = self.adapt_checkpoint_max_history_size
-            
         # Assume that all parameters are either on the CPU or on the GPU.
         device = next(self.parameters()).device
 
         d = torch.load(path, map_location=device, weights_only=True)
 
-        # Adapt the checkpoint using the provided function, if not None
-        if adapt_fn is not None:
-            d = adapt_fn(d)
-        
-        # Adapt the checkpoint history size using the provided function, if not None
-        if adapt_history is not None:
-            d = adapt_history(d)
+        # You can safely ignore all cumbersome processing below. We modified the model after we
+        # trained it. The code below manually adapts the checkpoints, so the checkpoints are
+        # compatible with the new model.
 
+        # Remove possibly prefix from the keys.
+        for k, v in list(d.items()):
+            if k.startswith("net."):
+                del d[k]
+                d[k[4:]] = v
+
+        # Convert the ID-based parametrization to a name-based parametrization.
+        if "encoder.surf_token_embeds.weight" in d:
+            weight = d["encoder.surf_token_embeds.weight"]
+            del d["encoder.surf_token_embeds.weight"]
+        
+            assert weight.shape[1] == 4 + 3
+            for i, name in enumerate(("2t", "10u", "10v", "msl", "lsm", "z", "slt")):
+                d[f"encoder.surf_token_embeds.weights.{name}"] = weight[:, [i]]
+    
+        if "encoder.atmos_token_embeds.weight" in d:
+            weight = d["encoder.atmos_token_embeds.weight"]
+            del d["encoder.atmos_token_embeds.weight"]
+        
+            assert weight.shape[1] == 5
+            for i, name in enumerate(("z", "u", "v", "t", "q")):
+                d[f"encoder.atmos_token_embeds.weights.{name}"] = weight[:, [i]] 
+
+        if "decoder.surf_head.weight" in d:
+            weight = d["decoder.surf_head.weight"]
+            bias = d["decoder.surf_head.bias"]
+            del d["decoder.surf_head.weight"]
+            del d["decoder.surf_head.bias"]
+
+            assert weight.shape[0] == 4 * self.patch_size**2
+            assert bias.shape[0] == 4 * self.patch_size**2
+            weight = weight.reshape(self.patch_size**2, 4, -1)
+            bias = bias.reshape(self.patch_size**2, 4)
+
+            for i, name in enumerate(("2t", "10u", "10v", "msl")):
+                d[f"decoder.surf_heads.{name}.weight"] = weight[:, i]
+                d[f"decoder.surf_heads.{name}.bias"] = bias[:, i]
+
+        if "decoder.atmos_head.weight" in d:
+            weight = d["decoder.atmos_head.weight"]
+            bias = d["decoder.atmos_head.bias"]
+            del d["decoder.atmos_head.weight"]
+            del d["decoder.atmos_head.bias"]
+
+            assert weight.shape[0] == 5 * self.patch_size**2
+            assert bias.shape[0] == 5 * self.patch_size**2
+            weight = weight.reshape(self.patch_size**2, 5, -1)
+            bias = bias.reshape(self.patch_size**2, 5)
+
+            for i, name in enumerate(("z", "u", "v", "t", "q")):
+                d[f"decoder.atmos_heads.{name}.weight"] = weight[:, i]
+                d[f"decoder.atmos_heads.{name}.bias"] = bias[:, i]
+
+        #check if history size is compatible and adjust weights if necessary
+        if self.max_history_size > d["encoder.surf_token_embeds.weights.2t"].shape[2]:
+            d = self.adapt_checkpoint_max_history_size(d)
+        elif self.max_history_size < d["encoder.surf_token_embeds.weights.2t"].shape[2]:
+            assert False, f"Cannot load checkpoint with max_history_size {d['encoder.surf_token_embeds.weights.2t'].shape[2]} \
+                into model with max_history_size {self.max_history_size}" 
+                
         self.load_state_dict(d, strict=strict)
 
     def adapt_checkpoint_max_history_size(self, checkpoint) -> Any:
@@ -299,11 +335,12 @@ class Aurora(torch.nn.Module):
         
         This implementation copies weights from the checkpoint to the model, duplicating the weights. 
         """
-        
         #find all weights with prefix "encoder.surf_token_embeds.weights."
         for name, weight in list(checkpoint.items()):
             if name.startswith("encoder.surf_token_embeds.weights.") or name.startswith("encoder.atmos_token_embeds.weights."):
-                assert weight.shape[2] >= self.max_history_size, f"Cannot load checkpoint with max_history_size {weight.shape[2]} \
+                #this shouldn't get called with current logic but leaving here for future proofing and in cases where its called
+                #outside current context
+                assert weight.shape[2] <= self.max_history_size, f"Cannot load checkpoint with max_history_size {weight.shape[2]} \
                     into model with max_history_size {self.max_history_size} for weight {name}"   
             
                 # Initialize the new weight tensor with zeros
@@ -314,84 +351,6 @@ class Aurora(torch.nn.Module):
                 checkpoint[name] = new_weight
         
         return checkpoint
-   
-    @staticmethod 
-    def _adapt_checkpoint_prefix(checkpoint) -> Any:
-        """Adapt a checkpoint with a different prefix to the current model.
-        
-        If a checkpoint was trained with a different prefix than the current model, this function
-        will remove the prefix from the checkpoint so that it can be loaded.  
-        """
-        # Remove possibly prefix from the keys.
-        for k, v in list(checkpoint.items()):
-            if k.startswith("net."):
-                del checkpoint[k]
-                checkpoint[k[4:]] = v
-        return checkpoint 
-   
-    def _adapt_checkpoint_parametrization(self, checkpoint) -> Any:
-        # Convert the ID-based parametrization to a name-based parametrization.
-        if "encoder.surf_token_embeds.weight" in checkpoint:
-            weight = checkpoint["encoder.surf_token_embeds.weight"]
-            del checkpoint["encoder.surf_token_embeds.weight"]
-        
-            assert weight.shape[1] == 4 + 3
-            for i, name in enumerate(("2t", "10u", "10v", "msl", "lsm", "z", "slt")):
-                checkpoint[f"encoder.surf_token_embeds.weights.{name}"] = weight[:, [i]]
-    
-        if "encoder.atmos_token_embeds.weight" in checkpoint:
-            weight = checkpoint["encoder.atmos_token_embeds.weight"]
-            del checkpoint["encoder.atmos_token_embeds.weight"]
-        
-            assert weight.shape[1] == 5
-            for i, name in enumerate(("z", "u", "v", "t", "q")):
-                checkpoint[f"encoder.atmos_token_embeds.weights.{name}"] = weight[:, [i]]
-
-        if "decoder.surf_head.weight" in checkpoint:
-            weight = checkpoint["decoder.surf_head.weight"]
-            bias = checkpoint["decoder.surf_head.bias"]
-            del checkpoint["decoder.surf_head.weight"]
-            del checkpoint["decoder.surf_head.bias"]
-
-            assert weight.shape[0] == 4 * self.patch_size**2
-            assert bias.shape[0] == 4 * self.patch_size**2
-            weight = weight.reshape(self.patch_size**2, 4, -1)
-            bias = bias.reshape(self.patch_size**2, 4)
-
-            for i, name in enumerate(("2t", "10u", "10v", "msl")):
-                checkpoint[f"decoder.surf_heads.{name}.weight"] = weight[:, i]
-                checkpoint[f"decoder.surf_heads.{name}.bias"] = bias[:, i]
-
-        if "decoder.atmos_head.weight" in checkpoint:
-            weight = checkpoint["decoder.atmos_head.weight"]
-            bias = checkpoint["decoder.atmos_head.bias"]
-            del checkpoint["decoder.atmos_head.weight"]
-            del checkpoint["decoder.atmos_head.bias"]
-
-            assert weight.shape[0] == 5 * self.patch_size**2
-            assert bias.shape[0] == 5 * self.patch_size**2
-            weight = weight.reshape(self.patch_size**2, 5, -1)
-            bias = bias.reshape(self.patch_size**2, 5)
-
-            for i, name in enumerate(("z", "u", "v", "t", "q")):
-                checkpoint[f"decoder.atmos_heads.{name}.weight"] = weight[:, i]
-                checkpoint[f"decoder.atmos_heads.{name}.bias"] = bias[:, i]
-        return checkpoint 
-    
-    def adapt_checkpoint(self, checkpoint) -> Any:
-        """Adapt a checkpoint to the current model.
-        
-        Current model has a different structure than the model that was used to train the checkpoint
-        that is being loaded. This function adapts the checkpoint to the current model so that it can 
-        be loaded.  
-        """
-        # You can safely ignore all cumbersome processing below. We modified the model after we
-        # trained it. The code below manually adapts the checkpoints, so the checkpoints are
-        # compatible with the new model.
-
-        checkpoint = Aurora._adapt_checkpoint_prefix(checkpoint) 
-        checkpoint = self._adapt_checkpoint_parametrization(checkpoint)
-        return checkpoint 
     
     def configure_activation_checkpointing(self):
         """Configure activation checkpointing.
@@ -417,4 +376,6 @@ AuroraHighRes = partial(
     patch_size=10,
     encoder_depths=(6, 8, 8),
     decoder_depths=(8, 8, 6),
+    # One particular static variable requires a different normalisation.
+    surf_stats={"z": (-3.270407e03, 6.540335e04)},
 )
