@@ -1,3 +1,5 @@
+"""Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
+
 import pytest
 import torch
 from unittest.mock import patch
