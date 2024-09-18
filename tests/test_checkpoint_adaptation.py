@@ -31,3 +31,14 @@ def test_adapt_checkpoint_max_history(model, checkpoint):
 def test_adapt_checkpoint_max_history_fail(model, checkpoint):
     with pytest.raises(AssertionError):
         model.adapt_checkpoint_max_history_size(checkpoint)
+        
+#test adapting the checkpoint twice to ensure that the second time should not change the weights
+@pytest.mark.parametrize('model', [4], indirect=True)
+def test_adapt_checkpoint_max_history_twice(model, checkpoint):
+    adapted_checkpoint = model.adapt_checkpoint_max_history_size(checkpoint)
+    adapted_checkpoint = model.adapt_checkpoint_max_history_size(adapted_checkpoint)
+    
+    for name, weight in adapted_checkpoint.items():
+        assert weight.shape[2] == model.max_history_size
+        for j in range(weight.shape[2]):
+            assert torch.equal(weight[:, :, j, :, :], checkpoint[name][:, :, j % checkpoint[name].shape[2], :, :])
