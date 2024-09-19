@@ -349,10 +349,9 @@ class Aurora(torch.nn.Module):
                                          device=weight.device, dtype=weight.dtype)
                 
                 # Copy the existing weights to the new tensor by duplicating the histories provided into any new history dimensions
-                for j in range(new_weight.shape[2]):
-                    if j < weight.shape[2]:
-                        # only fill existing weights, others are zeros
-                        new_weight[:, :, j, :, :] = weight[:, :, j, :, :]
+                for j in range(weight.shape[2]):
+                    # only fill existing weights, others are zeros
+                    new_weight[:, :, j, :, :] = weight[:, :, j, :, :]
                 checkpoint[name] = new_weight
         return checkpoint
                 
