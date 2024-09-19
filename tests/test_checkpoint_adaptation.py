@@ -26,7 +26,10 @@ def test_adapt_checkpoint_max_history(model, checkpoint):
     for name, weight in adapted_checkpoint.items():
         assert weight.shape[2] == model.max_history_size
         for j in range(weight.shape[2]):
-            assert torch.equal(weight[:, :, j, :, :], checkpoint[name][:, :, j % checkpoint[name].shape[2], :, :])
+            if j >= checkpoint[name].shape[2]:
+                assert torch.equal(weight[:, :, j, :, :], torch.zeros_like(weight[:, :, j, :, :]))
+            else:
+                assert torch.equal(weight[:, :, j, :, :], checkpoint[name][:, :, j % checkpoint[name].shape[2], :, :])
 
 #check that assert is thrown when trying to load a larger checkpoint to a smaller history size
 @pytest.mark.parametrize('model', [1], indirect=True)
@@ -37,10 +40,14 @@ def test_adapt_checkpoint_max_history_fail(model, checkpoint):
 #test adapting the checkpoint twice to ensure that the second time should not change the weights
 @pytest.mark.parametrize('model', [4], indirect=True)
 def test_adapt_checkpoint_max_history_twice(model, checkpoint):
-    adapted_checkpoint = model.adapt_checkpoint_max_history_size(checkpoint)
+    adapted_checkpoint = model.adapt_checkpoint_max_history_size(checkpoint) 
     adapted_checkpoint = model.adapt_checkpoint_max_history_size(adapted_checkpoint)
     
     for name, weight in adapted_checkpoint.items():
         assert weight.shape[2] == model.max_history_size
         for j in range(weight.shape[2]):
-            assert torch.equal(weight[:, :, j, :, :], checkpoint[name][:, :, j % checkpoint[name].shape[2], :, :])
+            if j >= checkpoint[name].shape[2]:
+                assert torch.equal(weight[:, :, j, :, :], torch.zeros_like(weight[:, :, j, :, :]))
+            else:
+                assert torch.equal(weight[:, :, j, :, :], checkpoint[name][:, :, j % checkpoint[name].shape[2], :, :])
+            

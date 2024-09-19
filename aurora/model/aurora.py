@@ -333,25 +333,29 @@ class Aurora(torch.nn.Module):
         will assert fail to prevent loading the checkpoint. This is to prevent loading a checkpoint
         which will likely cause the checkpoint to degrade is performance. 
         
-        This implementation copies weights from the checkpoint to the model, duplicating the weights. 
+        This implementation copies weights from the checkpoint to the model and fills 0 for the new history 
+        width dimension.
         """
-        #find all weights with prefix "encoder.surf_token_embeds.weights."
+         # Find all weights with prefix "encoder.surf_token_embeds.weights."
         for name, weight in list(checkpoint.items()):
             if name.startswith("encoder.surf_token_embeds.weights.") or name.startswith("encoder.atmos_token_embeds.weights."):
-                #this shouldn't get called with current logic but leaving here for future proofing and in cases where its called
-                #outside current context
+                # This shouldn't get called with current logic but leaving here for future proofing and in cases where its called
+                # outside current context
                 assert weight.shape[2] <= self.max_history_size, f"Cannot load checkpoint with max_history_size {weight.shape[2]} \
                     into model with max_history_size {self.max_history_size} for weight {name}"   
             
-                # Initialize the new weight tensor with zeros
-                new_weight = torch.zeros((weight.shape[0], 1, self.max_history_size, weight.shape[3], weight.shape[4]))
-                # Copy the existing weights to the new tensor my duplicating the histories provided in to any new history dimensions
+                # Initialize the new weight tensor
+                new_weight = torch.zeros((weight.shape[0], 1, self.max_history_size, weight.shape[3], weight.shape[4]), 
+                                         device=weight.device, dtype=weight.dtype)
+                
+                # Copy the existing weights to the new tensor by duplicating the histories provided into any new history dimensions
                 for j in range(new_weight.shape[2]):
-                    new_weight[:, :, j, :, :] = weight[:, :, j % weight.shape[2], :, :]
+                    if j < weight.shape[2]:
+                        # only fill existing weights, others are zeros
+                        new_weight[:, :, j, :, :] = weight[:, :, j, :, :]
                 checkpoint[name] = new_weight
-        
         return checkpoint
-    
+                
     def configure_activation_checkpointing(self):
         """Configure activation checkpointing.
 
