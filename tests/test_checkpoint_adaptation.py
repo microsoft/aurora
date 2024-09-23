@@ -55,6 +55,6 @@ def test_adapt_checkpoint_max_history_twice(model, checkpoint):
         assert weight.shape[2] == model.max_history_size
         for j in range(weight.shape[2]):
             if j >= checkpoint[name].shape[2]:
-                np.testing.assert_allcllose(weight[:, :, j, :, :], 0 * weight[:, :, j, :, :])
+                np.testing.assert_allclose(weight[:, :, j, :, :], 0 * weight[:, :, j, :, :])
             else:
                 np.testing.assert_allclose(weight[:, :, j, :, :], checkpoint[name][:, :, j, :, :])
