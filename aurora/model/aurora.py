@@ -5,7 +5,7 @@ import dataclasses
 import warnings
 from datetime import timedelta
 from functools import partial
-from typing import Optional
+from typing import Any, Optional
 
 import torch
 from huggingface_hub import hf_hub_download
@@ -112,6 +112,7 @@ class Aurora(torch.nn.Module):
         self.patch_size = patch_size
         self.surf_stats = surf_stats or dict()
         self.autocast = autocast
+        self.max_history_size = max_history_size
 
         if self.surf_stats:
             warnings.warn(
@@ -268,8 +269,7 @@ class Aurora(torch.nn.Module):
                 del d[k]
                 d[k[4:]] = v
 
-        # Convert the ID-based parametrisation to a name-based parametrisation.
-
+        # Convert the ID-based parametrization to a name-based parametrization.
         if "encoder.surf_token_embeds.weight" in d:
             weight = d["encoder.surf_token_embeds.weight"]
             del d["encoder.surf_token_embeds.weight"]
@@ -316,7 +316,54 @@ class Aurora(torch.nn.Module):
                 d[f"decoder.atmos_heads.{name}.weight"] = weight[:, i]
                 d[f"decoder.atmos_heads.{name}.bias"] = bias[:, i]
 
+        # check if history size is compatible and adjust weights if necessary
+        if self.max_history_size > d["encoder.surf_token_embeds.weights.2t"].shape[2]:
+            d = self.adapt_checkpoint_max_history_size(d)
+        elif self.max_history_size < d["encoder.surf_token_embeds.weights.2t"].shape[2]:
+            raise AssertionError(f"Cannot load checkpoint with max_history_size \
+                {d['encoder.surf_token_embeds.weights.2t'].shape[2]} \
+                into model with max_history_size {self.max_history_size}")
+
         self.load_state_dict(d, strict=strict)
+
+    def adapt_checkpoint_max_history_size(self, checkpoint) -> Any:
+        """Adapt a checkpoint with smaller max_history_size to a model with a larger
+        max_history_size than the current model.
+
+        If a checkpoint was trained with a larger max_history_size than the current model,
+        this function will assert fail to prevent loading the checkpoint. This is to
+        prevent loading a checkpoint which will likely cause the checkpoint to degrade is
+        performance.
+
+        This implementation copies weights from the checkpoint to the model and fills 0
+        for the new history width dimension.
+        """
+        # Find all weights with prefix "encoder.surf_token_embeds.weights."
+        for name, weight in list(checkpoint.items()):
+            if name.startswith("encoder.surf_token_embeds.weights.") or name.startswith(
+                "encoder.atmos_token_embeds.weights."
+            ):
+                # This shouldn't get called with current logic but leaving here for future proofing
+                # and in cases where its called outside current context
+                assert (
+                    weight.shape[2] <= self.max_history_size
+                ), f"Cannot load checkpoint with max_history_size {weight.shape[2]} \
+                    into model with max_history_size {self.max_history_size} for weight {name}"
+
+                # Initialize the new weight tensor
+                new_weight = torch.zeros(
+                    (weight.shape[0], 1, self.max_history_size, weight.shape[3], weight.shape[4]),
+                    device=weight.device,
+                    dtype=weight.dtype,
+                )
+
+                # Copy the existing weights to the new tensor by duplicating the histories provided
+                # into any new history dimensions
+                for j in range(weight.shape[2]):
+                    # only fill existing weights, others are zeros
+                    new_weight[:, :, j, :, :] = weight[:, :, j, :, :]
+                checkpoint[name] = new_weight
+        return checkpoint
 
     def configure_activation_checkpointing(self):
         """Configure activation checkpointing.
