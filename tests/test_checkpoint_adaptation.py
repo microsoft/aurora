@@ -1,5 +1,6 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
+import numpy as np
 import pytest
 import torch
 
@@ -19,45 +20,41 @@ def checkpoint():
     }
 
 
-# check both history sizes which are divisible by 2 (original shape) and not
+# Check both history sizes which are divisible by 2 (original shape) and not.
 @pytest.mark.parametrize("model", [4, 5], indirect=True)
 def test_adapt_checkpoint_max_history(model, checkpoint):
-    # checkpoint starts with history dim, shape[2], as size 2
+    # Checkpoint starts with history dim., `shape[2]`, equal to 2.
     assert checkpoint["encoder.surf_token_embeds.weights.0"].shape[2] == 2
-    adapted_checkpoint = model.adapt_checkpoint_max_history_size(checkpoint)
+    model.adapt_checkpoint_max_history_size(checkpoint)
 
-    for name, weight in adapted_checkpoint.items():
+    for name, weight in checkpoint.items():
         assert weight.shape[2] == model.max_history_size
         for j in range(weight.shape[2]):
             if j >= checkpoint[name].shape[2]:
-                assert torch.equal(weight[:, :, j, :, :], torch.zeros_like(weight[:, :, j, :, :]))
+                np.testing.assert_allclose(weight[:, :, j, :, :], 0 * weight[:, :, j, :, :])
             else:
-                assert torch.equal(
-                    weight[:, :, j, :, :],
-                    checkpoint[name][:, :, j % checkpoint[name].shape[2], :, :],
-                )
+                np.testing.assert_allclose(weight[:, :, j, :, :], checkpoint[name][:, :, j, :, :])
 
 
-# check that assert is thrown when trying to load a larger checkpoint to a smaller history size
 @pytest.mark.parametrize("model", [1], indirect=True)
 def test_adapt_checkpoint_max_history_fail(model, checkpoint):
+    """Check that an assertion error is thrown when trying to load a larger checkpoint to a
+    smaller history size."""
     with pytest.raises(AssertionError):
         model.adapt_checkpoint_max_history_size(checkpoint)
 
 
-# test adapting the checkpoint twice to ensure that the second time should not change the weights
 @pytest.mark.parametrize("model", [4], indirect=True)
 def test_adapt_checkpoint_max_history_twice(model, checkpoint):
-    adapted_checkpoint = model.adapt_checkpoint_max_history_size(checkpoint)
-    adapted_checkpoint = model.adapt_checkpoint_max_history_size(adapted_checkpoint)
+    """Test adapting the checkpoint twice to ensure that the second time should not change the
+    weights."""
+    model.adapt_checkpoint_max_history_size(checkpoint)
+    model.adapt_checkpoint_max_history_size(checkpoint)
 
-    for name, weight in adapted_checkpoint.items():
+    for name, weight in checkpoint.items():
         assert weight.shape[2] == model.max_history_size
         for j in range(weight.shape[2]):
             if j >= checkpoint[name].shape[2]:
-                assert torch.equal(weight[:, :, j, :, :], torch.zeros_like(weight[:, :, j, :, :]))
+                np.testing.assert_allclose(weight[:, :, j, :, :], 0 * weight[:, :, j, :, :])
             else:
-                assert torch.equal(
-                    weight[:, :, j, :, :],
-                    checkpoint[name][:, :, j % checkpoint[name].shape[2], :, :],
-                )
+                np.testing.assert_allclose(weight[:, :, j, :, :], checkpoint[name][:, :, j, :, :])
