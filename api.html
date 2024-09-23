@@ -608,7 +608,9 @@ decoder. The embedding dimensionality here is different, which is why this is a
 separate parameter.</p></li>
 <li><p><strong>perceiver_ln_eps</strong> (<em>float</em><em>, </em><em>optional</em>) – Epsilon in the perceiver layer norm. layers. Used
 to stabilise the model.</p></li>
-<li><p><strong>max_history_size</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum number of history steps.</p></li>
+<li><p><strong>max_history_size</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum number of history steps. You can load
+checkpoints with a smaller <cite>max_history_size</cite>, but you cannot load checkpoints
+with a larger <cite>max_history_size</cite>.</p></li>
 <li><p><strong>use_lora</strong> (<em>bool</em><em>, </em><em>optional</em>) – Use LoRA adaptation.</p></li>
 <li><p><strong>lora_steps</strong> (<em>int</em><em>, </em><em>optional</em>) – Use different LoRA adaptation for the first so-many roll-out
 steps.</p></li>
@@ -627,15 +629,15 @@ and scale.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="aurora.Aurora.adapt_checkpoint_max_history_size">
-<span class="sig-name descname"><span class="pre">adapt_checkpoint_max_history_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/aurora/model/aurora.html#Aurora.adapt_checkpoint_max_history_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora.Aurora.adapt_checkpoint_max_history_size" title="Link to this definition">#</a></dt>
-<dd><p>Adapt a checkpoint with smaller max_history_size to a model with a larger
-max_history_size than the current model.</p>
-<p>If a checkpoint was trained with a larger max_history_size than the current model,
+<span class="sig-name descname"><span class="pre">adapt_checkpoint_max_history_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/aurora/model/aurora.html#Aurora.adapt_checkpoint_max_history_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora.Aurora.adapt_checkpoint_max_history_size" title="Link to this definition">#</a></dt>
+<dd><p>Adapt a checkpoint with smaller <cite>max_history_size</cite> to a model with a larger
+<cite>max_history_size</cite> than the current model.</p>
+<p>If a checkpoint was trained with a larger <cite>max_history_size</cite> than the current model,
 this function will assert fail to prevent loading the checkpoint. This is to
 prevent loading a checkpoint which will likely cause the checkpoint to degrade is
 performance.</p>
-<p>This implementation copies weights from the checkpoint to the model and fills 0
-for the new history width dimension.</p>
+<p>This implementation copies weights from the checkpoint to the model and fills zeros
+for the new history width dimension. It mutates <cite>checkpoint</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
