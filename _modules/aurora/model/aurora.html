@@ -346,7 +346,7 @@ document.write(`
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">huggingface_hub</span> <span class="kn">import</span> <span class="n">hf_hub_download</span>
@@ -457,6 +457,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span> <span class="o">=</span> <span class="n">patch_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">surf_stats</span> <span class="o">=</span> <span class="n">surf_stats</span> <span class="ow">or</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">autocast</span> <span class="o">=</span> <span class="n">autocast</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_history_size</span> <span class="o">=</span> <span class="n">max_history_size</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">surf_stats</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
@@ -622,8 +623,7 @@ document.write(`
                 <span class="k">del</span> <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
                 <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">[</span><span class="mi">4</span><span class="p">:]]</span> <span class="o">=</span> <span class="n">v</span>
 
-        <span class="c1"># Convert the ID-based parametrisation to a name-based parametrisation.</span>
-
+        <span class="c1"># Convert the ID-based parametrization to a name-based parametrization.</span>
         <span class="k">if</span> <span class="s2">&quot;encoder.surf_token_embeds.weight&quot;</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
             <span class="n">weight</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;encoder.surf_token_embeds.weight&quot;</span><span class="p">]</span>
             <span class="k">del</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;encoder.surf_token_embeds.weight&quot;</span><span class="p">]</span>
@@ -670,7 +670,57 @@ document.write(`
                 <span class="n">d</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;decoder.atmos_heads.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.weight&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">weight</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
                 <span class="n">d</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;decoder.atmos_heads.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.bias&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bias</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
 
+        <span class="c1"># check if history size is compatible and adjust weights if necessary</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_history_size</span> <span class="o">&gt;</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;encoder.surf_token_embeds.weights.2t&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adapt_checkpoint_max_history_size</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_history_size</span> <span class="o">&lt;</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;encoder.surf_token_embeds.weights.2t&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot load checkpoint with max_history_size </span><span class="se">\</span>
+<span class="s2">                </span><span class="si">{</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;encoder.surf_token_embeds.weights.2t&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="se">\</span>
+<span class="s2">                into model with max_history_size </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_history_size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Aurora.adapt_checkpoint_max_history_size">
+<a class="viewcode-back" href="../../../api.html#aurora.Aurora.adapt_checkpoint_max_history_size">[docs]</a>
+    <span class="k">def</span> <span class="nf">adapt_checkpoint_max_history_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adapt a checkpoint with smaller max_history_size to a model with a larger</span>
+<span class="sd">        max_history_size than the current model.</span>
+
+<span class="sd">        If a checkpoint was trained with a larger max_history_size than the current model,</span>
+<span class="sd">        this function will assert fail to prevent loading the checkpoint. This is to</span>
+<span class="sd">        prevent loading a checkpoint which will likely cause the checkpoint to degrade is</span>
+<span class="sd">        performance.</span>
+
+<span class="sd">        This implementation copies weights from the checkpoint to the model and fills 0</span>
+<span class="sd">        for the new history width dimension.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Find all weights with prefix &quot;encoder.surf_token_embeds.weights.&quot;</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">weight</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;encoder.surf_token_embeds.weights.&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span>
+                <span class="s2">&quot;encoder.atmos_token_embeds.weights.&quot;</span>
+            <span class="p">):</span>
+                <span class="c1"># This shouldn&#39;t get called with current logic but leaving here for future proofing</span>
+                <span class="c1"># and in cases where its called outside current context</span>
+                <span class="k">assert</span> <span class="p">(</span>
+                    <span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_history_size</span>
+                <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Cannot load checkpoint with max_history_size </span><span class="si">{</span><span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="se">\</span>
+<span class="s2">                    into model with max_history_size </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_history_size</span><span class="si">}</span><span class="s2"> for weight </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+                <span class="c1"># Initialize the new weight tensor</span>
+                <span class="n">new_weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_history_size</span><span class="p">,</span> <span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">4</span><span class="p">]),</span>
+                    <span class="n">device</span><span class="o">=</span><span class="n">weight</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+                    <span class="n">dtype</span><span class="o">=</span><span class="n">weight</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+                <span class="p">)</span>
+
+                <span class="c1"># Copy the existing weights to the new tensor by duplicating the histories provided</span>
+                <span class="c1"># into any new history dimensions</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+                    <span class="c1"># only fill existing weights, others are zeros</span>
+                    <span class="n">new_weight</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">j</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">weight</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">j</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+                <span class="n">checkpoint</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_weight</span>
+        <span class="k">return</span> <span class="n">checkpoint</span></div>
 
 
 <div class="viewcode-block" id="Aurora.configure_activation_checkpointing">

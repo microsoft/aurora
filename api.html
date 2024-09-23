@@ -405,6 +405,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#models">Models</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Aurora"><code class="docutils literal notranslate"><span class="pre">Aurora</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Aurora.__init__"><code class="docutils literal notranslate"><span class="pre">Aurora.__init__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Aurora.adapt_checkpoint_max_history_size"><code class="docutils literal notranslate"><span class="pre">Aurora.adapt_checkpoint_max_history_size()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Aurora.configure_activation_checkpointing"><code class="docutils literal notranslate"><span class="pre">Aurora.configure_activation_checkpointing()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Aurora.forward"><code class="docutils literal notranslate"><span class="pre">Aurora.forward()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Aurora.load_checkpoint"><code class="docutils literal notranslate"><span class="pre">Aurora.load_checkpoint()</span></code></a></li>
@@ -625,6 +626,19 @@ and scale.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="aurora.Aurora.adapt_checkpoint_max_history_size">
+<span class="sig-name descname"><span class="pre">adapt_checkpoint_max_history_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/aurora/model/aurora.html#Aurora.adapt_checkpoint_max_history_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora.Aurora.adapt_checkpoint_max_history_size" title="Link to this definition">#</a></dt>
+<dd><p>Adapt a checkpoint with smaller max_history_size to a model with a larger
+max_history_size than the current model.</p>
+<p>If a checkpoint was trained with a larger max_history_size than the current model,
+this function will assert fail to prevent loading the checkpoint. This is to
+prevent loading a checkpoint which will likely cause the checkpoint to degrade is
+performance.</p>
+<p>This implementation copies weights from the checkpoint to the model and fills 0
+for the new history width dimension.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="aurora.Aurora.configure_activation_checkpointing">
 <span class="sig-name descname"><span class="pre">configure_activation_checkpointing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora/model/aurora.html#Aurora.configure_activation_checkpointing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora.Aurora.configure_activation_checkpointing" title="Link to this definition">#</a></dt>
 <dd><p>Configure activation checkpointing.</p>
@@ -773,6 +787,7 @@ parameters in the checkpoint. Defaults to <cite>True</cite>.</p></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#models">Models</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Aurora"><code class="docutils literal notranslate"><span class="pre">Aurora</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Aurora.__init__"><code class="docutils literal notranslate"><span class="pre">Aurora.__init__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Aurora.adapt_checkpoint_max_history_size"><code class="docutils literal notranslate"><span class="pre">Aurora.adapt_checkpoint_max_history_size()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Aurora.configure_activation_checkpointing"><code class="docutils literal notranslate"><span class="pre">Aurora.configure_activation_checkpointing()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Aurora.forward"><code class="docutils literal notranslate"><span class="pre">Aurora.forward()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Aurora.load_checkpoint"><code class="docutils literal notranslate"><span class="pre">Aurora.load_checkpoint()</span></code></a></li>
