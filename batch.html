@@ -541,10 +541,14 @@ All atmospheric variables must contain the same collection of pressure levels in
 <li><p><code class="docutils literal notranslate"><span class="pre">Metadata.lat</span></code> is the vector of latitudes.
 The latitudes must be <em>decreasing</em>.
 The latitudes can either include both endpoints, like <code class="docutils literal notranslate"><span class="pre">linspace(90,</span> <span class="pre">-90,</span> <span class="pre">721)</span></code>,
-or not include the south pole, like <code class="docutils literal notranslate"><span class="pre">linspace(90,</span> <span class="pre">-90,</span> <span class="pre">721)[:-1]</span></code>.</p></li>
+or not include the south pole, like <code class="docutils literal notranslate"><span class="pre">linspace(90,</span> <span class="pre">-90,</span> <span class="pre">721)[:-1]</span></code>.
+For curvilinear grids, this can also be a matrix, in which case the foregoing conditions
+apply to every <em>column</em>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Metadata.lon</span></code> is the vector of longitudes.
 The longitudes must be <em>increasing</em>.
-The longitudes must be in the range <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">360)</span></code>, so they can include zero and cannot include 360.</p></li>
+The longitudes must be in the range <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">360)</span></code>, so they can include zero and cannot include 360.
+For curvilinear grids, this can also be a matrix, in which case the foregoing conditions
+apply to every <em>row</em>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Metadata.atmos_levels</span></code> is a <code class="docutils literal notranslate"><span class="pre">tuple</span></code> of the pressure levels of the atmospheric variables in hPa.
 Note that these levels must be in exactly correspond to the order of the atmospheric variables.
 Note also that <code class="docutils literal notranslate"><span class="pre">Metadata.atmos_levels</span></code> should be a <code class="docutils literal notranslate"><span class="pre">tuple</span></code>, not a <code class="docutils literal notranslate"><span class="pre">list</span></code>.</p></li>

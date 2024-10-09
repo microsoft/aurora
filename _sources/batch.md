@@ -101,9 +101,13 @@ The following atmospheric variables are allows:
     The latitudes must be _decreasing_.
     The latitudes can either include both endpoints, like `linspace(90, -90, 721)`,
     or not include the south pole, like `linspace(90, -90, 721)[:-1]`.
+    For curvilinear grids, this can also be a matrix, in which case the foregoing conditions
+    apply to every _column_.
 * `Metadata.lon` is the vector of longitudes.
     The longitudes must be _increasing_.
     The longitudes must be in the range `[0, 360)`, so they can include zero and cannot include 360.
+    For curvilinear grids, this can also be a matrix, in which case the foregoing conditions
+    apply to every _row_.
 * `Metadata.atmos_levels` is a `tuple` of the pressure levels of the atmospheric variables in hPa.
     Note that these levels must be in exactly correspond to the order of the atmospheric variables.
     Note also that `Metadata.atmos_levels` should be a `tuple`, not a `list`.
