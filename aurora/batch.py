@@ -42,14 +42,29 @@ class Metadata:
     rollout_step: int = 0
 
     def __post_init__(self):
-        if not torch.all(self.lat[1:] - self.lat[:-1] < 0):
-            raise ValueError("Latitudes must be strictly decreasing.")
         if not (torch.all(self.lat <= 90) and torch.all(self.lat >= -90)):
             raise ValueError("Latitudes must be in the range [-90, 90].")
-        if not torch.all(self.lon[1:] - self.lon[:-1] > 0):
-            raise ValueError("Longitudes must be strictly increasing.")
         if not (torch.all(self.lon >= 0) and torch.all(self.lon < 360)):
             raise ValueError("Longitudes must be in the range [0, 360).")
+
+        # Validate vector-valued latitudes and longitudes:
+        if self.lat.dim() == self.lon.dim() == 1:
+            if not torch.all(self.lat[1:] - self.lat[:-1] < 0):
+                raise ValueError("Latitudes must be strictly decreasing.")
+            if not torch.all(self.lon[1:] - self.lon[:-1] > 0):
+                raise ValueError("Longitudes must be strictly increasing.")
+
+        # Validate matrix-valued latitudes and longitudes:
+        elif self.lat.dim() == self.lon.dim() == 2:
+            if not torch.all(self.lat[1:, :] - self.lat[:-1, :]):
+                raise ValueError("Latitudes must be strictly decreasing along every column.")
+            if not torch.all(self.lon[:, 1:] - self.lon[:, :-1] > 0):
+                raise ValueError("Longitudes must be strictly increasing along every row.")
+
+        else:
+            raise ValueError(
+                "The latitudes and longitudes must either both be vectors or both be matrices."
+            )
 
 
 @dataclasses.dataclass
