@@ -23,8 +23,8 @@ def normalise_surf_var(
     if stats and name in stats:
         location, scale = stats[name]
     else:
-        location = locations[name]
-        scale = scales[name]
+        location = locations.get(name, 0.)
+        scale = scales.get(name, 1.)
     if unnormalise:
         return x * scale + location
     else:
@@ -41,8 +41,8 @@ def normalise_atmos_var(
     level_locations: list[int | float] = []
     level_scales: list[int | float] = []
     for level in atmos_levels:
-        level_locations.append(locations[f"{name}_{level}"])
-        level_scales.append(scales[f"{name}_{level}"])
+        level_locations.append(locations.get(f"{name}_{level}", 0.))
+        level_scales.append(scales.get(f"{name}_{level}", 1.))
     location = torch.tensor(level_locations, dtype=x.dtype, device=x.device)
     scale = torch.tensor(level_scales, dtype=x.dtype, device=x.device)
 
