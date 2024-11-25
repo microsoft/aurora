@@ -159,7 +159,7 @@ class Perceiver3DEncoder(nn.Module):
         x = torch.einsum("blcd->bcld", x)  # (B, C, L, D)
         return x
 
-    def forward(self, batch: Batch, lead_time: timedelta) -> torch.Tensor:
+    def forward(self, batch: Batch, lead_time: timedelta, only_encoder: bool = False) -> torch.Tensor:
         """Peform encoding.
 
         Args:
@@ -231,10 +231,20 @@ class Perceiver3DEncoder(nn.Module):
             pos_expansion=pos_expansion,
             scale_expansion=scale_expansion,
         )
+
         # Encodings are (L, D).
         pos_encode = self.pos_embed(pos_encode[None, None, :].to(dtype=dtype))
         scale_encode = self.scale_embed(scale_encode[None, None, :].to(dtype=dtype))
         x = x + pos_encode + scale_encode
+
+        ## NOTE - for testing, zero-out surface contribution
+        x[:, -1] *= 0
+        ##
+
+        # for testing
+        if only_encoder:
+            return x
+        ###
 
         # Flatten the tokens.
         x = x.reshape(B, -1, self.embed_dim)  # (B, C + 1, L, D) to (B, L', D)
@@ -244,6 +254,11 @@ class Perceiver3DEncoder(nn.Module):
         lead_times = lead_hours * torch.ones(B, dtype=dtype, device=x.device)
         lead_time_encode = lead_time_expansion(lead_times, self.embed_dim).to(dtype=dtype)
         lead_time_emb = self.lead_time_embed(lead_time_encode)  # (B, D)
+
+        ## NOTE - for testing, zero-out lead time embedding
+        lead_time_emb *= 0
+        ##
+
         x = x + lead_time_emb.unsqueeze(1)  # (B, L', D) + (B, 1, D)
 
         # Add absolute time embedding.
@@ -251,7 +266,13 @@ class Perceiver3DEncoder(nn.Module):
         absolute_times = torch.tensor(absolute_times_list, dtype=torch.float32, device=x.device)
         absolute_time_encode = absolute_time_expansion(absolute_times, self.embed_dim)
         absolute_time_embed = self.absolute_time_embed(absolute_time_encode.to(dtype=dtype))
+
+        ## NOTE - for testing, zero-out lead time embedding
+        absolute_time_embed *= 0
+        ##
+
         x = x + absolute_time_embed.unsqueeze(1)  # (B, L, D) + (B, 1, D)
 
         x = self.pos_drop(x)
+
         return x

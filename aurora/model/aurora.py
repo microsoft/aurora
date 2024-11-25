@@ -7,6 +7,7 @@ from datetime import timedelta
 from functools import partial
 from typing import Optional
 
+from einops import rearrange
 import torch
 from huggingface_hub import hf_hub_download
 from torch.distributed.algorithms._checkpoint.checkpoint_wrapper import (
@@ -170,7 +171,7 @@ class Aurora(torch.nn.Module):
             perceiver_ln_eps=perceiver_ln_eps,
         )
 
-    def forward(self, batch: Batch) -> Batch:
+    def forward(self, batch: Batch, only_encoder: bool = False, only_encoder_and_swin = False) -> Batch:
         """Forward pass.
 
         Args:
@@ -203,7 +204,14 @@ class Aurora(torch.nn.Module):
         x = self.encoder(
             batch,
             lead_time=timedelta(hours=6),
+            only_encoder=only_encoder
         )
+
+        ## for testing
+        if only_encoder:
+            return x
+        ###
+
         with torch.autocast(device_type="cuda") if self.autocast else contextlib.nullcontext():
             x = self.backbone(
                 x,
@@ -211,6 +219,13 @@ class Aurora(torch.nn.Module):
                 patch_res=patch_res,
                 rollout_step=batch.metadata.rollout_step,
             )
+
+        ## for testing
+        if only_encoder_and_swin:
+            x = rearrange(x, "b (c l) d -> b c l d", c=self.encoder.latent_levels)
+            return x
+        ###
+
         pred = self.decoder(
             x,
             batch,
