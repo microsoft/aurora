@@ -97,7 +97,7 @@ class PerceiverAttention(nn.Module):
         context_dim: int,
         head_dim: int = 64,
         num_heads: int = 8,
-        k_q_ln: bool = False,
+        ln_k_q: bool = False,
     ) -> None:
         """Initialise.
 
@@ -106,7 +106,7 @@ class PerceiverAttention(nn.Module):
             context_dim (int): Dimensionality of the context features also given as input.
             head_dim (int): Attention head dimensionality.
             num_heads (int): Number of heads.
-            k_q_ln (bool): Apply an extra layer norm. to the keys and queries.
+            ln_k_q (bool): Apply an extra layer norm. to the keys and queries.
         """
         super().__init__()
         self.num_heads = num_heads
@@ -117,7 +117,7 @@ class PerceiverAttention(nn.Module):
         self.to_kv = nn.Linear(context_dim, self.inner_dim * 2, bias=False)
         self.to_out = nn.Linear(self.inner_dim, latent_dim, bias=False)
 
-        if k_q_ln:
+        if ln_k_q:
             self.ln_k = nn.LayerNorm(num_heads * head_dim)
             self.ln_q = nn.LayerNorm(num_heads * head_dim)
         else:
@@ -166,7 +166,7 @@ class PerceiverResampler(nn.Module):
         drop: float = 0.0,
         residual_latent: bool = True,
         ln_eps: float = 1e-5,
-        k_q_ln: bool = False,
+        ln_k_q: bool = False,
     ) -> None:
         """Initialise.
 
@@ -183,7 +183,7 @@ class PerceiverResampler(nn.Module):
                 Defaults to `True`.
             ln_eps (float, optional): Epsilon in the layer normalisation layers. Defaults to
                 `1e-5`.
-            k_q_ln (bool, optional): Apply an extra layer norm. to the keys and queries of the first
+            ln_k_q (bool, optional): Apply an extra layer norm. to the keys and queries of the first
                 resampling layer. Defaults to `False`.
         """
         super().__init__()
@@ -200,7 +200,7 @@ class PerceiverResampler(nn.Module):
                             context_dim=context_dim,
                             head_dim=head_dim,
                             num_heads=num_heads,
-                            k_q_ln=k_q_ln if i == 0 else False,
+                            ln_k_q=ln_k_q if i == 0 else False,
                         ),
                         MLP(dim=latent_dim, hidden_features=mlp_hidden_dim, dropout=drop),
                         nn.LayerNorm(latent_dim, eps=ln_eps),

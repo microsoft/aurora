@@ -123,7 +123,7 @@ class Perceiver3DEncoder(nn.Module):
             drop=drop_rate,
             mlp_ratio=mlp_ratio,
             ln_eps=perceiver_ln_eps,
-            k_q_ln=stabilise_level_agg,
+            ln_k_q=stabilise_level_agg,
         )
 
         # Drop patches after encoding.
