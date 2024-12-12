@@ -17,6 +17,11 @@ exactly the right variables
 at exactly the right pressure levels
 from exactly the right source.
 
+This also means that the performance of the model will be sensitive to how the
+data is regridded.
+For optimal performance, you should ensure that the data is regridded
+exactly like the data seen during pretraining and fine-tuning.
+
 (t0-vs-analysis)=
 ## HRES IFS T0 Versus HRES IFS Analysis
 
