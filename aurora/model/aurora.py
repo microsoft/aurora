@@ -50,6 +50,7 @@ class Aurora(torch.nn.Module):
         dec_mlp_ratio: float = 2.0,
         perceiver_ln_eps: float = 1e-5,
         max_history_size: int = 2,
+        timestep: timedelta = timedelta(hours=6),
         use_lora: bool = True,
         lora_steps: int = 40,
         lora_mode: LoRAMode = "single",
@@ -96,6 +97,7 @@ class Aurora(torch.nn.Module):
             max_history_size (int, optional): Maximum number of history steps. You can load
                 checkpoints with a smaller `max_history_size`, but you cannot load checkpoints
                 with a larger `max_history_size`.
+            timestep (timedelta, optional): Timestep of the model. Defaults to 6 hours.
             use_lora (bool, optional): Use LoRA adaptation.
             lora_steps (int, optional): Use different LoRA adaptation for the first so-many roll-out
                 steps.
@@ -115,6 +117,7 @@ class Aurora(torch.nn.Module):
         self.surf_stats = surf_stats or dict()
         self.autocast = autocast
         self.max_history_size = max_history_size
+        self.timestep = timestep
 
         if self.surf_stats:
             warnings.warn(
@@ -202,19 +205,19 @@ class Aurora(torch.nn.Module):
 
         x = self.encoder(
             batch,
-            lead_time=timedelta(hours=6),
+            lead_time=self.timestep,
         )
         with torch.autocast(device_type="cuda") if self.autocast else contextlib.nullcontext():
             x = self.backbone(
                 x,
-                lead_time=timedelta(hours=6),
+                lead_time=self.timestep,
                 patch_res=patch_res,
                 rollout_step=batch.metadata.rollout_step,
             )
         pred = self.decoder(
             x,
             batch,
-            lead_time=timedelta(hours=6),
+            lead_time=self.timestep,
             patch_res=patch_res,
         )
 
