@@ -51,6 +51,7 @@ class Aurora(torch.nn.Module):
         perceiver_ln_eps: float = 1e-5,
         max_history_size: int = 2,
         timestep: timedelta = timedelta(hours=6),
+        stabilise_level_agg: bool = False,
         use_lora: bool = True,
         lora_steps: int = 40,
         lora_mode: LoRAMode = "single",
@@ -98,6 +99,8 @@ class Aurora(torch.nn.Module):
                 checkpoints with a smaller `max_history_size`, but you cannot load checkpoints
                 with a larger `max_history_size`.
             timestep (timedelta, optional): Timestep of the model. Defaults to 6 hours.
+            stabilise_level_agg (bool, optional): Stabilise the level aggregation by inserting an
+                additional layer normalisation. Defaults to `False`.
             use_lora (bool, optional): Use LoRA adaptation.
             lora_steps (int, optional): Use different LoRA adaptation for the first so-many roll-out
                 steps.
@@ -141,6 +144,7 @@ class Aurora(torch.nn.Module):
             latent_levels=latent_levels,
             max_history_size=max_history_size,
             perceiver_ln_eps=perceiver_ln_eps,
+            stabilise_level_agg=stabilise_level_agg,
         )
 
         self.backbone = Swin3DTransformerBackbone(
