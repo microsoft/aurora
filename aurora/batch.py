@@ -3,7 +3,8 @@
 import dataclasses
 from datetime import datetime
 from functools import partial
-from typing import Callable
+from pathlib import Path
+from typing import Callable, List
 
 import numpy as np
 import torch
@@ -219,6 +220,80 @@ class Batch:
                 rollout_step=self.metadata.rollout_step,
             ),
         )
+
+    def to_netcdf(self, path: str | Path) -> None:
+        """Write the batch to a file.
+
+        This requires `xarray` and `netcdf4` to be installed.
+        """
+        try:
+            import xarray as xr
+        except ImportError as e:
+            raise RuntimeError("`xarray` must be installed.") from e
+
+        ds = xr.Dataset(
+            {
+                **{
+                    f"surf_{k}": (("batch", "history", "latitude", "longitude"), _np(v))
+                    for k, v in self.surf_vars.items()
+                },
+                **{
+                    f"static_{k}": (("latitude", "longitude"), _np(v))
+                    for k, v in self.static_vars.items()
+                },
+                **{
+                    f"atmos_{k}": (("batch", "history", "level", "latitude", "longitude"), _np(v))
+                    for k, v in self.atmos_vars.items()
+                },
+            },
+            coords={
+                "latitude": _np(self.metadata.lat),
+                "longitude": _np(self.metadata.lon),
+                "time": list(self.metadata.time),
+                "level": list(self.metadata.atmos_levels),
+                "rollout_step": self.metadata.rollout_step,
+            },
+        )
+        ds.to_netcdf(path)
+
+    @classmethod
+    def from_netcdf(cls, path: str | Path) -> "Batch":
+        """Load a batch from a file."""
+        try:
+            import xarray as xr
+        except ImportError as e:
+            raise RuntimeError("`xarray` must be installed.") from e
+
+        ds = xr.load_dataset(path, engine="netcdf4")
+
+        surf_vars: List[str] = []
+        static_vars: List[str] = []
+        atmos_vars: List[str] = []
+
+        for k in ds:
+            if k.startswith("surf_"):
+                surf_vars.append(k.removeprefix("surf_"))
+            elif k.startswith("static_"):
+                static_vars.append(k.removeprefix("static_"))
+            elif k.startswith("atmos_"):
+                atmos_vars.append(k.removeprefix("atmos_"))
+
+        return Batch(
+            surf_vars={k: torch.from_numpy(ds[f"surf_{k}"].values) for k in surf_vars},
+            static_vars={k: torch.from_numpy(ds[f"static_{k}"].values) for k in static_vars},
+            atmos_vars={k: torch.from_numpy(ds[f"atmos_{k}"].values) for k in atmos_vars},
+            metadata=Metadata(
+                lat=torch.from_numpy(ds.latitude.values),
+                lon=torch.from_numpy(ds.longitude.values),
+                time=tuple(ds.time.values.astype("datetime64[s]").tolist()),
+                atmos_levels=tuple(ds.level.values),
+                rollout_step=int(ds.rollout_step.values),
+            ),
+        )
+
+
+def _np(x: torch.Tensor) -> np.ndarray:
+    return x.detach().cpu().numpy()
 
 
 def interpolate(
