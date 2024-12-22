@@ -1,17 +1,19 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
+import os
 from datetime import timedelta
 
 import numpy as np
 import pytest
 import torch
+import torch.distributed as dist
 
 from tests.conftest import SavedBatch
 
 from aurora import Aurora, AuroraSmall, Batch
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def aurora_small() -> Aurora:
     model = AuroraSmall(use_lora=True)
     model.load_checkpoint(
@@ -74,6 +76,23 @@ def test_aurora_small(aurora_small: Aurora, test_input_output: tuple[Batch, Save
     assert pred.metadata.time == tuple(test_output["metadata"]["time"])
 
 
+def test_aurora_small_ddp(
+    aurora_small: Aurora, test_input_output: tuple[Batch, SavedBatch]
+) -> None:
+    batch, test_output = test_input_output
+
+    if not dist.is_initialized():
+        os.environ["MASTER_ADDR"] = "localhost"
+        os.environ["MASTER_PORT"] = "12355"
+        dist.init_process_group("gloo", rank=0, world_size=1)
+
+    aurora_small = torch.nn.parallel.DistributedDataParallel(aurora_small)
+
+    # Just test that it runs.
+    with torch.inference_mode():
+        aurora_small.forward(batch)
+
+
 def test_aurora_small_decoder_init() -> None:
     aurora_small = AuroraSmall(use_lora=True)
 
@@ -124,7 +143,7 @@ def test_aurora_small_lat_lon_matrices(
         )
 
 
-def test_aurora_flags(test_input_output: tuple[Batch, SavedBatch]) -> None:
+def test_aurora_small_flags(test_input_output: tuple[Batch, SavedBatch]) -> None:
     batch, test_output = test_input_output
 
     flag_collections: list[dict] = [
