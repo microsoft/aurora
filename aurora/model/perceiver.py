@@ -97,6 +97,7 @@ class PerceiverAttention(nn.Module):
         context_dim: int,
         head_dim: int = 64,
         num_heads: int = 8,
+        ln_k_q: bool = False,
     ) -> None:
         """Initialise.
 
@@ -105,6 +106,7 @@ class PerceiverAttention(nn.Module):
             context_dim (int): Dimensionality of the context features also given as input.
             head_dim (int): Attention head dimensionality.
             num_heads (int): Number of heads.
+            ln_k_q (bool): Apply an extra layer norm. to the keys and queries.
         """
         super().__init__()
         self.num_heads = num_heads
@@ -114,6 +116,13 @@ class PerceiverAttention(nn.Module):
         self.to_q = nn.Linear(latent_dim, self.inner_dim, bias=False)
         self.to_kv = nn.Linear(context_dim, self.inner_dim * 2, bias=False)
         self.to_out = nn.Linear(self.inner_dim, latent_dim, bias=False)
+
+        if ln_k_q:
+            self.ln_k = nn.LayerNorm(num_heads * head_dim)
+            self.ln_q = nn.LayerNorm(num_heads * head_dim)
+        else:
+            self.ln_k = lambda x: x
+            self.ln_q = lambda x: x
 
     def forward(self, latents: torch.Tensor, x: torch.Tensor) -> torch.Tensor:
         """Run the cross-attention module.
@@ -131,6 +140,11 @@ class PerceiverAttention(nn.Module):
 
         q = self.to_q(latents)  # (B, L1, D2) to (B, L1, D)
         k, v = self.to_kv(x).chunk(2, dim=-1)  # (B, L2, D1) to twice (B, L2, D)
+
+        # Apply LN before (!) splitting the heads.
+        k = self.ln_k(k)
+        q = self.ln_q(q)
+
         q, k, v = map(lambda t: rearrange(t, "b l (h d) -> b h l d", h=h), (q, k, v))
 
         out = F.scaled_dot_product_attention(q, k, v)
@@ -152,6 +166,7 @@ class PerceiverResampler(nn.Module):
         drop: float = 0.0,
         residual_latent: bool = True,
         ln_eps: float = 1e-5,
+        ln_k_q: bool = False,
     ) -> None:
         """Initialise.
 
@@ -168,13 +183,15 @@ class PerceiverResampler(nn.Module):
                 Defaults to `True`.
             ln_eps (float, optional): Epsilon in the layer normalisation layers. Defaults to
                 `1e-5`.
+            ln_k_q (bool, optional): Apply an extra layer norm. to the keys and queries of the first
+                resampling layer. Defaults to `False`.
         """
         super().__init__()
 
         self.residual_latent = residual_latent
         self.layers = nn.ModuleList([])
         mlp_hidden_dim = int(latent_dim * mlp_ratio)
-        for _ in range(depth):
+        for i in range(depth):
             self.layers.append(
                 nn.ModuleList(
                     [
@@ -183,6 +200,7 @@ class PerceiverResampler(nn.Module):
                             context_dim=context_dim,
                             head_dim=head_dim,
                             num_heads=num_heads,
+                            ln_k_q=ln_k_q if i == 0 else False,
                         ),
                         MLP(dim=latent_dim, hidden_features=mlp_hidden_dim, dropout=drop),
                         nn.LayerNorm(latent_dim, eps=ln_eps),

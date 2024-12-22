@@ -2,16 +2,16 @@
     <img src="docs/aurora.jpg" alt="Aurora logo" width="200"/>
 </p>
 
-# Aurora: A Foundation Model of the Atmosphere
+# Aurora: A Foundation Model for the Earth System
 
 [![CI](https://github.com/microsoft/Aurora/actions/workflows/ci.yaml/badge.svg)](https://github.com/microsoft/Aurora/actions/workflows/ci.yaml)
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://microsoft.github.io/aurora)
 [![Paper](https://img.shields.io/badge/arXiv-2405.13063-blue)](https://arxiv.org/abs/2405.13063)
 
-Implementation of the Aurora model for atmospheric forecasting.
+Implementation of the Aurora model for Earth system forecasting.
 
 _The package currently includes the pretrained model and the fine-tuned version for high-resolution weather forecasting._
-_We are working on the fine-tuned version for air pollution forecasting, which will be included in due time._
+_We are working on the fine-tuned versions for air pollution and ocean wave forecasting, which will be included in due time._
 
 [Link to the paper on arXiv.](https://arxiv.org/abs/2405.13063)
 
@@ -22,8 +22,8 @@ Cite us as follows:
 
 ```
 @misc{bodnar2024aurora,
-    title = {Aurora: A Foundation Model of the Atmosphere},
-    author = {Cristian Bodnar and Wessel P. Bruinsma and Ana Lucic and Megan Stanley and Johannes Brandstetter and Patrick Garvan and Maik Riechert and Jonathan Weyn and Haiyu Dong and Anna Vaughan and Jayesh K. Gupta and Kit Tambiratnam and Alex Archibald and Elizabeth Heider and Max Welling and Richard E. Turner and Paris Perdikaris},
+    title = {Aurora: A Foundation Model for the Earth System},
+    author = {Cristian Bodnar and Wessel P. Bruinsma and Ana Lucic and Megan Stanley and Anna Vaughan and Johannes Brandstetter and Patrick Garvan and Maik Riechert and Jonathan A. Weyn and Haiyu Dong and Jayesh K. Gupta and Kit Thambiratnam and Alexander T. Archibald and Chun-Chieh Wu and Elizabeth Heider and Max Welling and Richard E. Turner and Paris Perdikaris},
     year = {2024},
     url = {https://arxiv.org/abs/2405.13063},
     eprint = {2405.13063},
@@ -48,10 +48,11 @@ Contents:
 Aurora is a machine learning model that can predict atmospheric variables, such as temperature.
 It is a _foundation model_, which means that it was first generally trained on a lot of data,
 and then can be adapted to specialised atmospheric forecasting tasks with relatively little data.
-We provide three such specialised versions:
+We provide four such specialised versions:
 one for medium-resolution weather prediction,
 one for high-resolution weather prediction,
-and one for air pollution prediction.
+one for air pollution prediction,
+and one for ocean wave prediction.
 
 ## Getting Started
 
@@ -127,7 +128,7 @@ Our goal in publishing this code is
 This code has not been developed nor tested for non-academic purposes and hence should not be used as such.
 
 ### Limitations
-Although Aurora was trained to accurately predict future weather and air pollution,
+Although Aurora was trained to accurately predict future weather, air pollution, and ocean waves,
 Aurora is based on neural networks, which means that there are no strict guarantees that predictions will always be accurate.
 Altering the inputs, providing a sample that was not in the training set,
 or even providing a sample that was in the training set but is simply unlucky may result in arbitrarily poor predictions.
@@ -183,7 +184,7 @@ make docs
 
 To locally view the documentation, open `docs/_build/index.html` in your browser.
 
-### Why is the fine-tuned version of Aurora for air quality forecasting missing?
+### Why are the fine-tuned versions of Aurora for air quality and ocean wave forecasting missing?
 
 The package currently includes the pretrained model and the fine-tuned version for high-resolution weather forecasting.
-We are working on the fine-tuned version for air pollution forecasting, which will be included in due time.
+We are working on the fine-tuned versions for air pollution and ocean wave forecasting, which will be included in due time.

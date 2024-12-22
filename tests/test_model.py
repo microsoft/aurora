@@ -1,15 +1,19 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
+import os
+from datetime import timedelta
+
 import numpy as np
 import pytest
 import torch
+import torch.distributed as dist
 
 from tests.conftest import SavedBatch
 
 from aurora import Aurora, AuroraSmall, Batch
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def aurora_small() -> Aurora:
     model = AuroraSmall(use_lora=True)
     model.load_checkpoint(
@@ -72,6 +76,23 @@ def test_aurora_small(aurora_small: Aurora, test_input_output: tuple[Batch, Save
     assert pred.metadata.time == tuple(test_output["metadata"]["time"])
 
 
+def test_aurora_small_ddp(
+    aurora_small: Aurora, test_input_output: tuple[Batch, SavedBatch]
+) -> None:
+    batch, test_output = test_input_output
+
+    if not dist.is_initialized():
+        os.environ["MASTER_ADDR"] = "localhost"
+        os.environ["MASTER_PORT"] = "12355"
+        dist.init_process_group("gloo", rank=0, world_size=1)
+
+    aurora_small = torch.nn.parallel.DistributedDataParallel(aurora_small)
+
+    # Just test that it runs.
+    with torch.inference_mode():
+        aurora_small.forward(batch)
+
+
 def test_aurora_small_decoder_init() -> None:
     aurora_small = AuroraSmall(use_lora=True)
 
@@ -120,3 +141,48 @@ def test_aurora_small_lat_lon_matrices(
             pred_matrix.atmos_vars[k],
             rtol=1e-5,
         )
+
+
+def test_aurora_small_flags(test_input_output: tuple[Batch, SavedBatch]) -> None:
+    batch, test_output = test_input_output
+
+    flag_collections: list[dict] = [
+        {},
+        {"stabilise_level_agg": True},
+        {"timestep": timedelta(hours=12)},
+    ]
+
+    preds = []
+    for flags in flag_collections:
+        model = AuroraSmall(use_lora=True, **flags)
+        model.load_checkpoint(
+            "microsoft/aurora",
+            "aurora-0.25-small-pretrained.ckpt",
+            strict=False,  # LoRA parameters not available.
+        )
+        model = model.double()
+        model.eval()
+        with torch.inference_mode():
+            preds.append(model.forward(batch).normalise(model.surf_stats))
+
+    # Check that all predictions are different.
+    for i, pred1 in enumerate(preds):
+        for pred2 in preds[i + 1 :]:
+            for k in pred1.surf_vars:
+                assert not np.allclose(
+                    pred1.surf_vars[k],
+                    pred2.surf_vars[k],
+                    rtol=5e-2,
+                )
+            for k in pred1.static_vars:
+                np.testing.assert_allclose(
+                    pred1.static_vars[k],
+                    pred2.static_vars[k],
+                    rtol=1e-5,
+                )
+            for k in pred1.atmos_vars:
+                assert not np.allclose(
+                    pred1.atmos_vars[k],
+                    pred2.atmos_vars[k],
+                    rtol=5e-2,
+                )

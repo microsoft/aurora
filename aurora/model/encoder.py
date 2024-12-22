@@ -43,6 +43,7 @@ class Perceiver3DEncoder(nn.Module):
         mlp_ratio: float = 4.0,
         max_history_size: int = 2,
         perceiver_ln_eps: float = 1e-5,
+        stabilise_level_agg: bool = False,
     ) -> None:
         """Initialise.
 
@@ -67,6 +68,8 @@ class Perceiver3DEncoder(nn.Module):
                 to `2`.
             perceiver_ln_eps (float, optional): Epsilon value for layer normalisation in the
                 Perceiver. Defaults to 1e-5.
+            stabilise_level_agg (bool, optional): Stabilise the level aggregation by inserting an
+                additional layer normalisation. Defaults to `False`.
         """
         super().__init__()
 
@@ -120,6 +123,7 @@ class Perceiver3DEncoder(nn.Module):
             drop=drop_rate,
             mlp_ratio=mlp_ratio,
             ln_eps=perceiver_ln_eps,
+            ln_k_q=stabilise_level_agg,
         )
 
         # Drop patches after encoding.
