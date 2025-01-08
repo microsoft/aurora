@@ -1,6 +1,5 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
-import json
 import logging
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -28,7 +27,6 @@ CommSpecs = Union[LocalCommunication.Spec, BlobStorageCommunication.Spec]
 
 
 class Submission(BaseModel):
-    action: Literal["submit"]
     host_comm: CommSpecs = Field(..., discriminator="class_name")
     model_name: str
     num_steps: int
@@ -37,10 +35,6 @@ class Submission(BaseModel):
 class Check(BaseModel):
     action: Literal["check"]
     uuid: str
-
-
-class Request(BaseModel):
-    request: Union[Submission, Check] = Field(..., discriminator="action")
 
 
 POOL = ThreadPoolExecutor(max_workers=1)
@@ -102,7 +96,7 @@ def run(input_data: AMLRequest) -> dict:
     if input_data.method == "POST":
         logger.info("Submitting new task to thread pool.")
         try:
-            task = Task(**input_data.get_json())
+            task = Task(Submission(**input_data.get_json()))
         except Exception as exc:
             return AMLResponse(dict(message=str(exc)), 500, {}, json_str=True)
         POOL.submit(task)
@@ -119,7 +113,8 @@ def run(input_data: AMLRequest) -> dict:
     elif input_data.method == "GET":
         logger.info("Returning the status of an existing task.")
         uuid = input_data.args.get("task_id")
-        time.sleep(1)  # Sleep here, so the client does not need to.
+        if not uuid:
+            return AMLRequest(dict(message="Missing task_id query parameter."), 400, {}, json_str=True)
         if uuid not in TASKS:
             return {
                 "success": False,
@@ -127,6 +122,12 @@ def run(input_data: AMLRequest) -> dict:
             }
         else:
             task = TASKS[uuid]
+            # Allow the task some time to complete.
+            # We sleep here so the client does not query too frequently.
+            for _ in range(3):
+                if task.completed:
+                    break
+                time.sleep(1)
             return {
                 "success": True,
                 "message": "Status check completed.",
