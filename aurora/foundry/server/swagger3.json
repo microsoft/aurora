@@ -1,0 +1,278 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Aurora Endpoint",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Check if alive",
+        "operationId": "ServiceHealthCheck",
+        "description": "Simple health check endpoint to ensure the service is up at any given point.",
+        "responses": {
+          "200": {
+            "description": "If service is up and running, this response will be returned with the content 'Healthy'",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "Healthy"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The service failed to execute due to an error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/score/": {
+      "post": {
+        "summary": "Create Task",
+        "operationId": "create_item_score__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTask"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTaskResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Fetch Result of a Task",
+        "operationId": "get_item_score_post",
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfull Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Answer"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateTaskResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "taskId": {
+            "type": "string",
+            "title": "Task ID"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "Answer": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ProgressInfo",
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message",
+          "data"
+        ],
+        "title": "Answer"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ProgressInfo": {
+        "properties": {
+          "kind": {
+            "const": "progress_info",
+            "title": "Kind"
+          },
+          "uuid": {
+            "type": "string",
+            "title": "Uuid"
+          },
+          "completed": {
+            "type": "boolean",
+            "title": "Completed"
+          },
+          "progress_percentage": {
+            "type": "integer",
+            "title": "Progress Percentage"
+          },
+          "error": {
+            "type": "boolean",
+            "title": "Error"
+          },
+          "error_info": {
+            "type": "string",
+            "title": "Error Info"
+          }
+        },
+        "type": "object",
+        "title": "ProgressInfo"
+      },
+      "CreateTask": {
+        "properties": {
+          "model_name": {
+            "type": "string",
+            "title": "Model Name"
+          },
+          "num_steps": {
+            "type": "integer",
+            "title": "Num Steps"
+          },
+          "client_comm": {
+            "type": "string",
+            "title": "Client Comm"
+          },
+          "host_comm": {
+            "type": "string",
+            "title": "Host Comm"
+          }
+        },
+        "type": "object",
+        "required": [
+          "request"
+        ],
+        "title": "CreateTask"
+      },
+      "SubmissionInfo": {
+        "properties": {
+          "kind": {
+            "const": "submission_info",
+            "title": "Kind"
+          },
+          "uuid": {
+            "type": "string",
+            "title": "Uuid"
+          }
+        },
+        "type": "object",
+        "title": "SubmissionInfo"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "securitySchemes": {
+        "Bearer": {
+          "type": "apiKey",
+          "name": "Authorization",
+          "in": "header",
+          "description": "For example Bearer abc123"
+        }
+      }
+    }
+  }
+}
