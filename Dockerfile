@@ -6,11 +6,11 @@ COPY ./pyproject.toml .
 
 # Assuming dependencies are fairly fixed, we can install them first and then copy the rest of the
 # code to avoid re-installing dependencies when the code changes.
-COPY requirements.txt .
+COPY _docker_requirements.txt .
 RUN pip install --upgrade pip virtualenv && \
     virtualenv venv -p python3.10 && \
     . venv/bin/activate && \
-    pip install -r requirements.txt
+    pip install -r _docker_requirements.txt
 
 # Download model weights.
 RUN ./venv/bin/python -c 'from huggingface_hub import hf_hub_download; hf_hub_download(repo_id="microsoft/aurora", filename="aurora-0.25-small-pretrained.ckpt")' && \
@@ -24,7 +24,6 @@ ARG AURORA_REPO_VERSION
 RUN [ ! -z "${AURORA_REPO_VERSION}" ] || { echo "AURORA_REPO_VERSION must be set."; exit 1; } && \
     . venv/bin/activate && \
     SETUPTOOLS_SCM_PRETEND_VERSION="$AURORA_REPO_VERSION" pip install -e .
-
 
 # Install `azcopy` and the AML inference server.
 RUN wget https://aka.ms/downloadazcopy-v10-linux -O azcopy.tar.gz && \
