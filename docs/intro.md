@@ -1,4 +1,4 @@
-# Aurora: A Foundation Model of the Atmosphere
+# Aurora: A Foundation Model for the Earth System
 
 Welcome to the documentation of Aurora!
 Here you will detailed instructions for using the model.
