@@ -18,11 +18,13 @@ authors = [
 license = {file = "LICENSE.txt"}
 readme = "README.md"
 keywords = [
-	"aurora model",
+    "aurora model",
 	"atmospheric dynamics",
-	"atmospheric chemistry",
-	"deep learning",
-	"foundation models",
+    "atmospheric chemistry",
+    "ocean waves",
+    "tropical cyclone tracking",
+    "weather prediction",
+    "foundation models",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -38,6 +40,9 @@ dependencies = [
     "einops",
     "timm==0.6.13",
     "huggingface-hub",
+    "pydantic",
+    "xarray",
+    "netcdf4",
 ]
 
 [project.optional-dependencies]
@@ -52,8 +57,6 @@ dev = [
     "pre-commit",
     "jupyter-book",
     "scipy",
-    "xarray",
-    "netcdf4",
 ]
 
 [project.urls]
