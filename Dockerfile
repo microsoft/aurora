@@ -35,4 +35,8 @@ RUN . ./venv/bin/activate && \
 EXPOSE 5001
 ENV PORT=5001
 
+# we don't have a swagger2.json file, so we'll just "ignore" the version option and always return a version 3 file
+RUN cp ./aurora/foundry/server/swagger3.json ./swagger3.json
+RUN cp ./aurora/foundry/server/swagger3.json ./swagger2.json
+
 CMD ["./venv/bin/azmlinfsrv", "--entry_script", "aurora/foundry/server/score.py"]

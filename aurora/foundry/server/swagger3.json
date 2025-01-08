@@ -4,6 +4,11 @@
     "title": "Aurora Endpoint",
     "version": "0.1.0"
   },
+  "security": [
+    {
+      "Bearer": []
+    }
+  ],
   "paths": {
     "/": {
       "get": {
@@ -37,8 +42,13 @@
         }
       }
     },
-    "/score/": {
+    "/score": {
       "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "summary": "Create Task",
         "operationId": "create_item_score__post",
         "requestBody": {
@@ -75,11 +85,16 @@
         }
       },
       "get": {
-        "summary": "Fetch Result of a Task",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Fetch Progress of a Task",
         "operationId": "get_item_score_post",
         "parameters": [
           {
-            "name": "taskId",
+            "name": "task_id",
             "in": "query",
             "required": true,
             "schema": {
@@ -114,7 +129,7 @@
             "type": "string",
             "title": "Message"
           },
-          "taskId": {
+          "task_id": {
             "type": "string",
             "title": "Task ID"
           }
