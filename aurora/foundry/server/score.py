@@ -87,10 +87,10 @@ def run(input_data: AMLRequest) -> dict:
     """Perform predictions.
 
     Args:
-        raw_data (str): Request as JSON.
+        input_data (AMLRequest): Mostly a Flask Request object.
 
     Returns:
-        dict: Answer, which will be encoded as JSON.
+        dict/AMLResponse: The response to the request. dicts are implictitly 200 AMLResponses.
     """
     logger.info("Received request.")
     if input_data.method == "POST":
