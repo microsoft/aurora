@@ -56,6 +56,6 @@ class FoundryClient(AbstractFoundryClient):
         )
 
     def score(self, data: dict) -> dict:
-        answer = self._req("POST", "score", {"data": data})
+        answer = self._req("POST", "score", data)
         answer.raise_for_status()
         return answer.json()

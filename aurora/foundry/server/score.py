@@ -6,6 +6,9 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from typing import Literal, Union
 from uuid import uuid4
+from azureml_inference_server_http.api.aml_response import AMLResponse
+from azureml_inference_server_http.api.aml_request import AMLRequest
+from azureml_inference_server_http.api.aml_request import rawhttp
 
 from pydantic import BaseModel, Field
 
@@ -85,7 +88,8 @@ def init() -> None:
     POOL.__enter__()
 
 
-def run(raw_data: str) -> dict:
+@rawhttp
+def run(input_data: AMLRequest) -> dict:
     """Perform predictions.
 
     Args:
@@ -95,12 +99,12 @@ def run(raw_data: str) -> dict:
         dict: Answer, which will be encoded as JSON.
     """
     logger.info("Received request.")
-    raw = json.loads(raw_data)
-    request = Request(**raw["data"]).request
-
-    if isinstance(request, Submission):
+    if input_data.method == "POST":
         logger.info("Submitting new task to thread pool.")
-        task = Task(request)
+        try:
+            task = Task(**input_data.get_json())
+        except Exception as exc:
+            return AMLResponse(dict(message=str(exc)), 500, {}, json_str=True)
         POOL.submit(task)
         TASKS[task.uuid] = task
         return {
@@ -112,9 +116,9 @@ def run(raw_data: str) -> dict:
             },
         }
 
-    elif isinstance(request, Check):
+    elif input_data.method == "GET":
         logger.info("Returning the status of an existing task.")
-        uuid = request.uuid
+        uuid = input_data.args.get("task_id")
         time.sleep(1)  # Sleep here, so the client does not need to.
         if uuid not in TASKS:
             return {
@@ -138,7 +142,4 @@ def run(raw_data: str) -> dict:
 
     else:
         # This branch should be unreachable.
-        return {
-            "success": False,
-            "message": "Invalid action.",
-        }
+        return AMLRequest(dict(message="Method not allowed."), 405, {}, json_str=True)
