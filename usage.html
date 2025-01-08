@@ -30,7 +30,7 @@
   <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -64,7 +64,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Form of a Batch" href="batch.html" />
-    <link rel="prev" title="Aurora: A Foundation Model of the Atmosphere" href="intro.html" />
+    <link rel="prev" title="Aurora: A Foundation Model for the Earth System" href="intro.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -164,7 +164,7 @@
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
                 <a class="reference internal" href="intro.html">
-                    Aurora: A Foundation Model of the Atmosphere
+                    Aurora: A Foundation Model for the Earth System
                 </a>
             </li>
         </ul>
@@ -423,11 +423,11 @@ A batch of data contains surface-level variables,
 static variables, atmospheric variables, and associated metadata.
 This batch must be an <code class="docutils literal notranslate"><span class="pre">aurora.Batch</span></code>.
 Here is an example that constructs a random batch:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 
-<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 
-<span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">Metadata</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">Metadata</span>
 
 <span class="n">batch</span> <span class="o">=</span> <span class="n">Batch</span><span class="p">(</span>
     <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;2t&quot;</span><span class="p">,</span> <span class="s2">&quot;10u&quot;</span><span class="p">,</span> <span class="s2">&quot;10v&quot;</span><span class="p">,</span> <span class="s2">&quot;msl&quot;</span><span class="p">)},</span>
@@ -446,13 +446,13 @@ Here is an example that constructs a random batch:</p>
 <p>Second, you need to construct a model and load a checkpoint.
 There are various versions of Aurora, both in terms of model size and in terms of what the model was trained on.
 The regular version of Aurora can be constructed as follows:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>In this example, however, we use a smaller version:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">AuroraSmall</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraSmall</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">AuroraSmall</span><span class="p">()</span>
 </pre></div>
@@ -482,7 +482,7 @@ For example, <code class="docutils literal notranslate"><span class="pre">pred.s
 <h2>Autoregressive Roll-Outs<a class="headerlink" href="#autoregressive-roll-outs" title="Link to this heading">#</a></h2>
 <p>To make predictions for more than one step ahead, you can apply the model autoregressively.
 This can be done with <code class="docutils literal notranslate"><span class="pre">aurora.rollout</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">rollout</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">rollout</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
 
@@ -532,7 +532,7 @@ Every element of <code class="docutils literal notranslate"><span class="pre">pr
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Aurora: A Foundation Model of the Atmosphere</p>
+        <p class="prev-next-title">Aurora: A Foundation Model for the Earth System</p>
       </div>
     </a>
     <a class="right-next"

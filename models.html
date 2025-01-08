@@ -30,7 +30,7 @@
   <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -164,7 +164,7 @@
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
                 <a class="reference internal" href="intro.html">
-                    Aurora: A Foundation Model of the Atmosphere
+                    Aurora: A Foundation Model for the Earth System
                 </a>
             </li>
         </ul>
@@ -416,7 +416,7 @@ We now describe the available models in turn.</p>
 <p>Aurora 0.25° Pretrained is a version of Aurora trained on a wide variety of data.</p>
 <section id="usage">
 <h3>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Model is not fine-tuned.</span>
 <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">)</span>
@@ -467,7 +467,7 @@ For convenience, these are also available in
 <p>Aurora 0.25° Pretrained Small is, as the name suggests, a smaller version of Aurora 0.25° Pretrained.</p>
 <section id="id1">
 <h3>Usage<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">AuroraSmall</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraSmall</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">AuroraSmall</span><span class="p">()</span>
 <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-small-pretrained.ckpt&quot;</span><span class="p">)</span>
@@ -485,7 +485,7 @@ We do not recommend any other use.</p>
 <p>Aurora 0.25° Fine-Tuned is Aurora 0.25° Pretrained fine-tuned on IFS HRES T0.</p>
 <section id="id3">
 <h3>Usage<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">()</span>
 <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-finetuned.ckpt&quot;</span><span class="p">)</span>
@@ -552,7 +552,7 @@ For convenience, these are also available in
 </table>
 </div>
 <p>You can turn off LoRA as follows:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Disable LoRA for more realistic samples.</span>
 <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-finetuned.ckpt&quot;</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -565,7 +565,7 @@ For convenience, these are also available in
 <p>Aurora 0.1° Fine-Tuned is a high-resolution version of Aurora.</p>
 <section id="id6">
 <h3>Usage<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">AuroraHighRes</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraHighRes</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">AuroraHighRes</span><span class="p">()</span>
 <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.1-finetuned.ckpt&quot;</span><span class="p">)</span>
@@ -617,7 +617,7 @@ However, these static variables will not be exactly equal to the ones we used, w
 performance.
 If you download the static variables yourself, you must adjust the normalisation statistics.
 You can do that in the following way:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">AuroraHighRes</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraHighRes</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">AuroraHighRes</span><span class="p">(</span>
     <span class="c1"># Use manually downloaded and regridded static variables.</span>
@@ -637,7 +637,7 @@ and the second value <code class="docutils literal notranslate"><span class="pre
 <h3>Notes<a class="headerlink" href="#id9" title="Link to this heading">#</a></h3>
 <p><a class="reference internal" href="#lora-or-no-lora"><span class="std std-ref">Like for Aurora 0.25° Fine-Tuned</span></a>,
 you can turn off LoRA to obtain more realistic predictions at the expensive of slightly higher long-term MSE:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">AuroraHighRes</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraHighRes</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">AuroraHighRes</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Disable LoRA for more realistic samples.</span>
 <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.1-finetuned.ckpt&quot;</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>

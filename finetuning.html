@@ -30,7 +30,7 @@
   <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -164,7 +164,7 @@
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
                 <a class="reference internal" href="intro.html">
-                    Aurora: A Foundation Model of the Atmosphere
+                    Aurora: A Foundation Model for the Earth System
                 </a>
             </li>
         </ul>
@@ -391,7 +391,7 @@
 <h1>Fine-Tuning<a class="headerlink" href="#fine-tuning" title="Link to this heading">#</a></h1>
 <p>Generally, if you wish to fine-tune Aurora for a specific application,
 you should build on the pretrained version:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Model is not fine-tuned.</span>
 <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">)</span>
@@ -403,7 +403,7 @@ you should build on the pretrained version:</p>
 In addition, you will need to use <a class="reference external" href="https://pytorch.org/docs/stable/amp.html">PyTorch AMP</a>
 and gradient checkpointing.
 You can do this as follows:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span>
     <span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># Model was not fine-tuned.</span>
@@ -440,8 +440,8 @@ You can stabilise the level aggregation of the model
 by setting the following flag in the constructor: <code class="docutils literal notranslate"><span class="pre">stabilise_level_agg=True</span></code>.
 Note that <code class="docutils literal notranslate"><span class="pre">stabilise_level_agg=True</span></code> will considerably perturb the model,
 so significant additional fine-tuning may be required to get to the desired level of performance.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
-<span class="kn">from</span> <span class="nn">aurora.normalisation</span> <span class="kn">import</span> <span class="n">locations</span><span class="p">,</span> <span class="n">scales</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">aurora.normalisation</span><span class="w"> </span><span class="kn">import</span> <span class="n">locations</span><span class="p">,</span> <span class="n">scales</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span>
     <span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -456,8 +456,8 @@ so significant additional fine-tuning may be required to get to the desired leve
 <p>Aurora can be extended with new variables by adjusting the keyword arguments <code class="docutils literal notranslate"><span class="pre">surf_vars</span></code>,
 <code class="docutils literal notranslate"><span class="pre">static_vars</span></code>, and <code class="docutils literal notranslate"><span class="pre">atmos_vars</span></code>.
 When you add a new variable, you also need to set the normalisation statistics.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
-<span class="kn">from</span> <span class="nn">aurora.normalisation</span> <span class="kn">import</span> <span class="n">locations</span><span class="p">,</span> <span class="n">scales</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">aurora.normalisation</span><span class="w"> </span><span class="kn">import</span> <span class="n">locations</span><span class="p">,</span> <span class="n">scales</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span>
     <span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -496,7 +496,7 @@ If you do this, you will likely add or remove parameters.
 Then <code class="docutils literal notranslate"><span class="pre">Aurora.load_checkpoint</span></code> will error,
 because the existing checkpoint now mismatches with the model’s parameters.
 Simply set <code class="docutils literal notranslate"><span class="pre">Aurora.load_checkpoint(...,</span> <span class="pre">strict=False)</span></code> to ignore the mismatches:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aurora</span> <span class="kn">import</span> <span class="n">Aurora</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 

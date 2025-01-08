@@ -29,7 +29,7 @@
   <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
@@ -163,7 +163,7 @@
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
                 <a class="reference internal" href="../../../intro.html">
-                    Aurora: A Foundation Model of the Atmosphere
+                    Aurora: A Foundation Model for the Earth System
                 </a>
             </li>
         </ul>
@@ -327,31 +327,31 @@
   <h1>Source code for aurora.model.aurora</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Copyright (c) Microsoft Corporation. Licensed under the MIT license.&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">contextlib</span>
-<span class="kn">import</span> <span class="nn">dataclasses</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
 
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">huggingface_hub</span> <span class="kn">import</span> <span class="n">hf_hub_download</span>
-<span class="kn">from</span> <span class="nn">torch.distributed.algorithms._checkpoint.checkpoint_wrapper</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">huggingface_hub</span><span class="w"> </span><span class="kn">import</span> <span class="n">hf_hub_download</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.algorithms._checkpoint.checkpoint_wrapper</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">apply_activation_checkpointing</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">aurora.batch</span> <span class="kn">import</span> <span class="n">Batch</span>
-<span class="kn">from</span> <span class="nn">aurora.model.decoder</span> <span class="kn">import</span> <span class="n">Perceiver3DDecoder</span>
-<span class="kn">from</span> <span class="nn">aurora.model.encoder</span> <span class="kn">import</span> <span class="n">Perceiver3DEncoder</span>
-<span class="kn">from</span> <span class="nn">aurora.model.lora</span> <span class="kn">import</span> <span class="n">LoRAMode</span>
-<span class="kn">from</span> <span class="nn">aurora.model.swin3d</span> <span class="kn">import</span> <span class="n">BasicLayer3D</span><span class="p">,</span> <span class="n">Swin3DTransformerBackbone</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">aurora.batch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Batch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.decoder</span><span class="w"> </span><span class="kn">import</span> <span class="n">Perceiver3DDecoder</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.encoder</span><span class="w"> </span><span class="kn">import</span> <span class="n">Perceiver3DEncoder</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.lora</span><span class="w"> </span><span class="kn">import</span> <span class="n">LoRAMode</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.swin3d</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasicLayer3D</span><span class="p">,</span> <span class="n">Swin3DTransformerBackbone</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;AuroraSmall&quot;</span><span class="p">,</span> <span class="s2">&quot;AuroraHighRes&quot;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="Aurora">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora">[docs]</a>
-<span class="k">class</span> <span class="nc">Aurora</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Aurora</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The Aurora model.</span>
 
 <span class="sd">    Defaults to to the 1.3 B parameter configuration.</span>
@@ -359,7 +359,7 @@
 
 <div class="viewcode-block" id="Aurora.__init__">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;2t&quot;</span><span class="p">,</span> <span class="s2">&quot;10u&quot;</span><span class="p">,</span> <span class="s2">&quot;10v&quot;</span><span class="p">,</span> <span class="s2">&quot;msl&quot;</span><span class="p">),</span>
         <span class="n">static_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;lsm&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;slt&quot;</span><span class="p">),</span>
@@ -511,7 +511,7 @@
 
 <div class="viewcode-block" id="Aurora.forward">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward pass.</span>
 
 <span class="sd">        Args:</span>
@@ -579,7 +579,7 @@
 
 <div class="viewcode-block" id="Aurora.load_checkpoint">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora.load_checkpoint">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">repo</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">repo</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a checkpoint from HuggingFace.</span>
 
 <span class="sd">        Args:</span>
@@ -595,7 +595,7 @@
 
 <div class="viewcode-block" id="Aurora.load_checkpoint_local">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora.load_checkpoint_local">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_checkpoint_local</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_checkpoint_local</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a checkpoint directly from a file.</span>
 
 <span class="sd">        Args:</span>
@@ -680,7 +680,7 @@
 
 <div class="viewcode-block" id="Aurora.adapt_checkpoint_max_history_size">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora.adapt_checkpoint_max_history_size">[docs]</a>
-    <span class="k">def</span> <span class="nf">adapt_checkpoint_max_history_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">adapt_checkpoint_max_history_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Adapt a checkpoint with smaller `max_history_size` to a model with a larger</span>
 <span class="sd">        `max_history_size` than the current model.</span>
 
@@ -720,7 +720,7 @@
 
 <div class="viewcode-block" id="Aurora.configure_activation_checkpointing">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora.configure_activation_checkpointing">[docs]</a>
-    <span class="k">def</span> <span class="nf">configure_activation_checkpointing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">configure_activation_checkpointing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure activation checkpointing.</span>
 
 <span class="sd">        This is required in order to compute gradients without running out of memory.</span>
