@@ -12,7 +12,7 @@ import pytest
 import requests
 
 from aurora.foundry.client.foundry import FoundryClient
-from aurora.foundry.common.channel import BlobStorageCommunication, LocalCommunication
+from aurora.foundry.common.channel import BlobStorageCommunication
 
 MOCK_ADDRESS = "https://mock-foundry.azurewebsites.net"
 
@@ -100,9 +100,7 @@ def mock_foundry_client(
                 ["python", str(azcopy_path), str(azcopy_mock_work_dir)],
             )
             # The below test URL must start with `https`!
-            blob_url_with_sas = (
-                "https://storageaccount.blob.core.windows.net/container/folder?SAS"
-            )
+            blob_url_with_sas = "https://storageaccount.blob.core.windows.net/container/folder?SAS"
 
             def _matcher(request: requests.Request) -> requests.Response | None:
                 """Mock requests that check for the existence of blobs."""
@@ -192,9 +190,7 @@ def mock_foundry_client(
                 ["python", str(azcopy_path), str(azcopy_mock_work_dir)],
             )
             # The below test URL must start with `https`!
-            blob_url_with_sas = (
-                "https://storageaccount.blob.core.windows.net/container/folder?SAS"
-            )
+            blob_url_with_sas = "https://storageaccount.blob.core.windows.net/container/folder?SAS"
 
             def _matcher(request: requests.Request) -> requests.Response | None:
                 """Mock requests that check for the existence of blobs."""

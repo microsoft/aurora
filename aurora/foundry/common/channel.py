@@ -162,7 +162,7 @@ class BlobStorageCommunication(CommunicationChannel):
         if "?" not in blob_folder:
             raise ValueError("Given URL does not appear to contain a SAS token.")
 
-    def to_spec(self) -> dict[str, str]:
+    def to_spec(self) -> str:
         return self.blob_folder
 
     class Spec(BaseModel):

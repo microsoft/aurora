@@ -3,17 +3,14 @@
 import logging
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import Literal, Union
 from uuid import uuid4
 
 from azureml_inference_server_http.api.aml_request import AMLRequest, rawhttp
-from azureml_inference_server_http.api.aml_response import AMLResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 import aurora.foundry.server._hook  # noqa: F401
 from aurora.foundry.common.channel import (
     BlobStorageCommunication,
-    LocalCommunication,
     iterate_prediction_files,
 )
 from aurora.foundry.common.model import models
