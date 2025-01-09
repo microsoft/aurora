@@ -101,12 +101,7 @@ def run(input_data: AMLRequest) -> dict:
         POOL.submit(task)
         TASKS[task.uuid] = task
         return {
-            "success": True,
-            "message": "Request has been succesfully submitted.",
-            "data": {
-                "kind": "submission_info",
-                "uuid": task.uuid,
-            },
+            "task_id": task.uuid,
         }
 
     elif input_data.method == "GET":

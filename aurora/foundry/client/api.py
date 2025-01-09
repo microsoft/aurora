@@ -4,9 +4,9 @@ This is the API that the end user uses to submit jobs to the model running on Az
 """
 
 import logging
-from typing import Generator, Literal, Optional, Union
+from typing import Generator, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from aurora import Batch
 from aurora.foundry.client.foundry import AbstractFoundryClient
@@ -19,8 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class SubmissionInfo(BaseModel):
-    kind: Literal["submission_info"]
-    uuid: str
+    task_id: str
 
 
 class ProgressInfo(BaseModel):
@@ -30,12 +29,6 @@ class ProgressInfo(BaseModel):
     progress_percentage: int
     error: bool
     error_info: str
-
-
-class Answer(BaseModel):
-    success: bool
-    message: str
-    data: Optional[Union[SubmissionInfo, ProgressInfo]] = Field(..., discriminator="kind")
 
 
 class SubmissionError(Exception):
