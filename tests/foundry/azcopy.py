@@ -5,11 +5,19 @@ A mock of `azcopy` designed specifically for the tests here.
 
 import json
 import logging
+import os
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
-import click
+try:
+    import click
+except ImportError:
+    # This might be run in the release Docker image, where `click` won't be available. Just install
+    # it.
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "--no-deps", "click"])
+    import click
 
 # Expose logging messages.
 logger = logging.getLogger()
@@ -65,6 +73,9 @@ def main(work_path: Path, args: tuple[str, ...]) -> None:
         target = _parse_path(args[2], work_path)
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(source, target)
+        # If this is run from within the release Docker image, we need to give others execution
+        # permissions to copy and load the file on the client side.
+        os.chmod(target, 0o755)
 
     else:
         raise RuntimeError(f"Unknown command `{args[0]}`.")

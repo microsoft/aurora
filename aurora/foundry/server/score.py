@@ -10,6 +10,7 @@ from azureml_inference_server_http.api.aml_request import AMLRequest, rawhttp
 from azureml_inference_server_http.api.aml_response import AMLResponse
 from pydantic import BaseModel, Field
 
+import aurora.foundry.server._hook  # noqa: F401
 from aurora.foundry.common.channel import (
     BlobStorageCommunication,
     LocalCommunication,

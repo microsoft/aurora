@@ -10,6 +10,8 @@ import sys
 from pathlib import Path
 
 import click
+import requests
+import requests_mock
 from flask import Request
 from werkzeug.test import EnvironBuilder
 
@@ -51,31 +53,54 @@ def main(azcopy_mock_work_path: Path, path: Path) -> None:
         str(azcopy_mock_work_path),
     ]
 
-    score.init()
+    def _matcher(request: requests.Request) -> requests.Response | None:
+        """Mock requests that check for the existence of blobs."""
+        if "blob.core.windows.net/" in request.url:
+            # Split off the SAS token.
+            path, _ = request.url.split("?", 1)
+            # Split off the storage account URL.
+            _, path = path.split("blob.core.windows.net/", 1)
 
-    while True:
-        method = sys.stdin.readline().strip()
-        base_url = sys.stdin.readline().strip()
-        query_params = sys.stdin.readline().strip()
-        headers = json.loads(sys.stdin.readline().encode("utf-8").strip())
-        payload = sys.stdin.readline().encode("utf-8").strip()
+            local_path = azcopy_mock_work_path / path
 
-        builder = EnvironBuilder(
-            method=method,
-            base_url=base_url,
-            query_string=query_params,
-            headers=headers,
-            data=payload,
-        )
-        env = builder.get_environ()
-        flask_request = Request(env)
+            response = requests.Response()
+            if local_path.exists():
+                response.status_code = 200
+            else:
+                response.status_code = 404
+            return response
 
-        resp = score.run(flask_request)
-        answer = json.dumps(resp).encode("utf-8") if isinstance(resp, dict) else resp.data
+        return None
 
-        sys.stdout.write(answer.decode("utf-8"))
-        sys.stdout.write("\n")
-        sys.stdout.flush()
+    with requests_mock.Mocker() as mock:
+        mock.real_http = True
+        mock.add_matcher(_matcher)
+
+        score.init()
+
+        while True:
+            method = sys.stdin.readline().strip()
+            base_url = sys.stdin.readline().strip()
+            query_params = sys.stdin.readline().strip()
+            headers = json.loads(sys.stdin.readline().encode("utf-8").strip())
+            payload = sys.stdin.readline().encode("utf-8").strip()
+
+            builder = EnvironBuilder(
+                method=method,
+                base_url=base_url,
+                query_string=query_params,
+                headers=headers,
+                data=payload,
+            )
+            env = builder.get_environ()
+            flask_request = Request(env)
+
+            resp = score.run(flask_request)
+            answer = json.dumps(resp).encode("utf-8") if isinstance(resp, dict) else resp.data
+
+            sys.stdout.write(answer.decode("utf-8"))
+            sys.stdout.write("\n")
+            sys.stdout.flush()
 
 
 if __name__ == "__main__":

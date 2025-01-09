@@ -1,7 +1,6 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
 import abc
-import json
 import logging
 import os
 import subprocess
@@ -10,6 +9,7 @@ import time
 from pathlib import Path
 from typing import Generator, Literal
 
+import requests
 from pydantic import BaseModel, HttpUrl
 
 from aurora import Batch
@@ -217,25 +217,8 @@ class BlobStorageCommunication(CommunicationChannel):
             self._azcopy(["copy", str(mark_file_path), self._blob_path(f"{name}.finished")])
 
     def _is_marked(self, name: str) -> bool:
-        out = json.loads(
-            self._azcopy(
-                [
-                    "list",
-                    self._blob_path(f"{name}.finished"),
-                    "--output-type",
-                    "json",
-                    "--output-level",
-                    "essential",
-                ]
-            )
-        )
-        return (
-            len(out) == 2
-            and isinstance(out[0], dict)
-            and out[0].get("MessageType", None) == "ListObject"
-            and isinstance(out[1], dict)
-            and out[1].get("MessageType", None) == "EndOfJob"
-        )
+        res = requests.head(self._blob_path(f"{name}.finished"))
+        return res.status_code == 200
 
 
 def iterate_prediction_files(name: str, num_steps: int) -> Generator[str, None, None]:

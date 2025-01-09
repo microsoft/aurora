@@ -68,6 +68,7 @@ def mock_foundry_responses_subprocess(stdin, stdout, requests_mock, base_address
         "subprocess-local",
         "subprocess-blob",
         "docker-local",
+        "docker-blob",
     ]
 )
 def mock_foundry_client(
@@ -111,21 +112,48 @@ def mock_foundry_client(
                 blob_url_with_sas = (
                     "https://storageaccount.blob.core.windows.net/container/folder?SAS"
                 )
+
+                def _matcher(request: requests.Request) -> requests.Response | None:
+                    """Mock requests that check for the existence of blobs."""
+                    if "blob.core.windows.net/" in request.url:
+                        # Split off the SAS token.
+                        path, _ = request.url.split("?", 1)
+                        # Split off the storage account URL.
+                        _, path = path.split("blob.core.windows.net/", 1)
+
+                        local_path = azcopy_mock_work_dir / path
+
+                        response = requests.Response()
+                        if local_path.exists():
+                            response.status_code = 200
+                        else:
+                            response.status_code = 404
+                        return response
+
+                    return None
+
+                requests_mock.add_matcher(_matcher)
+
                 yield {
                     "client_comm": BlobStorageCommunication(blob_url_with_sas),
                     "host_comm": BlobStorageCommunication(blob_url_with_sas),
                     "foundry_client": FoundryClient(MOCK_ADDRESS, "mock-token"),
                 }
 
-    elif request.param == "docker-local":
+    elif "docker" in request.param:
         requests_mock.real_http = True
         client_comm_folder = tmp_path / "communication"
 
         # It's important to create the communication folder on the client side already. If we don't,
         # Docker will create it, and the permissions will then be wrong.
         client_comm_folder.mkdir(exist_ok=True, parents=True)
+        azcopy_mock_work_dir.mkdir(exist_ok=True, parents=True)
+
+        # Find the path of the server hook.
+        server_hook = Path(__file__).parents[0] / "docker_server_hook.py"
 
         # Run the Docker container. Assume that it has already been built.
+        azcopy_path = Path(__file__).parents[0] / "azcopy.py"
         p = subprocess.Popen(
             [
                 "docker",
@@ -136,6 +164,17 @@ def mock_foundry_client(
                 "-t",
                 "-v",
                 f"{client_comm_folder}:/communication",
+                "-v",
+                f"{azcopy_mock_work_dir}:/azcopy_work",
+                "--mount",
+                f"type=bind,src={azcopy_path},dst=/aurora_foundry/azcopy.py,readonly",
+                "--mount",
+                (
+                    f"type=bind"
+                    f",src={server_hook}"
+                    f",dst=/aurora_foundry/aurora/foundry/server/_hook.py"
+                    f",readonly"
+                ),
                 "aurora-foundry:latest",
             ],
         )
@@ -155,11 +194,50 @@ def mock_foundry_client(
                         raise e
                 break
 
-            yield {
-                "client_comm": LocalCommunication(client_comm_folder),
-                "host_comm": LocalCommunication("/communication"),
-                "foundry_client": FoundryClient("http://127.0.0.1:5001", "mock-token"),
-            }
+            if "local" in request.param:
+                yield {
+                    "client_comm": LocalCommunication(client_comm_folder),
+                    "host_comm": LocalCommunication("/communication"),
+                    "foundry_client": FoundryClient("http://127.0.0.1:5001", "mock-token"),
+                }
+            else:
+                # Communicate via blob storage, so mock `azcopy` too.
+                monkeypatch.setattr(
+                    BlobStorageCommunication,
+                    "_AZCOPY_EXECUTABLE",
+                    ["python", str(azcopy_path), str(azcopy_mock_work_dir)],
+                )
+                # The below test URL must start with `https`!
+                blob_url_with_sas = (
+                    "https://storageaccount.blob.core.windows.net/container/folder?SAS"
+                )
+
+                def _matcher(request: requests.Request) -> requests.Response | None:
+                    """Mock requests that check for the existence of blobs."""
+                    if "blob.core.windows.net/" in request.url:
+                        # Split off the SAS token.
+                        path, _ = request.url.split("?", 1)
+                        # Split off the storage account URL.
+                        _, path = path.split("blob.core.windows.net/", 1)
+
+                        local_path = azcopy_mock_work_dir / path
+
+                        response = requests.Response()
+                        if local_path.exists():
+                            response.status_code = 200
+                        else:
+                            response.status_code = 404
+                        return response
+
+                    return None
+
+                requests_mock.add_matcher(_matcher)
+
+                yield {
+                    "client_comm": BlobStorageCommunication(blob_url_with_sas),
+                    "host_comm": BlobStorageCommunication(blob_url_with_sas),
+                    "foundry_client": FoundryClient("http://127.0.0.1:5001", "mock-token"),
+                }
 
         finally:
             p.terminate()
