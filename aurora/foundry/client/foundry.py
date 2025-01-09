@@ -2,7 +2,6 @@
 
 import abc
 import logging
-import os
 from typing import Literal
 
 import requests
@@ -58,7 +57,7 @@ class FoundryClient(AbstractFoundryClient):
     ) -> requests.Response:
         return requests.request(
             method,
-            self.endpoint.rstrip('/') + '/' + path.lstrip('/'),
+            self.endpoint.rstrip("/") + "/" + path.lstrip("/"),
             headers={
                 "Authorization": f"Bearer {self.token}",
                 "Content-Type": "application/json",

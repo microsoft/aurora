@@ -41,7 +41,7 @@ def mock_foundry_responses_subprocess(stdin, stdout, requests_mock, base_address
         text = request.text or ""
         stdin.write(method + b"\n")
         stdin.write(request.path.encode("unicode_escape") + b"\n")
-        stdin.write(request.url.partition('?')[2].encode("unicode_escape") + b"\n")
+        stdin.write(request.url.partition("?")[2].encode("unicode_escape") + b"\n")
         stdin.write(json.dumps(dict(request.headers)).encode("unicode_escape") + b"\n")
         stdin.write(text.encode("unicode_escape") + b"\n")
         stdin.flush()
@@ -57,7 +57,7 @@ def mock_foundry_responses_subprocess(stdin, stdout, requests_mock, base_address
         json=_mock_send,
     )
     requests_mock.get(
-        re.compile(f"{base_address}/score\?task_id=.*"),
+        re.compile(rf"{base_address}/score\?task_id=.*"),
         json=_mock_send,
     )
     yield
@@ -82,9 +82,11 @@ def mock_foundry_client(
         # Already determine a possible working path for the mock of `azcopy`. It might not be used,
         # but we do already need to determine it.
 
-        with runner_process(azcopy_mock_work_dir) as (p, stdin, stdout), mock_foundry_responses_subprocess(
-            stdin, stdout, requests_mock
-        ):
+        with runner_process(azcopy_mock_work_dir) as (
+            p,
+            stdin,
+            stdout,
+        ), mock_foundry_responses_subprocess(stdin, stdout, requests_mock):
             # Now we decide whether we do communication locally or via blob storage. If we do
             # communication via blob storage, we must mock `azcopy` too.
             comm_folder = tmp_path / "communication"

@@ -4,7 +4,7 @@ This is the API that the end user uses to submit jobs to the model running on Az
 """
 
 import logging
-from typing import Generator, Literal
+from typing import Generator
 
 from pydantic import BaseModel
 
