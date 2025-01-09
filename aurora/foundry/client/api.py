@@ -73,23 +73,18 @@ def submit(
     # Send a request to the endpoint to produce the predictions.
     data = {
         "request": {
-            "action": "submit",
             "model_name": model_name,
             "num_steps": num_steps,
             "host_comm": host_comm.to_spec(),
         }
     }
-    answer = Answer(**foundry_client.score(data))
-    if not answer.success:
-        raise SubmissionError(answer.message)
-    submission_info = answer.data
-    if not isinstance(submission_info, SubmissionInfo):
-        raise SubmissionError(
-            "Server returned no submission information. "
-            "Cannot determine task UUID to track tasks."
-        )
+    response = foundry_client.submit_task(data)
+    try:
+        submission_info = SubmissionInfo(**response)
+    except Exception as e:
+        raise SubmissionError(response["message"]) from e
     task_uuid = submission_info.uuid
-    logger.info("Submitted request to endpoint.")
+    logger.info("Submitted task %r to endpoint.", task_uuid)
 
     # Send the initial condition over.
     client_comm.send(batch, task_uuid, "input.nc")
@@ -99,15 +94,7 @@ def submit(
     while True:
         # Check on the progress of the task.
         data = {"request": {"action": "check", "uuid": task_uuid}}
-        answer = Answer(**foundry_client.score(data))
-        if not answer.success:
-            raise SubmissionError(answer.message)
-        progress_info = answer.data
-        if not isinstance(progress_info, ProgressInfo):
-            raise SubmissionError(
-                "Server returned no progress information. "
-                "Cannot determine whether the task has been completed or not."
-            )
+        progress_info = ProgressInfo(**foundry_client.get_progress(task_uuid))
 
         if progress_info.error:
             raise SubmissionError(f"Task failed: {progress_info.error_info}")

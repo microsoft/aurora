@@ -17,14 +17,25 @@ class AbstractFoundryClient(metaclass=abc.ABCMeta):
     """A client to talk to Azure AI Foundry."""
 
     @abc.abstractmethod
-    def score(self, data: dict) -> dict:
+    def submit_task(self, data: dict) -> dict:
         """Send `data` to the scoring path.
 
         Args:
             data (dict): Data to send.
 
         Returns:
-            dict: Answer.
+            dict: SubmissionInfo.
+        """
+
+    @abc.abstractmethod
+    def get_progress(self, task_id: str) -> dict:
+        """Get the progress of the task.
+
+        Args:
+            task_id (str): Task ID to get progress info for.
+
+        Returns:
+            dict: ProgressInfo.
         """
 
 
@@ -55,7 +66,12 @@ class FoundryClient(AbstractFoundryClient):
             json=data,
         )
 
-    def score(self, data: dict) -> dict:
+    def submit_task(self, data: dict) -> dict:
         answer = self._req("POST", "score", data)
+        answer.raise_for_status()
+        return answer.json()
+
+    def get_progress(self, task_id: str) -> dict:
+        answer = self._req("GET", f"score?task_id={task_id}")
         answer.raise_for_status()
         return answer.json()
