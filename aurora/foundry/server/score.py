@@ -23,18 +23,23 @@ __all__ = ["init", "run"]
 # Need to give the name explicitly here, because the script may be run stand-alone.
 logger = logging.getLogger("aurora.foundry.server.score")
 
-CommSpecs = Union[LocalCommunication.Spec, BlobStorageCommunication.Spec]
-
 
 class Submission(BaseModel):
-    host_comm: CommSpecs = Field(..., discriminator="class_name")
+    data_folder_uri: str
     model_name: str
     num_steps: int
 
 
-class Check(BaseModel):
-    action: Literal["check"]
-    uuid: str
+class SubmissionResponse(BaseModel):
+    task_id: str
+
+
+class ProgressInfo(BaseModel):
+    task_id: str
+    completed: bool
+    progress_percentage: int
+    error: bool
+    error_info: str
 
 
 POOL = ThreadPoolExecutor(max_workers=1)
@@ -53,7 +58,7 @@ class Task:
     def __call__(self) -> None:
         try:
             request = self.request
-            host_comm = request.host_comm.construct()
+            host_comm = BlobStorageCommunication(request.data_folder_uri)
 
             model_class = models[request.model_name]
             model = model_class()
@@ -95,47 +100,34 @@ def run(input_data: AMLRequest) -> dict:
     logger.info("Received request.")
     if input_data.method == "POST":
         logger.info("Submitting new task to thread pool.")
-        try:
-            task = Task(Submission(**input_data.get_json()))
-        except Exception as exc:
-            return AMLResponse(dict(message=str(exc)), 500, {}, json_str=True)
+        task = Task(Submission(**input_data.get_json()))
         POOL.submit(task)
         TASKS[task.uuid] = task
-        return {
-            "task_id": task.uuid,
-        }
+        return SubmissionResponse(task_id=task.uuid).dict()
 
     elif input_data.method == "GET":
         logger.info("Returning the status of an existing task.")
-        uuid = input_data.args.get("task_id")
-        if not uuid:
-            return AMLResponse(
-                dict(message="Missing task_id query parameter."),
-                400,
-                {},
-                json_str=True,
-            )
-        if uuid not in TASKS:
-            return {
-                "success": False,
-                "message": "Task UUID cannot be found.",
-            }
+        task_id = input_data.args.get("task_id")
+        if not task_id:
+            raise Exception("Missing task_id query parameter.")
+        if task_id not in TASKS:
+            raise Exception("Task UUID cannot be found.")
         else:
-            task = TASKS[uuid]
+            task = TASKS[task_id]
             # Allow the task some time to complete.
             # We sleep here so the client does not query too frequently.
             for _ in range(3):
                 if task.completed:
                     break
                 time.sleep(1)
-            return {
-                "task_id": uuid,
-                "completed": task.completed,
-                "progress_percentage": task.progress_percentage,
-                "error": task.exc is not None,
-                "error_info": str(task.exc) if task.exc else "",
-            }
 
-    else:
-        # This branch should be unreachable.
-        return AMLResponse(dict(message="Method not allowed."), 405, {}, json_str=True)
+            return ProgressInfo(
+                task_id=task_id,
+                completed=task.completed,
+                progress_percentage=task.progress_percentage,
+                error=task.exc is not None,
+                error_info=str(task.exc) if task.exc else "",
+            ).dict()
+
+    # This branch should be unreachable.
+    raise Exception("Method not allowed.")

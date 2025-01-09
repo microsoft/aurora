@@ -100,7 +100,7 @@ class CommunicationChannel:
         """
 
     @abc.abstractmethod
-    def to_spec(self) -> dict[str, str]:
+    def to_spec(self) -> str:
         """Convert this channel to specification that can be serialised into JSON.
 
         Returns:
@@ -119,11 +119,8 @@ class LocalCommunication(CommunicationChannel):
         """
         self.folder = Path(folder)
 
-    def to_spec(self) -> dict[str, str]:
-        return {
-            "class_name": "LocalCommunication",
-            "folder": str(self.folder),
-        }
+    def to_spec(self) -> str:
+        return str(self.folder)
 
     class Spec(BaseModel):
         class_name: Literal["LocalCommunication"]
@@ -166,10 +163,7 @@ class BlobStorageCommunication(CommunicationChannel):
             raise ValueError("Given URL does not appear to contain a SAS token.")
 
     def to_spec(self) -> dict[str, str]:
-        return {
-            "class_name": "BlobStorageCommunication",
-            "blob_folder": self.blob_folder,
-        }
+        return self.blob_folder
 
     class Spec(BaseModel):
         class_name: Literal["BlobStorageCommunication"]

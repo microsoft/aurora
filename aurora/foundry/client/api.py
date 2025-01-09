@@ -66,7 +66,7 @@ def submit(
     task = {
         "model_name": model_name,
         "num_steps": num_steps,
-        "host_comm": host_comm.to_spec(),
+        "data_folder_uri": host_comm.to_spec(),
     }
     response = foundry_client.submit_task(task)
     try:

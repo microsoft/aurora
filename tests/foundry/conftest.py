@@ -92,53 +92,44 @@ def mock_foundry_client(
             # communication via blob storage, we must mock `azcopy` too.
             comm_folder = tmp_path / "communication"
 
-            if "local" in request.param:
-                # Communicate via a local folder.
-                yield {
-                    "client_comm": LocalCommunication(comm_folder),
-                    "host_comm": LocalCommunication(comm_folder),
-                    "foundry_client": FoundryClient(MOCK_ADDRESS, "mock-token"),
-                }
+            # Communicate via blob storage, so mock `azcopy` too.
+            azcopy_path = Path(__file__).parents[0] / "azcopy.py"
+            monkeypatch.setattr(
+                BlobStorageCommunication,
+                "_AZCOPY_EXECUTABLE",
+                ["python", str(azcopy_path), str(azcopy_mock_work_dir)],
+            )
+            # The below test URL must start with `https`!
+            blob_url_with_sas = (
+                "https://storageaccount.blob.core.windows.net/container/folder?SAS"
+            )
 
-            else:
-                # Communicate via blob storage, so mock `azcopy` too.
-                azcopy_path = Path(__file__).parents[0] / "azcopy.py"
-                monkeypatch.setattr(
-                    BlobStorageCommunication,
-                    "_AZCOPY_EXECUTABLE",
-                    ["python", str(azcopy_path), str(azcopy_mock_work_dir)],
-                )
-                # The below test URL must start with `https`!
-                blob_url_with_sas = (
-                    "https://storageaccount.blob.core.windows.net/container/folder?SAS"
-                )
+            def _matcher(request: requests.Request) -> requests.Response | None:
+                """Mock requests that check for the existence of blobs."""
+                if "blob.core.windows.net/" in request.url:
+                    # Split off the SAS token.
+                    path, _ = request.url.split("?", 1)
+                    # Split off the storage account URL.
+                    _, path = path.split("blob.core.windows.net/", 1)
 
-                def _matcher(request: requests.Request) -> requests.Response | None:
-                    """Mock requests that check for the existence of blobs."""
-                    if "blob.core.windows.net/" in request.url:
-                        # Split off the SAS token.
-                        path, _ = request.url.split("?", 1)
-                        # Split off the storage account URL.
-                        _, path = path.split("blob.core.windows.net/", 1)
+                    local_path = azcopy_mock_work_dir / path
 
-                        local_path = azcopy_mock_work_dir / path
+                    response = requests.Response()
+                    if local_path.exists():
+                        response.status_code = 200
+                    else:
+                        response.status_code = 404
+                    return response
 
-                        response = requests.Response()
-                        if local_path.exists():
-                            response.status_code = 200
-                        else:
-                            response.status_code = 404
-                        return response
+                return None
 
-                    return None
+            requests_mock.add_matcher(_matcher)
 
-                requests_mock.add_matcher(_matcher)
-
-                yield {
-                    "client_comm": BlobStorageCommunication(blob_url_with_sas),
-                    "host_comm": BlobStorageCommunication(blob_url_with_sas),
-                    "foundry_client": FoundryClient(MOCK_ADDRESS, "mock-token"),
-                }
+            yield {
+                "client_comm": BlobStorageCommunication(blob_url_with_sas),
+                "host_comm": BlobStorageCommunication(blob_url_with_sas),
+                "foundry_client": FoundryClient(MOCK_ADDRESS, "mock-token"),
+            }
 
     elif "docker" in request.param:
         requests_mock.real_http = True
@@ -194,50 +185,43 @@ def mock_foundry_client(
                         raise e
                 break
 
-            if "local" in request.param:
-                yield {
-                    "client_comm": LocalCommunication(client_comm_folder),
-                    "host_comm": LocalCommunication("/communication"),
-                    "foundry_client": FoundryClient("http://127.0.0.1:5001", "mock-token"),
-                }
-            else:
-                # Communicate via blob storage, so mock `azcopy` too.
-                monkeypatch.setattr(
-                    BlobStorageCommunication,
-                    "_AZCOPY_EXECUTABLE",
-                    ["python", str(azcopy_path), str(azcopy_mock_work_dir)],
-                )
-                # The below test URL must start with `https`!
-                blob_url_with_sas = (
-                    "https://storageaccount.blob.core.windows.net/container/folder?SAS"
-                )
+            # Communicate via blob storage, so mock `azcopy` too.
+            monkeypatch.setattr(
+                BlobStorageCommunication,
+                "_AZCOPY_EXECUTABLE",
+                ["python", str(azcopy_path), str(azcopy_mock_work_dir)],
+            )
+            # The below test URL must start with `https`!
+            blob_url_with_sas = (
+                "https://storageaccount.blob.core.windows.net/container/folder?SAS"
+            )
 
-                def _matcher(request: requests.Request) -> requests.Response | None:
-                    """Mock requests that check for the existence of blobs."""
-                    if "blob.core.windows.net/" in request.url:
-                        # Split off the SAS token.
-                        path, _ = request.url.split("?", 1)
-                        # Split off the storage account URL.
-                        _, path = path.split("blob.core.windows.net/", 1)
+            def _matcher(request: requests.Request) -> requests.Response | None:
+                """Mock requests that check for the existence of blobs."""
+                if "blob.core.windows.net/" in request.url:
+                    # Split off the SAS token.
+                    path, _ = request.url.split("?", 1)
+                    # Split off the storage account URL.
+                    _, path = path.split("blob.core.windows.net/", 1)
 
-                        local_path = azcopy_mock_work_dir / path
+                    local_path = azcopy_mock_work_dir / path
 
-                        response = requests.Response()
-                        if local_path.exists():
-                            response.status_code = 200
-                        else:
-                            response.status_code = 404
-                        return response
+                    response = requests.Response()
+                    if local_path.exists():
+                        response.status_code = 200
+                    else:
+                        response.status_code = 404
+                    return response
 
-                    return None
+                return None
 
-                requests_mock.add_matcher(_matcher)
+            requests_mock.add_matcher(_matcher)
 
-                yield {
-                    "client_comm": BlobStorageCommunication(blob_url_with_sas),
-                    "host_comm": BlobStorageCommunication(blob_url_with_sas),
-                    "foundry_client": FoundryClient("http://127.0.0.1:5001", "mock-token"),
-                }
+            yield {
+                "client_comm": BlobStorageCommunication(blob_url_with_sas),
+                "host_comm": BlobStorageCommunication(blob_url_with_sas),
+                "foundry_client": FoundryClient("http://127.0.0.1:5001", "mock-token"),
+            }
 
         finally:
             p.terminate()
