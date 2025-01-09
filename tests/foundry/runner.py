@@ -8,6 +8,9 @@ import json
 import logging
 import sys
 from pathlib import Path
+from flask import Request
+from werkzeug.test import EnvironBuilder
+from werkzeug.wrappers import Request as WerkzeugRequest
 
 import click
 
@@ -52,12 +55,31 @@ def main(azcopy_mock_work_path: Path, path: Path) -> None:
     score.init()
 
     while True:
-        raw_data = sys.stdin.readline()
-        raw_data = raw_data.encode("utf-8").decode("unicode_escape")
+        method = sys.stdin.readline().strip()
+        base_url = sys.stdin.readline().strip()
+        query_params = json.loads(sys.stdin.readline().encode("utf-8").strip())
+        headers = json.loads(sys.stdin.readline().encode("utf-8").strip())
+        payload = sys.stdin.readline().encode("utf-8").strip()
 
-        answer = json.dumps(score.run(raw_data))
+        builder = EnvironBuilder(
+                method=method,
+                base_url=base_url,
+                headers={
+                    "Content-Type": "application/json"
+                },
+                data=payload,
+        )
+        env = builder.get_environ()
+        flask_request = Request(env)
 
-        sys.stdout.write(answer.encode("unicode_escape").decode("utf-8"))
+        resp = score.run(flask_request)
+        if isinstance(resp, dict):
+            answer = json.dumps(resp).encode("utf-8")
+        else:
+            answer = resp.data
+            print("DATA", answer)
+
+        sys.stdout.write(answer.decode("utf-8"))
         sys.stdout.write("\n")
         sys.stdout.flush()
 

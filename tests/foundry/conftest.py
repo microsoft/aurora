@@ -17,11 +17,11 @@ MOCK_ADDRESS = "https://mock-foundry.azurewebsites.net"
 
 
 @contextmanager
-def runner_process():
+def runner_process(azcopy_mock_work_dir):
     score_script_path = Path(__file__).parents[2] / "aurora/foundry/server/score.py"
     runner_path = Path(__file__).parents[0] / "runner.py"
     p = subprocess.Popen(
-        ["python", runner_path, score_script_path],
+        ["python", runner_path, azcopy_mock_work_dir, score_script_path],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
     )
@@ -38,8 +38,10 @@ def mock_foundry_responses_subprocess(stdin, stdout, requests_mock, base_address
     def _mock_send(request, context) -> dict:
         method = request.method.encode("unicode_escape")
         stdin.write(method + b"\n")
-        stdin.write(method.url + b"\n")
-        stdin.write(request.text().encode("unicode_escape") + b"\n")
+        stdin.write(request.path.encode("unicode_escape") + b"\n")
+        stdin.write(json.dumps(request.qs).encode("unicode_escape") + b"\n")
+        stdin.write(json.dumps(dict(request.headers)).encode("unicode_escape") + b"\n")
+        stdin.write(request.text.encode("unicode_escape") + b"\n")
         stdin.flush()
 
         output = stdout.readline()
@@ -79,7 +81,7 @@ def mock_foundry_client(
         # Already determine a possible working path for the mock of `azcopy`. It might not be used,
         # but we do already need to determine it.
 
-        with runner_process() as (p, stdin, stdout), mock_foundry_responses_subprocess(
+        with runner_process(azcopy_mock_work_dir) as (p, stdin, stdout), mock_foundry_responses_subprocess(
             stdin, stdout, requests_mock
         ):
             # Now we decide whether we do communication locally or via blob storage. If we do
