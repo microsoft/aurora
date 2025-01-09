@@ -5,10 +5,9 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from typing import Literal, Union
 from uuid import uuid4
-from azureml_inference_server_http.api.aml_response import AMLResponse
-from azureml_inference_server_http.api.aml_request import AMLRequest
-from azureml_inference_server_http.api.aml_request import rawhttp
 
+from azureml_inference_server_http.api.aml_request import AMLRequest, rawhttp
+from azureml_inference_server_http.api.aml_response import AMLResponse
 from pydantic import BaseModel, Field
 
 from aurora.foundry.common.channel import (
@@ -114,7 +113,12 @@ def run(input_data: AMLRequest) -> dict:
         logger.info("Returning the status of an existing task.")
         uuid = input_data.args.get("task_id")
         if not uuid:
-            return AMLRequest(dict(message="Missing task_id query parameter."), 400, {}, json_str=True)
+            return AMLRequest(
+                dict(message="Missing task_id query parameter."),
+                400,
+                {},
+                json_str=True,
+            )
         if uuid not in TASKS:
             return {
                 "success": False,
