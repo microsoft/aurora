@@ -1,65 +1,29 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Aurora Endpoint",
-    "version": "0.1.0"
+    "title": "Aurora",
+    "description": "Evaluate Aurora Model",
+    "version": "1.0.0"
   },
-  "security": [
-    {
-      "Bearer": []
-    }
-  ],
   "paths": {
-    "/": {
-      "get": {
-        "summary": "Check if alive",
-        "operationId": "ServiceHealthCheck",
-        "description": "Simple health check endpoint to ensure the service is up at any given point.",
-        "responses": {
-          "200": {
-            "description": "If service is up and running, this response will be returned with the content 'Healthy'",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string",
-                  "examples": [
-                    "Healthy"
-                  ]
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "The service failed to execute due to an error.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/score": {
       "post": {
+        "summary": "Submit a new task",
+        "operationId": "create_score_score_post",
         "security": [
           {
-            "Bearer": []
+            "APIKeyHeader": []
           }
         ],
-        "summary": "Create Task",
-        "operationId": "create_item_score__post",
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateTask"
+                "$ref": "#/components/schemas/Submission"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -67,7 +31,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CreateTaskResponse"
+                  "$ref": "#/components/schemas/SubmissionResponse"
                 }
               }
             }
@@ -85,31 +49,82 @@
         }
       },
       "get": {
+        "summary": "Get progress info for a given task",
+        "operationId": "get_score_score_get",
         "security": [
           {
-            "Bearer": []
+            "APIKeyHeader": []
           }
         ],
-        "summary": "Fetch Progress of a Task",
-        "operationId": "get_item_score_post",
         "parameters": [
           {
             "name": "task_id",
             "in": "query",
             "required": true,
             "schema": {
-              "type": "string"
-            }
+              "type": "string",
+              "description": "The ID of the task",
+              "examples": {
+                "task_id": {
+                  "value": "abc-123-def",
+                  "summary": "Sample Task ID"
+                }
+              },
+              "title": "Task Id"
+            },
+            "description": "The ID of the task"
           }
         ],
         "responses": {
           "200": {
-            "description": "Successfull Response",
+            "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Answer"
+                  "$ref": "#/components/schemas/ProgressInfo"
                 }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Succeeds when the service is ready.",
+        "operationId": "read_root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/swagger.json": {
+      "get": {
+        "summary": "Get Swagger",
+        "operationId": "get_swagger_swagger_json_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           }
@@ -119,52 +134,6 @@
   },
   "components": {
     "schemas": {
-      "CreateTaskResponse": {
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success"
-          },
-          "message": {
-            "type": "string",
-            "title": "Message"
-          },
-          "task_id": {
-            "type": "string",
-            "title": "Task ID"
-          }
-        }
-      },
-      "ErrorResponse": {
-        "properties": {
-          "message": {
-            "type": "string"
-          }
-        }
-      },
-      "Answer": {
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success"
-          },
-          "message": {
-            "type": "string",
-            "title": "Message"
-          },
-          "data": {
-            "$ref": "#/components/schemas/ProgressInfo",
-            "title": "Data"
-          }
-        },
-        "type": "object",
-        "required": [
-          "success",
-          "message",
-          "data"
-        ],
-        "title": "Answer"
-      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -180,13 +149,9 @@
       },
       "ProgressInfo": {
         "properties": {
-          "kind": {
-            "const": "progress_info",
-            "title": "Kind"
-          },
-          "uuid": {
+          "task_id": {
             "type": "string",
-            "title": "Uuid"
+            "title": "Task Id"
           },
           "completed": {
             "type": "boolean",
@@ -206,10 +171,28 @@
           }
         },
         "type": "object",
-        "title": "ProgressInfo"
+        "required": [
+          "task_id",
+          "completed",
+          "progress_percentage",
+          "error",
+          "error_info"
+        ],
+        "title": "ProgressInfo",
+        "example": {
+          "completed": true,
+          "error": false,
+          "error_info": "",
+          "progress_percentage": 100,
+          "task_id": "abc-123-def"
+        }
       },
-      "CreateTask": {
+      "Submission": {
         "properties": {
+          "data_folder_uri": {
+            "type": "string",
+            "title": "Data Folder Uri"
+          },
           "model_name": {
             "type": "string",
             "title": "Model Name"
@@ -217,35 +200,36 @@
           "num_steps": {
             "type": "integer",
             "title": "Num Steps"
-          },
-          "client_comm": {
-            "type": "string",
-            "title": "Client Comm"
-          },
-          "host_comm": {
-            "type": "string",
-            "title": "Host Comm"
           }
         },
         "type": "object",
         "required": [
-          "request"
+          "data_folder_uri",
+          "model_name",
+          "num_steps"
         ],
-        "title": "CreateTask"
+        "title": "Submission",
+        "example": {
+          "data_folder_uri": "https://my.blob.core.windows.net/container/some/path?WRITABLE_SAS",
+          "model_name": "aurora-0.25-small-pretrained",
+          "num_steps": 5
+        }
       },
-      "SubmissionInfo": {
+      "SubmissionResponse": {
         "properties": {
-          "kind": {
-            "const": "submission_info",
-            "title": "Kind"
-          },
-          "uuid": {
+          "task_id": {
             "type": "string",
-            "title": "Uuid"
+            "title": "Task Id"
           }
         },
         "type": "object",
-        "title": "SubmissionInfo"
+        "required": [
+          "task_id"
+        ],
+        "title": "SubmissionResponse",
+        "example": {
+          "task_id": "abc-123-def"
+        }
       },
       "ValidationError": {
         "properties": {
@@ -279,14 +263,14 @@
           "type"
         ],
         "title": "ValidationError"
-      },
-      "securitySchemes": {
-        "Bearer": {
-          "type": "apiKey",
-          "name": "Authorization",
-          "in": "header",
-          "description": "For example Bearer abc123"
-        }
+      }
+    },
+    "securitySchemes": {
+      "APIKeyHeader": {
+        "type": "apiKey",
+        "description": "Example 'Bearer myApiKey'",
+        "in": "header",
+        "name": "Authorization"
       }
     }
   }

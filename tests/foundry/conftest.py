@@ -88,10 +88,6 @@ def mock_foundry_client(
             stdin,
             stdout,
         ), mock_foundry_responses_subprocess(stdin, stdout, requests_mock):
-            # Now we decide whether we do communication locally or via blob storage. If we do
-            # communication via blob storage, we must mock `azcopy` too.
-            comm_folder = tmp_path / "communication"
-
             # Communicate via blob storage, so mock `azcopy` too.
             azcopy_path = Path(__file__).parents[0] / "azcopy.py"
             monkeypatch.setattr(

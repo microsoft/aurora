@@ -26,9 +26,21 @@ class Submission(BaseModel):
     model_name: str
     num_steps: int
 
+    class Config:
+        json_schema_extra = dict(
+            example=dict(
+                data_folder_uri="https://my.blob.core.windows.net/container/some/path?WRITABLE_SAS",
+                model_name="aurora-0.25-small-pretrained",
+                num_steps=5,
+            )
+        )
+
 
 class SubmissionResponse(BaseModel):
     task_id: str
+
+    class Config:
+        json_schema_extra = dict(example=dict(task_id="abc-123-def"))
 
 
 class ProgressInfo(BaseModel):
@@ -37,6 +49,17 @@ class ProgressInfo(BaseModel):
     progress_percentage: int
     error: bool
     error_info: str
+
+    class Config:
+        json_schema_extra = dict(
+            example=dict(
+                task_id="abc-123-def",
+                completed=True,
+                progress_percentage=100,
+                error=False,
+                error_info="",
+            )
+        )
 
 
 POOL = ThreadPoolExecutor(max_workers=1)

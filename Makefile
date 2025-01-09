@@ -1,4 +1,4 @@
-.PHONY: install test docs docker-requirements docker
+.PHONY: install test docs docker-requirements docker swagger-file
 
 install:
 	pip install --upgrade pip
@@ -19,3 +19,7 @@ docker-requirements: pyproject.toml
 docker:
 	(pip show setuptools-scm 1>/dev/null) || pip install setuptools-scm
 	AURORA_REPO_VERSION=`python -m setuptools_scm` docker build --build-arg AURORA_REPO_VERSION -t aurora-foundry:latest .
+
+swagger-file:
+	pip install fastapi
+	python aurora/foundry/server/generate-swagger.py aurora/foundry/server/swagger3.json
