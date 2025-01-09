@@ -52,12 +52,13 @@ dev = [
     "ghp-import",
     "pytest",
     "pytest-cov",
+    "requests_mock",
     "mypy",
     "ruff==0.4.1",
     "pre-commit",
-    "requests_mock",
     "jupyter-book",
-    "scipy",
+    "flask",
+    "azureml-inference-server-http",
 ]
 
 [project.urls]
