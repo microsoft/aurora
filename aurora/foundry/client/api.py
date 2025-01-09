@@ -23,8 +23,7 @@ class SubmissionInfo(BaseModel):
 
 
 class ProgressInfo(BaseModel):
-    kind: Literal["progress_info"]
-    uuid: str
+    task_id: str
     completed: bool
     progress_percentage: int
     error: bool
@@ -74,17 +73,18 @@ def submit(
         submission_info = SubmissionInfo(**response)
     except Exception as e:
         raise SubmissionError(response["message"]) from e
-    task_uuid = submission_info.uuid
-    logger.info("Submitted task %r to endpoint.", task_uuid)
+    task_id = submission_info.task_id
+    logger.info("Submitted task %r to endpoint.", task_id)
 
     # Send the initial condition over.
-    client_comm.send(batch, task_uuid, "input.nc")
+    client_comm.send(batch, task_id, "input.nc")
 
     previous_progress: int = 0
 
     while True:
         # Check on the progress of the task.
-        progress_info = ProgressInfo(**foundry_client.get_progress(task_uuid))
+        response = foundry_client.get_progress(task_id)
+        progress_info = ProgressInfo(**response)
 
         if progress_info.error:
             raise SubmissionError(f"Task failed: {progress_info.error_info}")
@@ -99,4 +99,4 @@ def submit(
 
     logger.info("Retrieving predictions.")
     for prediction_name in iterate_prediction_files("prediction.nc", num_steps):
-        yield client_comm.receive(task_uuid, prediction_name)
+        yield client_comm.receive(task_id, prediction_name)

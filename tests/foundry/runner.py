@@ -57,16 +57,15 @@ def main(azcopy_mock_work_path: Path, path: Path) -> None:
     while True:
         method = sys.stdin.readline().strip()
         base_url = sys.stdin.readline().strip()
-        query_params = json.loads(sys.stdin.readline().encode("utf-8").strip())
+        query_params = sys.stdin.readline().strip()
         headers = json.loads(sys.stdin.readline().encode("utf-8").strip())
         payload = sys.stdin.readline().encode("utf-8").strip()
 
         builder = EnvironBuilder(
                 method=method,
                 base_url=base_url,
-                headers={
-                    "Content-Type": "application/json"
-                },
+                query_string=query_params,
+                headers=headers,
                 data=payload,
         )
         env = builder.get_environ()
@@ -77,7 +76,6 @@ def main(azcopy_mock_work_path: Path, path: Path) -> None:
             answer = json.dumps(resp).encode("utf-8")
         else:
             answer = resp.data
-            print("DATA", answer)
 
         sys.stdout.write(answer.decode("utf-8"))
         sys.stdout.write("\n")

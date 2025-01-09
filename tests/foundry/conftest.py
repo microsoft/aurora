@@ -1,6 +1,7 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
 import json
+import re
 import subprocess
 import time
 from contextlib import contextmanager
@@ -37,11 +38,12 @@ def runner_process(azcopy_mock_work_dir):
 def mock_foundry_responses_subprocess(stdin, stdout, requests_mock, base_address=MOCK_ADDRESS):
     def _mock_send(request, context) -> dict:
         method = request.method.encode("unicode_escape")
+        text = request.text or ""
         stdin.write(method + b"\n")
         stdin.write(request.path.encode("unicode_escape") + b"\n")
-        stdin.write(json.dumps(request.qs).encode("unicode_escape") + b"\n")
+        stdin.write(request.url.partition('?')[2].encode("unicode_escape") + b"\n")
         stdin.write(json.dumps(dict(request.headers)).encode("unicode_escape") + b"\n")
-        stdin.write(request.text.encode("unicode_escape") + b"\n")
+        stdin.write(text.encode("unicode_escape") + b"\n")
         stdin.flush()
 
         output = stdout.readline()
@@ -50,13 +52,12 @@ def mock_foundry_responses_subprocess(stdin, stdout, requests_mock, base_address
 
         return json.loads(output.decode("unicode_escape"))
 
-    task_uuid = "mock-uuid"
     requests_mock.post(
         f"{base_address}/score",
         json=_mock_send,
     )
     requests_mock.get(
-        f"{base_address}/score?uuid={task_uuid}",
+        re.compile(f"{base_address}/score\?task_id=.*"),
         json=_mock_send,
     )
     yield
@@ -115,6 +116,7 @@ def mock_foundry_client(
                 }
 
     elif request.param == "docker-local":
+        requests_mock.real_http = True
         client_comm_folder = tmp_path / "communication"
 
         # It's important to create the communication folder on the client side already. If we don't,

@@ -108,7 +108,7 @@ def run(input_data: AMLRequest) -> dict:
         logger.info("Returning the status of an existing task.")
         uuid = input_data.args.get("task_id")
         if not uuid:
-            return AMLRequest(
+            return AMLResponse(
                 dict(message="Missing task_id query parameter."),
                 400,
                 {},
@@ -128,18 +128,13 @@ def run(input_data: AMLRequest) -> dict:
                     break
                 time.sleep(1)
             return {
-                "success": True,
-                "message": "Status check completed.",
-                "data": {
-                    "kind": "progress_info",
-                    "uuid": uuid,
-                    "completed": task.completed,
-                    "progress_percentage": task.progress_percentage,
-                    "error": task.exc is not None,
-                    "error_info": str(task.exc) if task.exc else "",
-                },
+                "task_id": uuid,
+                "completed": task.completed,
+                "progress_percentage": task.progress_percentage,
+                "error": task.exc is not None,
+                "error_info": str(task.exc) if task.exc else "",
             }
 
     else:
         # This branch should be unreachable.
-        return AMLRequest(dict(message="Method not allowed."), 405, {}, json_str=True)
+        return AMLResponse(dict(message="Method not allowed."), 405, {}, json_str=True)
