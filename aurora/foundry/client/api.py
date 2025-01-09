@@ -71,14 +71,12 @@ def submit(
         raise KeyError(f"Model `{model_name}` is not a valid model.")
 
     # Send a request to the endpoint to produce the predictions.
-    data = {
-        "request": {
-            "model_name": model_name,
-            "num_steps": num_steps,
-            "host_comm": host_comm.to_spec(),
-        }
+    task = {
+        "model_name": model_name,
+        "num_steps": num_steps,
+        "host_comm": host_comm.to_spec(),
     }
-    response = foundry_client.submit_task(data)
+    response = foundry_client.submit_task(task)
     try:
         submission_info = SubmissionInfo(**response)
     except Exception as e:
@@ -93,7 +91,6 @@ def submit(
 
     while True:
         # Check on the progress of the task.
-        data = {"request": {"action": "check", "uuid": task_uuid}}
         progress_info = ProgressInfo(**foundry_client.get_progress(task_uuid))
 
         if progress_info.error:
