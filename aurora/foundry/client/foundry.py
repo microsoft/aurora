@@ -58,7 +58,7 @@ class FoundryClient(AbstractFoundryClient):
     ) -> requests.Response:
         return requests.request(
             method,
-            os.path.join(self.endpoint, path),
+            self.endpoint.rstrip('/') + '/' + path.lstrip('/'),
             headers={
                 "Authorization": f"Bearer {self.token}",
                 "Content-Type": "application/json",

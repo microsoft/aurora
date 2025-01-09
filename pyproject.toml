@@ -55,7 +55,6 @@ dev = [
     "mypy",
     "ruff==0.4.1",
     "pre-commit",
-    "requests_mock",
     "jupyter-book",
     "scipy",
 ]

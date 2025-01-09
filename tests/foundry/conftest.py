@@ -156,7 +156,7 @@ def mock_foundry_client(
             yield {
                 "client_comm": LocalCommunication(client_comm_folder),
                 "host_comm": LocalCommunication("/communication"),
-                "foundry_client": FoundryClient("https://127.0.0.1:5001", "mock-token"),
+                "foundry_client": FoundryClient("http://127.0.0.1:5001", "mock-token"),
             }
 
         finally:
