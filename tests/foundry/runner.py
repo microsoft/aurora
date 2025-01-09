@@ -8,11 +8,10 @@ import json
 import logging
 import sys
 from pathlib import Path
-from flask import Request
-from werkzeug.test import EnvironBuilder
-from werkzeug.wrappers import Request as WerkzeugRequest
 
 import click
+from flask import Request
+from werkzeug.test import EnvironBuilder
 
 # Expose logging messages.
 logger = logging.getLogger()
@@ -62,20 +61,17 @@ def main(azcopy_mock_work_path: Path, path: Path) -> None:
         payload = sys.stdin.readline().encode("utf-8").strip()
 
         builder = EnvironBuilder(
-                method=method,
-                base_url=base_url,
-                query_string=query_params,
-                headers=headers,
-                data=payload,
+            method=method,
+            base_url=base_url,
+            query_string=query_params,
+            headers=headers,
+            data=payload,
         )
         env = builder.get_environ()
         flask_request = Request(env)
 
         resp = score.run(flask_request)
-        if isinstance(resp, dict):
-            answer = json.dumps(resp).encode("utf-8")
-        else:
-            answer = resp.data
+        answer = json.dumps(resp).encode("utf-8") if isinstance(resp, dict) else resp.data
 
         sys.stdout.write(answer.decode("utf-8"))
         sys.stdout.write("\n")
