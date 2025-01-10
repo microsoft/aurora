@@ -18,7 +18,12 @@ docker-requirements: pyproject.toml
 
 docker:
 	(pip show setuptools-scm 1>/dev/null) || pip install setuptools-scm
-	AURORA_REPO_VERSION=`python -m setuptools_scm` docker build --build-arg AURORA_REPO_VERSION -t aurora-foundry:latest .
+	AURORA_REPO_VERSION=`python -m setuptools_scm` docker build --build-arg AURORA_REPO_VERSION -t testwsacr.azurecr.io/aurora-foundry:20250110-1 .
+
+docker-acr:
+	(pip show setuptools-scm 1>/dev/null) || pip install setuptools-scm
+	[ ! -z "$(ACR)" ]
+	AURORA_REPO_VERSION=`python -m setuptools_scm` az acr build --build-arg AURORA_REPO_VERSION -r "$(ACR)" -t aurora-foundry:20250110-1 .
 
 swagger-file:
 	pip install fastapi
