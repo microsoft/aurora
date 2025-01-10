@@ -57,7 +57,7 @@ for pred in submit(
     model_name="aurora-0.25-small-pretrained",
     num_steps=4,
     foundry_client=foundry_client,
-    channel=communication,
+    channel=channel,
 ):
     pass  # Do something with `pred`.
 ```
