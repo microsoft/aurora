@@ -28,7 +28,7 @@ jobs:
 
       - name: Build Foundry image
         run: |
-            DOCKER_IMAGE=aurora-foundry make docker
+            make docker
 
       - name: Install dependencies
         run: |
@@ -37,4 +37,4 @@ jobs:
 
       - name: Run tests
         run: |
-            DOCKER_IMAGE=aurora-foundry pytest -v --cov=aurora --cov-report term-missing
+            make test
