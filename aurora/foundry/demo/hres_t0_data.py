@@ -35,9 +35,11 @@ def load_batch(day: datetime = datetime(2022, 5, 11), cache_path: str = "~/downl
 
 
 def _load_batch(day: str, cache_path: Path) -> Batch:
+    # Install any required packages and hide the output. This can be done in a nicer way.
     subprocess.check_call(
         [sys.executable, "-m", "pip", "install", "fsspec", "gcsfs", "zarr", "matplotlib"],
         stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
 
     cache_path = cache_path.expanduser()
