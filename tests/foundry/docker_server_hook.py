@@ -38,11 +38,12 @@ mock = requests_mock.Mocker().__enter__()
 mock.real_http = True
 mock.add_matcher(_matcher)
 
-from aurora.foundry.common.channel import BlobStorageChannel  # noqa: E402
+if Path("/azcopy_work").exists():
+    from aurora.foundry.common.channel import BlobStorageChannel  # noqa: E402
 
-# Second, mock `azcopy`, assuming that the `azcopy` mock working directory is `/azcopy_work`.
-BlobStorageChannel._AZCOPY_EXECUTABLE = [
-    "python",
-    "/aurora_foundry/azcopy.py",
-    "/azcopy_work",
-]
+    # Second, mock `azcopy`, assuming that the `azcopy` mock working directory is `/azcopy_work`.
+    BlobStorageChannel._AZCOPY_EXECUTABLE = [
+        "python",
+        "/aurora_foundry/azcopy.py",
+        "/azcopy_work",
+    ]

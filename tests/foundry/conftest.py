@@ -21,13 +21,22 @@ MOCK_ADDRESS = "https://mock-foundry.azurewebsites.net"
 
 @contextmanager
 def runner_process(
-    azcopy_mock_work_dir: Path,
+    azcopy_mock_work_path: Path | None,
 ) -> Generator[Tuple[subprocess.Popen, IO, IO], None, None]:
     """Launch a runner process that mocks the Azure ML Inference Server."""
     score_script_path = Path(__file__).parents[2] / "aurora/foundry/server/score.py"
     runner_path = Path(__file__).parents[0] / "runner.py"
     p = subprocess.Popen(
-        ["python", runner_path, azcopy_mock_work_dir, score_script_path],
+        [
+            "python",
+            runner_path,
+            *(
+                ["--azcopy-mock-work-path", str(azcopy_mock_work_path)]
+                if azcopy_mock_work_path
+                else []
+            ),
+            score_script_path,
+        ],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
     )
@@ -72,23 +81,18 @@ def mock_foundry_responses_subprocess(
     yield
 
 
-@pytest.fixture(params=["subprocess", "docker"])
-def mock_foundry_client(
-    request,
-    monkeypatch,
-    requests_mock,
-    tmp_path: Path,
-) -> Generator[dict, None, None]:
+def mock_azcopy(tmp_path: Path, monkeypatch, requests_mock) -> Tuple[Path, Path, str]:
+    """Mock `azcopy`."""
     # Communicate via blob storage, so mock `azcopy` too.
-    azcopy_mock_work_dir = tmp_path / "azcopy_work"
+    azcopy_mock_work_path = tmp_path / "azcopy_work"
     # It's important to already create the work folder. If we don't then the Docker image will
     # create it, and the permissions will then be wrong.
-    azcopy_mock_work_dir.mkdir(exist_ok=True, parents=True)
+    azcopy_mock_work_path.mkdir(exist_ok=True, parents=True)
     azcopy_path = Path(__file__).parents[0] / "azcopy.py"
     monkeypatch.setattr(
         BlobStorageChannel,
         "_AZCOPY_EXECUTABLE",
-        ["python", str(azcopy_path), str(azcopy_mock_work_dir)],
+        ["python", str(azcopy_path), str(azcopy_mock_work_path)],
     )
     # The below test URL must start with `https`!
     blob_url_with_sas = "https://storageaccount.blob.core.windows.net/container/folder?SAS"
@@ -99,7 +103,7 @@ def mock_foundry_client(
         path = url.path[1:]  # Remove leading slash.
 
         if url.hostname and url.hostname.endswith(".blob.core.windows.net"):
-            local_path = azcopy_mock_work_dir / path
+            local_path = azcopy_mock_work_path / path
 
             response = requests.Response()
             if local_path.exists():
@@ -112,8 +116,42 @@ def mock_foundry_client(
 
     requests_mock.add_matcher(_matcher)
 
+    return azcopy_path, azcopy_mock_work_path, blob_url_with_sas
+
+
+@pytest.fixture(
+    params=[
+        "subprocess",
+        "subprocess-real-container",
+        "docker",
+    ]
+)
+def mock_foundry_client(
+    request,
+    tmp_path: Path,
+    monkeypatch,
+    requests_mock,
+) -> Generator[dict, None, None]:
     if request.param == "subprocess":
-        with runner_process(azcopy_mock_work_dir) as (p, stdin, stdout):  # noqa: SIM117
+        azcopy_path, azcopy_mock_work_path, blob_url_with_sas = mock_azcopy(
+            tmp_path, monkeypatch, requests_mock
+        )
+
+        with runner_process(azcopy_mock_work_path) as (p, stdin, stdout):  # noqa: SIM117
+            with mock_foundry_responses_subprocess(stdin, stdout, requests_mock):
+                yield {
+                    "channel": BlobStorageChannel(blob_url_with_sas),
+                    "foundry_client": FoundryClient(MOCK_ADDRESS, "mock-token"),
+                }
+
+    elif request.param == "subprocess-real-container":
+        requests_mock.real_http = True
+
+        if "TEST_BLOB_URL_WITH_SAS" not in os.environ:
+            pytest.skip("`TEST_BLOB_URL_WITH_SAS` is not set, so test cannot be run.")
+        blob_url_with_sas = os.environ["TEST_BLOB_URL_WITH_SAS"]
+
+        with runner_process(None) as (p, stdin, stdout):  # noqa: SIM117
             with mock_foundry_responses_subprocess(stdin, stdout, requests_mock):
                 yield {
                     "channel": BlobStorageChannel(blob_url_with_sas),
@@ -121,6 +159,10 @@ def mock_foundry_client(
                 }
 
     elif request.param == "docker":
+        azcopy_path, azcopy_mock_work_path, blob_url_with_sas = mock_azcopy(
+            tmp_path, monkeypatch, requests_mock
+        )
+
         requests_mock.real_http = True
 
         if "DOCKER_IMAGE" not in os.environ:
@@ -142,7 +184,7 @@ def mock_foundry_client(
                 "--rm",
                 "-t",
                 "-v",
-                f"{azcopy_mock_work_dir}:/azcopy_work",
+                f"{azcopy_mock_work_path}:/azcopy_work",
                 "--mount",
                 f"type=bind,src={azcopy_path},dst=/aurora_foundry/azcopy.py,readonly",
                 "--mount",

@@ -8,6 +8,7 @@ import json
 import logging
 import sys
 from pathlib import Path
+from typing import Callable
 from urllib.parse import urlparse
 
 import click
@@ -26,9 +27,8 @@ logger.addHandler(stream_handler)
 
 
 @click.command()
-@click.argument(
-    "azcopy_mock_work_path",
-    required=True,
+@click.option(
+    "--azcopy-mock-work-path",
     type=click.Path(
         exists=False, file_okay=False, dir_okay=True, resolve_path=True, path_type=Path
     ),
@@ -38,7 +38,7 @@ logger.addHandler(stream_handler)
     required=True,
     type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True, path_type=Path),
 )
-def main(azcopy_mock_work_path: Path, path: Path) -> None:
+def main(azcopy_mock_work_path: Path | None, path: Path) -> None:
     spec = util.spec_from_file_location("score", path)
     assert spec is not None, "Could not load specification."
     score = util.module_from_spec(spec)
@@ -46,36 +46,42 @@ def main(azcopy_mock_work_path: Path, path: Path) -> None:
     assert spec.loader is not None, "Specification has no loader."
     spec.loader.exec_module(score)
 
-    # At this point, we mock `azcopy` too.
-    azcopy_path = Path(__file__).parents[0] / "azcopy.py"
-    sys.modules["aurora.foundry"].BlobStorageChannel._AZCOPY_EXECUTABLE = [
-        "python",
-        str(azcopy_path),
-        str(azcopy_mock_work_path),
-    ]
+    if azcopy_mock_work_path:
+        # At this point, we mock `azcopy` too.
+        azcopy_path = Path(__file__).parents[0] / "azcopy.py"
+        sys.modules["aurora.foundry"].BlobStorageChannel._AZCOPY_EXECUTABLE = [
+            "python",
+            str(azcopy_path),
+            str(azcopy_mock_work_path),
+        ]
 
-    def _matcher(request: requests.Request) -> requests.Response | None:
-        """Mock requests that check for the existence of blobs."""
-        url = urlparse(request.url)
-        path = url.path[1:]  # Remove leading slash.
+        _matcher: Callable[[requests.Request], requests.Response | None] | None
 
-        if url.hostname and url.hostname.endswith(".blob.core.windows.net"):
-            local_path = azcopy_mock_work_path / path
+        def _matcher(request: requests.Request) -> requests.Response | None:
+            """Mock requests that check for the existence of blobs."""
+            url = urlparse(request.url)
+            path = url.path[1:]  # Remove leading slash.
 
-            local_path = azcopy_mock_work_path / path
+            if url.hostname and url.hostname.endswith(".blob.core.windows.net"):
+                local_path = azcopy_mock_work_path / path
 
-            response = requests.Response()
-            if local_path.exists():
-                response.status_code = 200
-            else:
-                response.status_code = 404
-            return response
+                local_path = azcopy_mock_work_path / path
 
-        return None
+                response = requests.Response()
+                if local_path.exists():
+                    response.status_code = 200
+                else:
+                    response.status_code = 404
+                return response
+
+            return None
+    else:
+        _matcher = None
 
     with requests_mock.Mocker() as mock:
         mock.real_http = True
-        mock.add_matcher(_matcher)
+        if _matcher is not None:
+            mock.add_matcher(_matcher)
 
         score.init()
 
