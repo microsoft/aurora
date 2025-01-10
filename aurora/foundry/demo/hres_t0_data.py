@@ -115,9 +115,9 @@ def _load_batch(day: str, cache_path: Path) -> Batch:
             # The static variables are constant, so we just get them for the first time. They
             # don't need to be flipped along the latitude dimension, because they are from
             # ERA5.
-            "z": torch.from_numpy(static_vars_ds["z"].values[0]),
-            "slt": torch.from_numpy(static_vars_ds["slt"].values[0]),
-            "lsm": torch.from_numpy(static_vars_ds["lsm"].values[0]),
+            "z": torch.from_numpy(static_vars_ds["z"].values),
+            "slt": torch.from_numpy(static_vars_ds["slt"].values),
+            "lsm": torch.from_numpy(static_vars_ds["lsm"].values),
         },
         atmos_vars={
             "t": _prepare(atmos_vars_ds["temperature"].values),

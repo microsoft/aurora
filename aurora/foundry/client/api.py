@@ -75,9 +75,10 @@ def submit(
     logger.info(f"Created task `{task_id}` at endpoint.")
 
     # Send the initial condition over.
+    logger.info("Uploading initial condition.")
     channel.send(batch, task_id, "input.nc")
 
-    previous_status: str = "No Status"
+    previous_status: str = "No status"
     previous_progress: int = 0
 
     while True:
@@ -112,3 +113,4 @@ def submit(
     logger.info("Retrieving predictions.")
     for prediction_name in iterate_prediction_files("prediction.nc", num_steps):
         yield channel.receive(task_id, prediction_name)
+    logger.info("All predictions have been retrieved.")
