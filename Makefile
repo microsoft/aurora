@@ -1,7 +1,7 @@
 .PHONY: install test docs docker-requirements docker swagger-file
 
 DOCKER_WS ?= testwsacr
-DOCKER_IMAGE ?= aurora-foundry:20250110-1
+DOCKER_IMAGE ?= aurora-foundry:20250110-2
 
 install:
 	pip install --upgrade pip
