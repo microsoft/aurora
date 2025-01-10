@@ -124,6 +124,7 @@ def mock_azcopy(tmp_path: Path, monkeypatch, requests_mock) -> Tuple[Path, Path,
         "subprocess",
         "subprocess-real-container",
         "docker",
+        "docker-real-container",
     ]
 )
 def mock_foundry_client(
@@ -197,6 +198,68 @@ def mock_foundry_client(
                 docker_image,
             ],
         )
+
+        try:
+            # Wait for the server to come online.
+            start = time.time()
+            while True:
+                try:
+                    res = requests.get("http://127.0.0.1:5001/")
+                    res.raise_for_status()
+                except (requests.ConnectionError, requests.HTTPError) as e:
+                    # Try for at most 10 seconds.
+                    if time.time() - start < 10:
+                        time.sleep(0.5)
+                        continue
+                    else:
+                        raise e
+                break
+
+            yield {
+                "channel": BlobStorageChannel(blob_url_with_sas),
+                "foundry_client": FoundryClient("http://127.0.0.1:5001", "mock-token"),
+            }
+
+        finally:
+            p.terminate()
+            p.wait()
+
+    elif request.param == "docker-real-container":
+        requests_mock.real_http = True
+
+        if "TEST_BLOB_URL_WITH_SAS" not in os.environ:
+            pytest.skip("`TEST_BLOB_URL_WITH_SAS` is not set, so test cannot be run.")
+        blob_url_with_sas = os.environ["TEST_BLOB_URL_WITH_SAS"]
+
+        if "DOCKER_IMAGE" not in os.environ:
+            raise RuntimeError(
+                "Set the environment variable `DOCKER_IMAGE` "
+                "to the release image of Aurora Foundry."
+            )
+        docker_image = os.environ["DOCKER_IMAGE"]
+
+        # Run the Docker container. Assume that it has already been built. Insert the hook
+        # to mock things on the server side.
+        server_hook = Path(__file__).parents[0] / "docker_server_hook.py"
+        p = subprocess.Popen(
+            [
+                "docker",
+                "run",
+                "-p",
+                "5001:5001",
+                "--rm",
+                "-t",
+                "--mount",
+                (
+                    f"type=bind"
+                    f",src={server_hook}"
+                    f",dst=/aurora_foundry/aurora/foundry/server/_hook.py"
+                    f",readonly"
+                ),
+                docker_image,
+            ],
+        )
+
         try:
             # Wait for the server to come online.
             start = time.time()
