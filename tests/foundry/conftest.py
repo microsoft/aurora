@@ -8,6 +8,7 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Generator
+from urllib.parse import urlparse
 
 import pytest
 import requests
@@ -87,12 +88,10 @@ def mock_foundry_client(
 
     def _matcher(request: requests.Request) -> requests.Response | None:
         """Mock requests that check for the existence of blobs."""
-        if "blob.core.windows.net/" in request.url:
-            # Split off the SAS token.
-            path, _ = request.url.split("?", 1)
-            # Split off the storage account URL.
-            _, path = path.split("blob.core.windows.net/", 1)
+        url = urlparse(request.url)
+        path = url.path[1:]  # Remove leading slash.
 
+        if url.hostname and url.hostname.endswith("blob.core.windows.net"):
             local_path = azcopy_mock_work_dir / path
 
             response = requests.Response()

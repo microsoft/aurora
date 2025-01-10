@@ -3,6 +3,7 @@
 import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 # This will be run in the release Docker image, so packages required for mocking are not available.
 subprocess.check_call([sys.executable, "-m", "pip", "install", "--no-deps", "requests_mock"])
@@ -16,12 +17,10 @@ import requests_mock  # noqa: E402
 
 def _matcher(request: requests.Request) -> requests.Response | None:
     """Mock requests that check for the existence of blobs."""
-    if "blob.core.windows.net/" in request.url:
-        # Split off the SAS token.
-        path, _ = request.url.split("?", 1)
-        # Split off the storage account URL.
-        _, path = path.split("blob.core.windows.net/", 1)
+    url = urlparse(request.url)
+    path = url.path[1:]  # Remove leading slash.
 
+    if url.hostname and url.hostname.endswith("blob.core.windows.net"):
         # Assume that the local folder `/azcopy_work` is used by the mock of `azcopy`.
         local_path = Path("/azcopy_work") / path
 
