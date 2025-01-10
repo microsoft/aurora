@@ -20,7 +20,7 @@ def _matcher(request: requests.Request) -> requests.Response | None:
     url = urlparse(request.url)
     path = url.path[1:]  # Remove leading slash.
 
-    if url.hostname and url.hostname.endswith("blob.core.windows.net"):
+    if url.hostname and url.hostname.endswith(".blob.core.windows.net"):
         # Assume that the local folder `/azcopy_work` is used by the mock of `azcopy`.
         local_path = Path("/azcopy_work") / path
 

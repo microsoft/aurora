@@ -8,6 +8,7 @@ import json
 import logging
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 import click
 import requests
@@ -55,11 +56,11 @@ def main(azcopy_mock_work_path: Path, path: Path) -> None:
 
     def _matcher(request: requests.Request) -> requests.Response | None:
         """Mock requests that check for the existence of blobs."""
-        if "blob.core.windows.net/" in request.url:
-            # Split off the SAS token.
-            path, _ = request.url.split("?", 1)
-            # Split off the storage account URL.
-            _, path = path.split("blob.core.windows.net/", 1)
+        url = urlparse(request.url)
+        path = url.path[1:]  # Remove leading slash.
+
+        if url.hostname and url.hostname.endswith(".blob.core.windows.net"):
+            local_path = azcopy_mock_work_path / path
 
             local_path = azcopy_mock_work_path / path
 

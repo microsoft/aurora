@@ -91,7 +91,7 @@ def mock_foundry_client(
         url = urlparse(request.url)
         path = url.path[1:]  # Remove leading slash.
 
-        if url.hostname and url.hostname.endswith("blob.core.windows.net"):
+        if url.hostname and url.hostname.endswith(".blob.core.windows.net"):
             local_path = azcopy_mock_work_dir / path
 
             response = requests.Response()
