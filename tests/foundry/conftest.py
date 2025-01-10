@@ -7,7 +7,7 @@ import subprocess
 import time
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Generator
+from typing import IO, Generator, Tuple
 from urllib.parse import urlparse
 
 import pytest
@@ -20,7 +20,10 @@ MOCK_ADDRESS = "https://mock-foundry.azurewebsites.net"
 
 
 @contextmanager
-def runner_process(azcopy_mock_work_dir: Path):
+def runner_process(
+    azcopy_mock_work_dir: Path,
+) -> Generator[Tuple[subprocess.Popen, IO, IO], None, None]:
+    """Launch a runner process that mocks the Azure ML Inference Server."""
     score_script_path = Path(__file__).parents[2] / "aurora/foundry/server/score.py"
     runner_path = Path(__file__).parents[0] / "runner.py"
     p = subprocess.Popen(
@@ -37,7 +40,11 @@ def runner_process(azcopy_mock_work_dir: Path):
 
 
 @contextmanager
-def mock_foundry_responses_subprocess(stdin, stdout, requests_mock, base_address=MOCK_ADDRESS):
+def mock_foundry_responses_subprocess(
+    stdin: IO, stdout: IO, requests_mock, base_address: str = MOCK_ADDRESS
+) -> Generator[None, None, None]:
+    """Mock requests to Foundry by redirecting them to the subprocess."""
+
     def _mock_send(request, context) -> dict:
         method = request.method.encode("unicode_escape")
         text = request.text or ""
