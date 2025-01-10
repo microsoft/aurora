@@ -16,7 +16,6 @@ from aurora import Batch
 
 __all__ = [
     "CommunicationChannel",
-    "LocalCommunication",
     "BlobStorageCommunication",
     "iterate_prediction_files",
 ]
@@ -39,7 +38,7 @@ class CommunicationChannel:
         self._send(batch, name)
         self._mark(name)
 
-    def receive(self, uuid: str, name: str) -> Batch:
+    def receive(self, uuid: str, name: str, timeout: int = 120) -> Batch:
         """Receive the batch under the file name `name`.
 
         This function blocks until the file is ready.
@@ -47,14 +46,64 @@ class CommunicationChannel:
         Args:
             uuid (str): UUID of the task.
             name (str): Name to receive.
+            timeout (int, optional): Timeout in seconds. Defaults to 2 minutes.
 
         Returns:
             :class:`aurora.Batch`: Batch under the name `name`.
         """
         name = f"{uuid}/{name}"
+        start = time.time()
         while not self._is_marked(name):
-            time.sleep(0.5)
+            if time.time() - start < timeout:
+                time.sleep(1)
+            else:
+                raise TimeoutError("File was not marked within the timeout.")
         return self._receive(name)
+
+    def write(self, data: bytes, uuid: str, name: str) -> None:
+        """Write `data` to `name`.
+
+        Args:
+            Data (bytes): Data to write.
+            uuid (str): UUID of the task.
+            name (str): Name to write to.
+        """
+        name = f"{uuid}/{name}"
+        self._write(data, name)
+        self._mark(name)
+
+    def read(self, uuid: str, name: str, timeout: int = 120) -> bytes:
+        """Read `name`.
+
+        Args:
+            uuid (str): UUID of the task.
+            name (str): Name to read.
+            timeout (int, optional): Timeout in seconds. Defaults to 2 minutes.
+
+        Returns:
+            bytes: Data of `name`.
+        """
+        name = f"{uuid}/{name}"
+        start = time.time()
+        while not self._is_marked(name):
+            if time.time() - start < timeout:
+                time.sleep(1)
+            else:
+                raise TimeoutError("File was not marked within the timeout.")
+        return self._read(name)
+
+    def exists(self, uuid: str, name: str) -> bool:
+        """Check whether `name` is available.
+
+        Args:
+            uuid (str): UUID of the task.
+            name (str): Name to check for.
+
+        Returns:
+            bool: Wether `name` is  available.
+        """
+        name = f"{uuid}/{name}"
+        return self._is_marked(name)
 
     @abc.abstractmethod
     def _send(self, batch: Batch, name: str) -> None:
@@ -78,6 +127,27 @@ class CommunicationChannel:
 
         Returns:
             :class:`aurora.Batch`: Batch under the file name `name`.
+        """
+
+    @abc.abstractmethod
+    def _write(self, data: bytes, name: str) -> None:
+        """Send the data `data` under the file name `name` without marking the file.
+
+        This method should be implemented.
+
+        Args:
+            data (bytes): Data to send.
+            name (str): Name of `data`.
+        """
+
+    @abc.abstractmethod
+    def _read(self, name: str) -> bytes:
+        """Read data from `name`.
+
+        This function asserts that the file is ready and should be implemented by implementations.
+
+        Args:
+            name (str): Name to read.
         """
 
     @abc.abstractmethod
@@ -106,44 +176,6 @@ class CommunicationChannel:
         Returns:
             dict[str, str]: Specification.
         """
-
-
-class LocalCommunication(CommunicationChannel):
-    """A communication channel via a local folder."""
-
-    def __init__(self, folder: str | Path) -> None:
-        """Instantiate.
-
-        Args:
-            folder (str or Path): Folder to use.
-        """
-        self.folder = Path(folder)
-
-    def to_spec(self) -> str:
-        return str(self.folder)
-
-    class Spec(BaseModel):
-        class_name: Literal["LocalCommunication"]
-        folder: Path
-
-        def construct(self) -> "LocalCommunication":
-            return LocalCommunication(folder=str(self.folder))
-
-    def _send(self, batch: Batch, name: str) -> None:
-        target = self.folder / name
-        target.parent.mkdir(exist_ok=True, parents=True)
-        batch.to_netcdf(target)
-
-    def _receive(self, name: str) -> Batch:
-        return Batch.from_netcdf(self.folder / name)
-
-    def _mark(self, name: str) -> None:
-        target = self.folder / f"{name}.finished"
-        target.parent.mkdir(exist_ok=True, parents=True)
-        target.touch()
-
-    def _is_marked(self, name: str) -> bool:
-        return (self.folder / f"{name}.finished").exists()
 
 
 class BlobStorageCommunication(CommunicationChannel):
@@ -202,6 +234,18 @@ class BlobStorageCommunication(CommunicationChannel):
         with tempfile.NamedTemporaryFile() as tf:
             self._azcopy(["copy", self._blob_path(name), tf.name])
             return Batch.from_netcdf(tf.name)
+
+    def _write(self, data: bytes, name: str) -> None:
+        with tempfile.NamedTemporaryFile() as tf:
+            with open(tf.name, "wb") as f:
+                f.write(data)
+            self._azcopy(["copy", tf.name, self._blob_path(name)])
+
+    def _read(self, name: str) -> bytes:
+        with tempfile.NamedTemporaryFile() as tf:
+            self._azcopy(["copy", self._blob_path(name), tf.name])
+            with open(tf.name, "rb") as f:
+                return f.read()
 
     def _mark(self, name: str) -> None:
         with tempfile.TemporaryDirectory() as td:

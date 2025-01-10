@@ -18,16 +18,17 @@ __all__ = ["SubmissionError", "submit"]
 logger = logging.getLogger(__name__)
 
 
-class SubmissionInfo(BaseModel):
+class CreationInfo(BaseModel):
     task_id: str
 
 
-class ProgressInfo(BaseModel):
+class TaskInfo(BaseModel):
     task_id: str
     completed: bool
     progress_percentage: int
-    error: bool
-    error_info: str
+    success: bool | None
+    submitted: bool
+    status: str
 
 
 class SubmissionError(Exception):
@@ -62,7 +63,7 @@ def submit(
     if model_name not in models:
         raise KeyError(f"Model `{model_name}` is not a valid model.")
 
-    # Send a request to the endpoint to produce the predictions.
+    # Create a task at the endpoint.
     task = {
         "model_name": model_name,
         "num_steps": num_steps,
@@ -70,32 +71,46 @@ def submit(
     }
     response = foundry_client.submit_task(task)
     try:
-        submission_info = SubmissionInfo(**response)
+        submission_info = CreationInfo(**response)
     except Exception as e:
-        raise SubmissionError(response["message"]) from e
+        raise SubmissionError("Failed to create task.") from e
     task_id = submission_info.task_id
-    logger.info("Submitted task %r to endpoint.", task_id)
+    logger.info(f"Created task `{task_id}` at endpoint.")
 
     # Send the initial condition over.
     client_comm.send(batch, task_id, "input.nc")
 
+    previous_status: str = "No Status"
     previous_progress: int = 0
 
     while True:
-        # Check on the progress of the task.
+        # Check on the progress of the task. The first progress check will trigger the task to be
+        # submitted.
         response = foundry_client.get_progress(task_id)
-        progress_info = ProgressInfo(**response)
+        task_info = TaskInfo(**response)
 
-        if progress_info.error:
-            raise SubmissionError(f"Task failed: {progress_info.error_info}")
+        if task_info.submitted:
+            # If the task has been submitted, we must be able to read the acknowledgement of the
+            # initial condition.
+            try:
+                client_comm.read(task_id, "input.nc.ack", timeout=120)
+            except TimeoutError as e:
+                raise SubmissionError("Could not read acknowledgement of initial condition.") from e
 
-        if progress_info.progress_percentage > previous_progress:
-            logger.info(f"Task progress update: {progress_info.progress_percentage}%.")
-            previous_progress = progress_info.progress_percentage
+        if task_info.status != previous_status:
+            logger.info(f"Task status update: {task_info.status}")
+            previous_status = task_info.status
 
-        if progress_info.completed:
-            logger.info("Task has been completed!")
-            break
+        if task_info.progress_percentage > previous_progress:
+            logger.info(f"Task progress update: {task_info.progress_percentage}%.")
+            previous_progress = task_info.progress_percentage
+
+        if task_info.completed:
+            if task_info.success:
+                logger.info("Task has been successfully completed!")
+                break
+            else:
+                raise SubmissionError(f"Task failed: {task_info.status}")
 
     logger.info("Retrieving predictions.")
     for prediction_name in iterate_prediction_files("prediction.nc", num_steps):

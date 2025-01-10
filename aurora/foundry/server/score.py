@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 from uuid import uuid4
 
 from azureml_inference_server_http.api.aml_request import AMLRequest, rawhttp
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 
 import aurora.foundry.server._hook  # noqa: F401
 from aurora.foundry.common.channel import (
@@ -22,7 +22,7 @@ logger = logging.getLogger("aurora.foundry.server.score")
 
 
 class Submission(BaseModel):
-    data_folder_uri: str
+    data_folder_uri: HttpUrl
     model_name: str
     num_steps: int
 
@@ -36,19 +36,20 @@ class Submission(BaseModel):
         )
 
 
-class SubmissionResponse(BaseModel):
+class CreationResponse(BaseModel):
     task_id: str
 
     class Config:
         json_schema_extra = dict(example=dict(task_id="abc-123-def"))
 
 
-class ProgressInfo(BaseModel):
+class TaskInfo(BaseModel):
     task_id: str
     completed: bool
     progress_percentage: int
-    error: bool
-    error_info: str
+    success: bool | None
+    submitted: bool
+    status: str
 
     class Config:
         json_schema_extra = dict(
@@ -56,8 +57,9 @@ class ProgressInfo(BaseModel):
                 task_id="abc-123-def",
                 completed=True,
                 progress_percentage=100,
-                error=False,
-                error_info="",
+                success=None,
+                submitted=True,
+                error_info="Queued",
             )
         )
 
@@ -67,43 +69,56 @@ TASKS = dict()
 
 
 class Task:
-    def __init__(self, request: Submission):
-        self.request: Submission = request
-        # TODO: Make sure that this `uuid` really is unique!
-        self.uuid: str = str(uuid4())
-        self.progress_percentage: int = 0
-        self.completed: bool = False
-        self.exc: Exception | None = None
+    def __init__(self, submission: Submission):
+        self.submission: Submission = submission
+
+        self.task_info = TaskInfo(
+            # TODO: Make sure that this `uuid` really is unique!
+            task_id=str(uuid4()),
+            completed=False,
+            progress_percentage=0,
+            success=None,
+            submitted=False,
+            status="Unsubmitted",
+        )
 
     def __call__(self) -> None:
-        try:
-            request = self.request
-            host_comm = BlobStorageCommunication(request.data_folder_uri)
+        self.task_info.status = "Running"
 
-            model_class = models[request.model_name]
+        try:
+            submission = self.submission
+            host_comm = BlobStorageCommunication(str(submission.data_folder_uri))
+
+            model_class = models[submission.model_name]
             model = model_class()
 
-            batch = host_comm.receive(self.uuid, "input.nc")
+            batch = host_comm.receive(self.task_info.task_id, "input.nc")
 
             logger.info("Running predictions.")
             for i, (pred, path) in enumerate(
                 zip(
-                    model.run(batch, request.num_steps),
-                    iterate_prediction_files("prediction.nc", request.num_steps),
+                    model.run(batch, submission.num_steps),
+                    iterate_prediction_files("prediction.nc", submission.num_steps),
                 )
             ):
-                host_comm.send(pred, self.uuid, path)
-                self.progress_percentage = int((100 * (i + 1)) / request.num_steps)
+                host_comm.send(pred, self.task_info.task_id, path)
 
-            self.completed = True
+                self.task_info.progress_percentage = int((100 * (i + 1)) / submission.num_steps)
+
+            self.task_info.success = True
+            self.task_info.status = "Successfully completed"
 
         except Exception as exc:
-            self.exc = exc
+            self.task_info.success = False
+            self.task_info.status = f"Exception: {str(exc)}"
+
+        finally:
+            self.task_info.completed = True
 
 
 def init() -> None:
     """Initialise. Do not load the model here, because which model we need depends on the
-    request."""
+    submission."""
     POOL.__enter__()
 
 
@@ -120,34 +135,53 @@ def run(input_data: AMLRequest) -> dict:
     logger.info("Received request.")
 
     if input_data.method == "POST":
-        logger.info("Submitting new task to thread pool.")
+        logger.info("Creating a new task.")
         task = Task(Submission(**input_data.get_json()))
-        POOL.submit(task)
-        TASKS[task.uuid] = task
-        return SubmissionResponse(task_id=task.uuid).dict()
+        TASKS[task.task_info.task_id] = task
+        return CreationResponse(task_id=task.task_info.task_id).dict()
 
     elif input_data.method == "GET":
-        logger.info("Returning the status of an existing task.")
+        logger.info("Processing an existing task.")
+
         task_id = input_data.args.get("task_id")
         if not task_id:
             raise Exception("Missing `task_id` query parameter.")
         if task_id not in TASKS:
             raise Exception("Task ID cannot be found.")
+
+        task = TASKS[task_id]
+
+        if not task.task_info.submitted:
+            # Attempt to submit the task if the initial condition is available.
+
+            comm = BlobStorageCommunication(str(task.submission.data_folder_uri))
+            if comm.exists(task_id, "input.nc"):
+                logger.info("Initial condition was found. Submitting task.")
+                # Send an acknowledgement back to test that the host can write. The client will
+                # check for this acknowledgement.
+                comm.write(b"", task_id, "input.nc.ack")
+
+                # Queue the task.
+                task.task_info.submitted = True
+                task.task_info.status = "Queued"
+                POOL.submit(task)
+
+            else:
+                logger.info("Initial condition not available. Waiting.")
+
+                # Wait a little to prevent the client for querying too frequently.
+                time.sleep(3)
+
         else:
-            task = TASKS[task_id]
-            # Allow the task some time to complete.
-            # We sleep here so the client does not query too frequently.
+            logger.info("Task still running. Waiting.")
+
+            # Wait a little to prevent the client for querying too frequently. While waiting,
+            # do check for the task to be completed.
             for _ in range(3):
-                if task.completed:
+                if task.task_info.completed:
                     break
                 time.sleep(1)
 
-            return ProgressInfo(
-                task_id=task_id,
-                completed=task.completed,
-                progress_percentage=task.progress_percentage,
-                error=task.exc is not None,
-                error_info=str(task.exc) if task.exc else "",
-            ).dict()
+        return task.task_info.dict()
 
     raise Exception("Method not allowed.")  # This branch should be unreachable.

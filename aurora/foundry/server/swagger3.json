@@ -2,13 +2,13 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Aurora",
-    "description": "Evaluate Aurora Model",
+    "description": "Produce predictions with the Aurora model",
     "version": "1.0.0"
   },
   "paths": {
     "/score": {
       "post": {
-        "summary": "Submit a new task",
+        "summary": "Create a new task",
         "operationId": "create_score_score_post",
         "security": [
           {
@@ -31,7 +31,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SubmissionResponse"
+                  "$ref": "#/components/schemas/CreationResponse"
                 }
               }
             }
@@ -49,7 +49,7 @@
         }
       },
       "get": {
-        "summary": "Get progress info for a given task",
+        "summary": "Update an existing task",
         "operationId": "get_score_score_get",
         "security": [
           {
@@ -81,7 +81,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProgressInfo"
+                  "$ref": "#/components/schemas/TaskInfo"
                 }
               }
             }
@@ -134,6 +134,22 @@
   },
   "components": {
     "schemas": {
+      "CreationResponse": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "title": "CreationResponse",
+        "example": {
+          "task_id": "abc-123-def"
+        }
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -147,50 +163,13 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
-      "ProgressInfo": {
-        "properties": {
-          "task_id": {
-            "type": "string",
-            "title": "Task Id"
-          },
-          "completed": {
-            "type": "boolean",
-            "title": "Completed"
-          },
-          "progress_percentage": {
-            "type": "integer",
-            "title": "Progress Percentage"
-          },
-          "error": {
-            "type": "boolean",
-            "title": "Error"
-          },
-          "error_info": {
-            "type": "string",
-            "title": "Error Info"
-          }
-        },
-        "type": "object",
-        "required": [
-          "task_id",
-          "completed",
-          "progress_percentage",
-          "error",
-          "error_info"
-        ],
-        "title": "ProgressInfo",
-        "example": {
-          "completed": true,
-          "error": false,
-          "error_info": "",
-          "progress_percentage": 100,
-          "task_id": "abc-123-def"
-        }
-      },
       "Submission": {
         "properties": {
           "data_folder_uri": {
             "type": "string",
+            "maxLength": 2083,
+            "minLength": 1,
+            "format": "uri",
             "title": "Data Folder Uri"
           },
           "model_name": {
@@ -215,19 +194,55 @@
           "num_steps": 5
         }
       },
-      "SubmissionResponse": {
+      "TaskInfo": {
         "properties": {
           "task_id": {
             "type": "string",
             "title": "Task Id"
+          },
+          "completed": {
+            "type": "boolean",
+            "title": "Completed"
+          },
+          "progress_percentage": {
+            "type": "integer",
+            "title": "Progress Percentage"
+          },
+          "success": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Success"
+          },
+          "submitted": {
+            "type": "boolean",
+            "title": "Submitted"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
           }
         },
         "type": "object",
         "required": [
-          "task_id"
+          "task_id",
+          "completed",
+          "progress_percentage",
+          "success",
+          "submitted",
+          "status"
         ],
-        "title": "SubmissionResponse",
+        "title": "TaskInfo",
         "example": {
+          "completed": true,
+          "error_info": "Queued",
+          "progress_percentage": 100,
+          "submitted": true,
           "task_id": "abc-123-def"
         }
       },

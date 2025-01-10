@@ -30,4 +30,4 @@ docker-acr:
 
 swagger-file:
 	pip install fastapi
-	python aurora/foundry/server/generate-swagger.py aurora/foundry/server/swagger3.json
+	python aurora/foundry/server/generate_swagger.py aurora/foundry/server/swagger3.json

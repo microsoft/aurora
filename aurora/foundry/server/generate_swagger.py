@@ -1,13 +1,15 @@
+"""Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
+
 import json
 import sys
 
 from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.security import APIKeyHeader
-from score import ProgressInfo, Submission, SubmissionResponse
+from score import CreationResponse, Submission, TaskInfo
 
 app = FastAPI(
     title="Aurora",
-    description="Evaluate Aurora Model",
+    description="Produce predictions with the Aurora model",
     version="1.0.0",
 )
 security = APIKeyHeader(
@@ -36,14 +38,14 @@ async def get_api_key(api_key: str = Depends(security)):
 # POST method on /score endpoint
 @app.post(
     "/score",
-    response_model=SubmissionResponse,
-    summary="Submit a new task",
+    response_model=CreationResponse,
+    summary="Create a new task",
 )
 async def create_score(input: Submission, token: str = Depends(get_api_key)): ...
 
 
 # GET method on /score endpoint
-@app.get("/score", response_model=ProgressInfo, summary="Get progress info for a given task")
+@app.get("/score", response_model=TaskInfo, summary="Update an existing task")
 async def get_score(
     task_id: str = Query(
         ...,
