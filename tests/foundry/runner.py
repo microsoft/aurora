@@ -47,7 +47,7 @@ def main(azcopy_mock_work_path: Path, path: Path) -> None:
 
     # At this point, we mock `azcopy` too.
     azcopy_path = Path(__file__).parents[0] / "azcopy.py"
-    sys.modules["aurora.foundry"].BlobStorageCommunication._AZCOPY_EXECUTABLE = [
+    sys.modules["aurora.foundry"].BlobStorageChannel._AZCOPY_EXECUTABLE = [
         "python",
         str(azcopy_path),
         str(azcopy_mock_work_path),

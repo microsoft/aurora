@@ -10,7 +10,7 @@ from pydantic import BaseModel, HttpUrl
 
 import aurora.foundry.server._hook  # noqa: F401
 from aurora.foundry.common.channel import (
-    BlobStorageCommunication,
+    BlobStorageChannel,
     iterate_prediction_files,
 )
 from aurora.foundry.common.model import models
@@ -87,12 +87,12 @@ class Task:
 
         try:
             submission = self.submission
-            host_comm = BlobStorageCommunication(str(submission.data_folder_uri))
+            channel = BlobStorageChannel(str(submission.data_folder_uri))
 
             model_class = models[submission.model_name]
             model = model_class()
 
-            batch = host_comm.receive(self.task_info.task_id, "input.nc")
+            batch = channel.receive(self.task_info.task_id, "input.nc")
 
             logger.info("Running predictions.")
             for i, (pred, path) in enumerate(
@@ -101,7 +101,7 @@ class Task:
                     iterate_prediction_files("prediction.nc", submission.num_steps),
                 )
             ):
-                host_comm.send(pred, self.task_info.task_id, path)
+                channel.send(pred, self.task_info.task_id, path)
 
                 self.task_info.progress_percentage = int((100 * (i + 1)) / submission.num_steps)
 
@@ -154,12 +154,12 @@ def run(input_data: AMLRequest) -> dict:
         if not task.task_info.submitted:
             # Attempt to submit the task if the initial condition is available.
 
-            comm = BlobStorageCommunication(str(task.submission.data_folder_uri))
-            if comm.exists(task_id, "input.nc"):
+            channel = BlobStorageChannel(str(task.submission.data_folder_uri))
+            if channel.exists(task_id, "input.nc"):
                 logger.info("Initial condition was found. Submitting task.")
                 # Send an acknowledgement back to test that the host can write. The client will
                 # check for this acknowledgement.
-                comm.write(b"", task_id, "input.nc.ack")
+                channel.write(b"", task_id, "input.nc.ack")
 
                 # Queue the task.
                 task.task_info.submitted = True

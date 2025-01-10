@@ -16,7 +16,7 @@ from aurora import Batch
 
 __all__ = [
     "CommunicationChannel",
-    "BlobStorageCommunication",
+    "BlobStorageChannel",
     "iterate_prediction_files",
 ]
 
@@ -178,7 +178,7 @@ class CommunicationChannel:
         """
 
 
-class BlobStorageCommunication(CommunicationChannel):
+class BlobStorageChannel(CommunicationChannel):
     """A communication channel via a folder in a Azure Blob Storage container."""
 
     _AZCOPY_EXECUTABLE: list[str] = ["azcopy"]
@@ -198,11 +198,11 @@ class BlobStorageCommunication(CommunicationChannel):
         return self.blob_folder
 
     class Spec(BaseModel):
-        class_name: Literal["BlobStorageCommunication"]
+        class_name: Literal["BlobStorageChannel"]
         blob_folder: HttpUrl  # TODO: Can we force this to be `https`?
 
-        def construct(self) -> "BlobStorageCommunication":
-            return BlobStorageCommunication(blob_folder=str(self.blob_folder))
+        def construct(self) -> "BlobStorageChannel":
+            return BlobStorageChannel(blob_folder=str(self.blob_folder))
 
     def _blob_path(self, name: str) -> str:
         """For a given file name `name`, get the full path including the SAS token.

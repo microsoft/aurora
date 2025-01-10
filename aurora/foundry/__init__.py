@@ -2,10 +2,10 @@
 
 from aurora.foundry.client.api import SubmissionError, submit
 from aurora.foundry.client.foundry import FoundryClient
-from aurora.foundry.common.channel import BlobStorageCommunication
+from aurora.foundry.common.channel import BlobStorageChannel
 
 __all__ = [
-    "BlobStorageCommunication",
+    "BlobStorageChannel",
     "FoundryClient",
     "submit",
     "SubmissionError",

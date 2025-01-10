@@ -39,8 +39,7 @@ def submit(
     batch: Batch,
     model_name: str,
     num_steps: int,
-    client_comm: CommunicationChannel,
-    host_comm: CommunicationChannel,
+    channel: CommunicationChannel,
     foundry_client: AbstractFoundryClient,
 ) -> Generator[Batch, None, None]:
     """Submit a request to Azure AI Foundry and retrieve the predictions.
@@ -50,10 +49,8 @@ def submit(
         model_name (str): Name of the model. This name must be available in
             :mod:`aurora_foundry.common.model`.
         num_steps (int): Number of prediction steps.
-        client_comm (:class:`aurora_foundry.common.comm.CommunicationChannel`): Channel that the
-            client uses to send and receive data.
-        host_comm (:class:`aurora_foundry.common.comm.CommunicationChannel`): Channel that the host
-            uses to send and receive data.
+        channel (:class:`aurora_foundry.common.channel.CommunicationChannel`): Channel to use for
+            sending and receiving data.
         foundry_client (:class:`aurora_foundry.client.foundry.AbstractFoundryClient`): Client to
             communicate with Azure Foundry AI.
 
@@ -67,7 +64,7 @@ def submit(
     task = {
         "model_name": model_name,
         "num_steps": num_steps,
-        "data_folder_uri": host_comm.to_spec(),
+        "data_folder_uri": channel.to_spec(),
     }
     response = foundry_client.submit_task(task)
     try:
@@ -78,7 +75,7 @@ def submit(
     logger.info(f"Created task `{task_id}` at endpoint.")
 
     # Send the initial condition over.
-    client_comm.send(batch, task_id, "input.nc")
+    channel.send(batch, task_id, "input.nc")
 
     previous_status: str = "No Status"
     previous_progress: int = 0
@@ -93,7 +90,7 @@ def submit(
             # If the task has been submitted, we must be able to read the acknowledgement of the
             # initial condition.
             try:
-                client_comm.read(task_id, "input.nc.ack", timeout=120)
+                channel.read(task_id, "input.nc.ack", timeout=120)
             except TimeoutError as e:
                 raise SubmissionError("Could not read acknowledgement of initial condition.") from e
 
@@ -114,4 +111,4 @@ def submit(
 
     logger.info("Retrieving predictions.")
     for prediction_name in iterate_prediction_files("prediction.nc", num_steps):
-        yield client_comm.receive(task_id, prediction_name)
+        yield channel.receive(task_id, prediction_name)

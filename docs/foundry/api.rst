@@ -8,7 +8,7 @@ Submission
 .. autoclass:: aurora.foundry.client.foundry.FoundryClient
     :members: __init__
 
-.. autoclass:: aurora.foundry.common.channel.BlobStorageCommunication
+.. autoclass:: aurora.foundry.common.channel.BlobStorageChannel
     :members: __init__
 
 

@@ -14,7 +14,7 @@ import pytest
 import requests
 
 from aurora.foundry.client.foundry import FoundryClient
-from aurora.foundry.common.channel import BlobStorageCommunication
+from aurora.foundry.common.channel import BlobStorageChannel
 
 MOCK_ADDRESS = "https://mock-foundry.azurewebsites.net"
 
@@ -79,7 +79,7 @@ def mock_foundry_client(
     azcopy_mock_work_dir.mkdir(exist_ok=True, parents=True)
     azcopy_path = Path(__file__).parents[0] / "azcopy.py"
     monkeypatch.setattr(
-        BlobStorageCommunication,
+        BlobStorageChannel,
         "_AZCOPY_EXECUTABLE",
         ["python", str(azcopy_path), str(azcopy_mock_work_dir)],
     )
@@ -109,8 +109,7 @@ def mock_foundry_client(
         with runner_process(azcopy_mock_work_dir) as (p, stdin, stdout):  # noqa: SIM117
             with mock_foundry_responses_subprocess(stdin, stdout, requests_mock):
                 yield {
-                    "client_comm": BlobStorageCommunication(blob_url_with_sas),
-                    "host_comm": BlobStorageCommunication(blob_url_with_sas),
+                    "channel": BlobStorageChannel(blob_url_with_sas),
                     "foundry_client": FoundryClient(MOCK_ADDRESS, "mock-token"),
                 }
 
@@ -166,8 +165,7 @@ def mock_foundry_client(
                 break
 
             yield {
-                "client_comm": BlobStorageCommunication(blob_url_with_sas),
-                "host_comm": BlobStorageCommunication(blob_url_with_sas),
+                "channel": BlobStorageChannel(blob_url_with_sas),
                 "foundry_client": FoundryClient("http://127.0.0.1:5001", "mock-token"),
             }
 
