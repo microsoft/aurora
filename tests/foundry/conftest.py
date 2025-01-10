@@ -1,6 +1,7 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
 import json
+import os
 import re
 import subprocess
 import time
@@ -18,7 +19,7 @@ MOCK_ADDRESS = "https://mock-foundry.azurewebsites.net"
 
 
 @contextmanager
-def runner_process(azcopy_mock_work_dir):
+def runner_process(azcopy_mock_work_dir: Path):
     score_script_path = Path(__file__).parents[2] / "aurora/foundry/server/score.py"
     runner_path = Path(__file__).parents[0] / "runner.py"
     p = subprocess.Popen(
@@ -63,82 +64,70 @@ def mock_foundry_responses_subprocess(stdin, stdout, requests_mock, base_address
     yield
 
 
-@pytest.fixture(
-    params=[
-        "subprocess-local",
-        "subprocess-blob",
-        "docker-local",
-        "docker-blob",
-    ]
-)
+@pytest.fixture(params=["subprocess", "docker"])
 def mock_foundry_client(
     request,
     monkeypatch,
     requests_mock,
     tmp_path: Path,
 ) -> Generator[dict, None, None]:
+    # Communicate via blob storage, so mock `azcopy` too.
     azcopy_mock_work_dir = tmp_path / "azcopy_work"
+    # It's important to already create the work folder. If we don't then the Docker image will
+    # create it, and the permissions will then be wrong.
+    azcopy_mock_work_dir.mkdir(exist_ok=True, parents=True)
+    azcopy_path = Path(__file__).parents[0] / "azcopy.py"
+    monkeypatch.setattr(
+        BlobStorageCommunication,
+        "_AZCOPY_EXECUTABLE",
+        ["python", str(azcopy_path), str(azcopy_mock_work_dir)],
+    )
+    # The below test URL must start with `https`!
+    blob_url_with_sas = "https://storageaccount.blob.core.windows.net/container/folder?SAS"
 
-    if "subprocess" in request.param:
-        # Already determine a possible working path for the mock of `azcopy`. It might not be used,
-        # but we do already need to determine it.
+    def _matcher(request: requests.Request) -> requests.Response | None:
+        """Mock requests that check for the existence of blobs."""
+        if "blob.core.windows.net/" in request.url:
+            # Split off the SAS token.
+            path, _ = request.url.split("?", 1)
+            # Split off the storage account URL.
+            _, path = path.split("blob.core.windows.net/", 1)
 
-        with runner_process(azcopy_mock_work_dir) as (
-            p,
-            stdin,
-            stdout,
-        ), mock_foundry_responses_subprocess(stdin, stdout, requests_mock):
-            # Communicate via blob storage, so mock `azcopy` too.
-            azcopy_path = Path(__file__).parents[0] / "azcopy.py"
-            monkeypatch.setattr(
-                BlobStorageCommunication,
-                "_AZCOPY_EXECUTABLE",
-                ["python", str(azcopy_path), str(azcopy_mock_work_dir)],
-            )
-            # The below test URL must start with `https`!
-            blob_url_with_sas = "https://storageaccount.blob.core.windows.net/container/folder?SAS"
+            local_path = azcopy_mock_work_dir / path
 
-            def _matcher(request: requests.Request) -> requests.Response | None:
-                """Mock requests that check for the existence of blobs."""
-                if "blob.core.windows.net/" in request.url:
-                    # Split off the SAS token.
-                    path, _ = request.url.split("?", 1)
-                    # Split off the storage account URL.
-                    _, path = path.split("blob.core.windows.net/", 1)
+            response = requests.Response()
+            if local_path.exists():
+                response.status_code = 200
+            else:
+                response.status_code = 404
+            return response
 
-                    local_path = azcopy_mock_work_dir / path
+        return None
 
-                    response = requests.Response()
-                    if local_path.exists():
-                        response.status_code = 200
-                    else:
-                        response.status_code = 404
-                    return response
+    requests_mock.add_matcher(_matcher)
 
-                return None
+    if request.param == "subprocess":
+        with runner_process(azcopy_mock_work_dir) as (p, stdin, stdout):  # noqa: SIM117
+            with mock_foundry_responses_subprocess(stdin, stdout, requests_mock):
+                yield {
+                    "client_comm": BlobStorageCommunication(blob_url_with_sas),
+                    "host_comm": BlobStorageCommunication(blob_url_with_sas),
+                    "foundry_client": FoundryClient(MOCK_ADDRESS, "mock-token"),
+                }
 
-            requests_mock.add_matcher(_matcher)
-
-            yield {
-                "client_comm": BlobStorageCommunication(blob_url_with_sas),
-                "host_comm": BlobStorageCommunication(blob_url_with_sas),
-                "foundry_client": FoundryClient(MOCK_ADDRESS, "mock-token"),
-            }
-
-    elif "docker" in request.param:
+    elif request.param == "docker":
         requests_mock.real_http = True
-        client_comm_folder = tmp_path / "communication"
 
-        # It's important to create the communication folder on the client side already. If we don't,
-        # Docker will create it, and the permissions will then be wrong.
-        client_comm_folder.mkdir(exist_ok=True, parents=True)
-        azcopy_mock_work_dir.mkdir(exist_ok=True, parents=True)
+        if "DOCKER_IMAGE" not in os.environ:
+            raise RuntimeError(
+                "Set the environment variable `DOCKER_IMAGE` "
+                "to the release image of Aurora Foundry."
+            )
+        docker_image = os.environ["DOCKER_IMAGE"]
 
-        # Find the path of the server hook.
+        # Run the Docker container. Assume that it has already been built. Insert the hook
+        # to mock things on the server side.
         server_hook = Path(__file__).parents[0] / "docker_server_hook.py"
-
-        # Run the Docker container. Assume that it has already been built.
-        azcopy_path = Path(__file__).parents[0] / "azcopy.py"
         p = subprocess.Popen(
             [
                 "docker",
@@ -147,8 +136,6 @@ def mock_foundry_client(
                 "5001:5001",
                 "--rm",
                 "-t",
-                "-v",
-                f"{client_comm_folder}:/communication",
                 "-v",
                 f"{azcopy_mock_work_dir}:/azcopy_work",
                 "--mount",
@@ -160,7 +147,7 @@ def mock_foundry_client(
                     f",dst=/aurora_foundry/aurora/foundry/server/_hook.py"
                     f",readonly"
                 ),
-                "aurora-foundry:latest",
+                docker_image,
             ],
         )
         try:
@@ -178,36 +165,6 @@ def mock_foundry_client(
                     else:
                         raise e
                 break
-
-            # Communicate via blob storage, so mock `azcopy` too.
-            monkeypatch.setattr(
-                BlobStorageCommunication,
-                "_AZCOPY_EXECUTABLE",
-                ["python", str(azcopy_path), str(azcopy_mock_work_dir)],
-            )
-            # The below test URL must start with `https`!
-            blob_url_with_sas = "https://storageaccount.blob.core.windows.net/container/folder?SAS"
-
-            def _matcher(request: requests.Request) -> requests.Response | None:
-                """Mock requests that check for the existence of blobs."""
-                if "blob.core.windows.net/" in request.url:
-                    # Split off the SAS token.
-                    path, _ = request.url.split("?", 1)
-                    # Split off the storage account URL.
-                    _, path = path.split("blob.core.windows.net/", 1)
-
-                    local_path = azcopy_mock_work_dir / path
-
-                    response = requests.Response()
-                    if local_path.exists():
-                        response.status_code = 200
-                    else:
-                        response.status_code = 404
-                    return response
-
-                return None
-
-            requests_mock.add_matcher(_matcher)
 
             yield {
                 "client_comm": BlobStorageCommunication(blob_url_with_sas),

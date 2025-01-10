@@ -118,6 +118,7 @@ def run(input_data: AMLRequest) -> dict:
         dict/AMLResponse: The response to the request. dicts are implictitly 200 AMLResponses.
     """
     logger.info("Received request.")
+
     if input_data.method == "POST":
         logger.info("Submitting new task to thread pool.")
         task = Task(Submission(**input_data.get_json()))
@@ -129,9 +130,9 @@ def run(input_data: AMLRequest) -> dict:
         logger.info("Returning the status of an existing task.")
         task_id = input_data.args.get("task_id")
         if not task_id:
-            raise Exception("Missing task_id query parameter.")
+            raise Exception("Missing `task_id` query parameter.")
         if task_id not in TASKS:
-            raise Exception("Task UUID cannot be found.")
+            raise Exception("Task ID cannot be found.")
         else:
             task = TASKS[task_id]
             # Allow the task some time to complete.
@@ -149,5 +150,4 @@ def run(input_data: AMLRequest) -> dict:
                 error_info=str(task.exc) if task.exc else "",
             ).dict()
 
-    # This branch should be unreachable.
-    raise Exception("Method not allowed.")
+    raise Exception("Method not allowed.")  # This branch should be unreachable.
