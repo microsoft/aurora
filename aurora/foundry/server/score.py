@@ -119,6 +119,8 @@ class Task:
 def init() -> None:
     """Initialise. Do not load the model here, because which model we need depends on the
     submission."""
+    logging.getLogger("aurora").setLevel(logging.INFO)
+    logger.info("Starting ThreadPoolExecutor")
     POOL.__enter__()
 
 
