@@ -80,6 +80,7 @@ def submit(
 
     previous_status: str = "No status"
     previous_progress: int = 0
+    ack_read: bool = False
 
     while True:
         # Check on the progress of the task. The first progress check will trigger the task to be
@@ -87,11 +88,12 @@ def submit(
         response = foundry_client.get_progress(task_id)
         task_info = TaskInfo(**response)
 
-        if task_info.submitted:
+        if task_info.submitted and not ack_read:
             # If the task has been submitted, we must be able to read the acknowledgement of the
             # initial condition.
             try:
                 channel.read(task_id, "input.nc.ack", timeout=120)
+                ack_read = True  # Read the acknowledgement only once.
             except TimeoutError as e:
                 raise SubmissionError("Could not read acknowledgement of initial condition.") from e
 
