@@ -1,31 +1,19 @@
-"""Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
+import json
 
 import logging
 import time
 from concurrent.futures import ThreadPoolExecutor
 from uuid import uuid4
 
-try:
-    from azureml_inference_server_http.api.aml_request import AMLRequest, rawhttp
-except ImportError:
-    # It's OK if this is not available.
-
-    AMLRequest = dict
-
-    def rawhttp(x):
-        return x
-
-
 from pydantic import BaseModel, HttpUrl
 
-import aurora.foundry.server._hook  # noqa: F401
+import mlflow.pyfunc
+
 from aurora.foundry.common.channel import (
     BlobStorageChannel,
     iterate_prediction_files,
 )
 from aurora.foundry.common.model import models
-
-__all__ = ["init", "run"]
 
 # Need to give the name explicitly here, because the script may be run stand-alone.
 logger = logging.getLogger("aurora.foundry.server.score")
@@ -72,10 +60,6 @@ class TaskInfo(BaseModel):
                 error_info="Queued",
             )
         )
-
-
-POOL = ThreadPoolExecutor(max_workers=1)
-TASKS = dict()
 
 
 class Task:
@@ -126,74 +110,68 @@ class Task:
             self.task_info.completed = True
 
 
-def init() -> None:
-    """Initialise."""
-    # Do not load the model here, because which model we need depends on the submission.
-    logging.getLogger("aurora").setLevel(logging.INFO)
-    logger.info("Starting ThreadPoolExecutor")
-    POOL.__enter__()
+class AuroraModelWrapper(mlflow.pyfunc.PythonModel):
+    def load_context(self, context):
+        logging.getLogger("aurora").setLevel(logging.INFO)
+        logger.info("Starting ThreadPoolExecutor")
+        self.POOL = ThreadPoolExecutor(max_workers=1)
+        self.TASKS = dict()
+        self.POOL.__enter__()
+
+    def predict(self, context, model_input, params=None):
+        data = json.loads(model_input["data"].item())
+        # print(f"Inputs:\n{data}")
+
+        if data["type"] == "submission":
+            logger.info("Creating a new task.")
+            task = Task(Submission(**data["msg"]))
+            self.TASKS[task.task_info.task_id] = task
+            return CreationResponse(task_id=task.task_info.task_id).dict()
+
+        elif data["type"] == "task_info":
+            logger.info("Processing an existing task.")
 
 
-@rawhttp
-def run(input_data: AMLRequest) -> dict:
-    """Perform predictions.
+            task_id = data["msg"]["task_id"]
+            if not task_id:
+                raise Exception("Missing `task_id` parameter.")
+            if task_id not in self.TASKS:
+                raise Exception("Task ID cannot be found.")
 
-    Args:
-        input_data (AMLRequest): Mostly a Flask `Request` object.
+            task = self.TASKS[task_id]
 
-    Returns:
-        dict: The response to the request. This `dict` is implicitly a status 200 `AMLResponse`.
-    """
-    logger.info("Received request.")
+            if not task.task_info.submitted:
+                # Attempt to submit the task if the initial condition is available.
 
-    if input_data.method == "POST":
-        logger.info("Creating a new task.")
-        task = Task(Submission(**input_data.get_json()))
-        TASKS[task.task_info.task_id] = task
-        return CreationResponse(task_id=task.task_info.task_id).dict()
+                channel = BlobStorageChannel(str(task.submission.data_folder_uri))
+                if channel.exists(task_id, "input.nc"):
+                    logger.info("Initial condition was found. Submitting task.")
+                    # Send an acknowledgement back to test that the host can write. The client will
+                    # check for this acknowledgement.
+                    channel.write(b"Acknowledgement of initial condition", task_id, "input.nc.ack")
 
-    elif input_data.method == "GET":
-        logger.info("Processing an existing task.")
+                    # Queue the task.
+                    task.task_info.submitted = True
+                    task.task_info.status = "Queued"
+                    self.POOL.submit(task)
 
-        task_id = input_data.args.get("task_id")
-        if not task_id:
-            raise Exception("Missing `task_id` query parameter.")
-        if task_id not in TASKS:
-            raise Exception("Task ID cannot be found.")
+                else:
+                    logger.info("Initial condition not available. Waiting.")
 
-        task = TASKS[task_id]
-
-        if not task.task_info.submitted:
-            # Attempt to submit the task if the initial condition is available.
-
-            channel = BlobStorageChannel(str(task.submission.data_folder_uri))
-            if channel.exists(task_id, "input.nc"):
-                logger.info("Initial condition was found. Submitting task.")
-                # Send an acknowledgement back to test that the host can write. The client will
-                # check for this acknowledgement.
-                channel.write(b"Acknowledgement of initial condition", task_id, "input.nc.ack")
-
-                # Queue the task.
-                task.task_info.submitted = True
-                task.task_info.status = "Queued"
-                POOL.submit(task)
+                    # Wait a little to prevent the client for querying too frequently.
+                    time.sleep(3)
 
             else:
-                logger.info("Initial condition not available. Waiting.")
+                logger.info("Task still running. Waiting.")
 
-                # Wait a little to prevent the client for querying too frequently.
-                time.sleep(3)
+                # Wait a little to prevent the client for querying too frequently. While waiting,
+                # do check for the task to be completed.
+                for _ in range(3):
+                    if task.task_info.completed:
+                        break
+                    time.sleep(1)
+
+            return task.task_info.dict()
 
         else:
-            logger.info("Task still running. Waiting.")
-
-            # Wait a little to prevent the client for querying too frequently. While waiting,
-            # do check for the task to be completed.
-            for _ in range(3):
-                if task.task_info.completed:
-                    break
-                time.sleep(1)
-
-        return task.task_info.dict()
-
-    raise Exception("Method not allowed.")  # This branch should be unreachable.
+            raise ValueError(f"Unknown data type: {data['type']}")

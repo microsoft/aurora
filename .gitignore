@@ -29,3 +29,8 @@ htmlcov
 .DS_Store
 *.swp
 .envrc
+
+checkpoints/
+mlflow_tmp/
+aurora_mlflow_pyfunc/
+mlruns/

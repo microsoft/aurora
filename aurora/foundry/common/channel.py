@@ -11,6 +11,7 @@ from typing import Generator, Literal
 
 import requests
 from pydantic import BaseModel, HttpUrl
+from azure.storage.blob import BlobClient
 
 from aurora import Batch
 
@@ -179,9 +180,7 @@ class CommunicationChannel:
 
 
 class BlobStorageChannel(CommunicationChannel):
-    """A communication channel via a folder in a Azure Blob Storage container."""
-
-    _AZCOPY_EXECUTABLE: list[str] = ["azcopy"]
+    """A communication channel via a folder in an Azure Blob Storage container."""
 
     def __init__(self, blob_folder: str) -> None:
         """Instantiate.
@@ -214,36 +213,40 @@ class BlobStorageChannel(CommunicationChannel):
             str: Full path including the SAS token.
         """
         url, _, sas = self.blob_folder.partition("?")
-        # Don't use `pathlib.Path` for web URLs! It messes up the protocol.
         return f"{os.path.join(url, name)}?{sas}"
 
-    def _azcopy(self, command: list[str]) -> str:
-        result = subprocess.run(
-            self._AZCOPY_EXECUTABLE + command,
-            stdout=subprocess.PIPE,
-            check=True,
-        )
-        return result.stdout.decode("utf-8")
+    def _upload_blob(self, file_path: str, blob_name: str) -> None:
+        """Upload a file to the blob."""
+        blob_client = BlobClient.from_blob_url(self._blob_path(blob_name))
+        with open(file_path, "rb") as f:
+            blob_client.upload_blob(f, overwrite=True)
+
+    def _download_blob(self, blob_name: str, file_path: str) -> None:
+        """Download a blob to a file."""
+        blob_client = BlobClient.from_blob_url(self._blob_path(blob_name))
+        with open(file_path, "wb") as f:
+            data = blob_client.download_blob().readall()
+            f.write(data)
 
     def _send(self, batch: Batch, name: str) -> None:
         with tempfile.NamedTemporaryFile() as tf:
             batch.to_netcdf(tf.name)
-            self._azcopy(["copy", tf.name, self._blob_path(name)])
+            self._upload_blob(tf.name, name)
 
     def _receive(self, name: str) -> Batch:
         with tempfile.NamedTemporaryFile() as tf:
-            self._azcopy(["copy", self._blob_path(name), tf.name])
+            self._download_blob(name, tf.name)
             return Batch.from_netcdf(tf.name)
 
     def _write(self, data: bytes, name: str) -> None:
         with tempfile.NamedTemporaryFile() as tf:
             with open(tf.name, "wb") as f:
                 f.write(data)
-            self._azcopy(["copy", tf.name, self._blob_path(name)])
+            self._upload_blob(tf.name, name)
 
     def _read(self, name: str) -> bytes:
         with tempfile.NamedTemporaryFile() as tf:
-            self._azcopy(["copy", self._blob_path(name), tf.name])
+            self._download_blob(name, tf.name)
             with open(tf.name, "rb") as f:
                 return f.read()
 
@@ -252,7 +255,7 @@ class BlobStorageChannel(CommunicationChannel):
             mark_file_path = Path(td) / f"{name}.finished"
             mark_file_path.parent.mkdir(exist_ok=True, parents=True)
             mark_file_path.write_text("File is available")
-            self._azcopy(["copy", str(mark_file_path), self._blob_path(f"{name}.finished")])
+            self._upload_blob(str(mark_file_path), f"{name}.finished")
 
     def _is_marked(self, name: str) -> bool:
         res = requests.head(self._blob_path(f"{name}.finished"))

@@ -70,7 +70,7 @@ class AuroraSmall(Model):
 
     def create_model(self) -> aurora.Aurora:
         model = aurora.AuroraSmall()
-        model.load_checkpoint("microsoft/aurora", "aurora-0.25-small-pretrained.ckpt")
+        model.load_checkpoint_local("./checkpoints/aurora-0.25-small-pretrained.ckpt")
         return model
 
 
@@ -80,7 +80,7 @@ class AuroraFineTuned(Model):
 
     def create_model(self) -> aurora.Aurora:
         model = aurora.Aurora()
-        model.load_checkpoint("microsoft/aurora", "aurora-0.25-finetuned.ckpt")
+        model.load_checkpoint_local("./checkpoints/aurora-0.25-finetuned.ckpt")
         return model
 
 
