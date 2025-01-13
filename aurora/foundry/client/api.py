@@ -9,7 +9,7 @@ from typing import Generator
 from pydantic import BaseModel
 
 from aurora import Batch
-from aurora.foundry.client.foundry import AbstractFoundryClient
+from aurora.foundry.client.foundry import FoundryClient
 from aurora.foundry.common.channel import CommunicationChannel, iterate_prediction_files
 from aurora.foundry.common.model import models
 
@@ -40,7 +40,7 @@ def submit(
     model_name: str,
     num_steps: int,
     channel: CommunicationChannel,
-    foundry_client: AbstractFoundryClient,
+    foundry_client: FoundryClient,
 ) -> Generator[Batch, None, None]:
     """Submit a request to Azure AI Foundry and retrieve the predictions.
 
@@ -51,7 +51,7 @@ def submit(
         num_steps (int): Number of prediction steps.
         channel (:class:`aurora_foundry.common.channel.CommunicationChannel`): Channel to use for
             sending and receiving data.
-        foundry_client (:class:`aurora_foundry.client.foundry.AbstractFoundryClient`): Client to
+        foundry_client (:class:`aurora_foundry.client.foundry.FoundryClient`): Client to
             communicate with Azure Foundry AI.
 
     Yields:
