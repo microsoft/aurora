@@ -61,3 +61,7 @@ for pred in submit(
 ):
     pass  # Do something with `pred`.
 ```
+
+The above uses the small model and a random initial conditions.
+In practice, you want to use the fine-tuned model, `aurora-0.25-finetuned`, and an initial condition from HRES T0.
+See the [HRES T0 example](/example_hres_t0).
