@@ -129,10 +129,10 @@ def run(input_data: AMLRequest) -> dict:
     """Perform predictions.
 
     Args:
-        input_data (AMLRequest): Mostly a Flask Request object.
+        input_data (AMLRequest): Mostly a Flask `Request` object.
 
     Returns:
-        dict/AMLResponse: The response to the request. dicts are implictitly 200 AMLResponses.
+        dict: The response to the request. These `dict`s are implicitly 200 `AMLResponses`.
     """
     logger.info("Received request.")
 

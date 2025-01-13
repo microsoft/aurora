@@ -47,11 +47,11 @@ def submit(
     Args:
         batch (:class:`aurora.Batch`): Initial condition.
         model_name (str): Name of the model. This name must be available in
-            :mod:`aurora_foundry.common.model`.
+            :mod:`aurora.foundry.common.model`.
         num_steps (int): Number of prediction steps.
-        channel (:class:`aurora_foundry.common.channel.CommunicationChannel`): Channel to use for
+        channel (:class:`aurora.foundry.common.channel.CommunicationChannel`): Channel to use for
             sending and receiving data.
-        foundry_client (:class:`aurora_foundry.client.foundry.FoundryClient`): Client to
+        foundry_client (:class:`aurora.foundry.client.foundry.FoundryClient`): Client to
             communicate with Azure Foundry AI.
 
     Yields:
