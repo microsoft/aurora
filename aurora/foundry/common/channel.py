@@ -213,7 +213,7 @@ class BlobStorageChannel(CommunicationChannel):
         Returns:
             str: Full path including the SAS token.
         """
-        url, sas = self.blob_folder.split("?", 1)
+        url, _, sas = self.blob_folder.partition("?")
         # Don't use `pathlib.Path` for web URLs! It messes up the protocol.
         return f"{os.path.join(url, name)}?{sas}"
 
