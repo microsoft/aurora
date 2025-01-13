@@ -251,7 +251,9 @@ class BlobStorageChannel(CommunicationChannel):
         with tempfile.TemporaryDirectory() as td:
             mark_file_path = Path(td) / f"{name}.finished"
             mark_file_path.parent.mkdir(exist_ok=True, parents=True)
-            mark_file_path.touch()
+            # Write a few bytes to the file. Blob storage has behaved weirdly for empty files.
+            with open(mark_file_path, "wb") as f:
+                f.write(b"File is available")
             self._azcopy(["copy", str(mark_file_path), self._blob_path(f"{name}.finished")])
 
     def _is_marked(self, name: str) -> bool:

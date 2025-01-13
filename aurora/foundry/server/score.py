@@ -161,7 +161,7 @@ def run(input_data: AMLRequest) -> dict:
                 logger.info("Initial condition was found. Submitting task.")
                 # Send an acknowledgement back to test that the host can write. The client will
                 # check for this acknowledgement.
-                channel.write(b"", task_id, "input.nc.ack")
+                channel.write(b"Acknowledgement of initial condition", task_id, "input.nc.ack")
 
                 # Queue the task.
                 task.task_info.submitted = True
