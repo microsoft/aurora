@@ -95,7 +95,14 @@ def submit(
                 channel.read(task_id, "input.nc.ack", timeout=120)
                 ack_read = True  # Read the acknowledgement only once.
             except TimeoutError as e:
-                raise SubmissionError("Could not read acknowledgement of initial condition.") from e
+                raise SubmissionError(
+                    "Could not read acknowledgement of initial condition. "
+                    "This acknowledgement should be availabe, "
+                    "since the task has been successfully submitted. "
+                    "Something might have gone wrong in the communication "
+                    "between the client and the server. "
+                    "Please the logs and your SAS token should you be using one."
+                ) from e
 
         if task_info.status != previous_status:
             logger.info(f"Task status update: {task_info.status}")
