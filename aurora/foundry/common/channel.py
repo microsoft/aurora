@@ -213,7 +213,7 @@ class BlobStorageChannel(CommunicationChannel):
             str: Full path including the SAS token.
         """
         url, _, sas = self.blob_folder.partition("?")
-        return f"{os.path.join(url, name)}?{sas}"
+        return f"{url.rstrip('/')}/{name.lstrip('/')}?{sas}"
 
     def _upload_blob(self, file_path: str, blob_name: str) -> None:
         """Upload a file to the blob."""
