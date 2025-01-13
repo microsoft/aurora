@@ -101,7 +101,7 @@ def submit(
                     "since the task has been successfully submitted. "
                     "Something might have gone wrong in the communication "
                     "between the client and the server. "
-                    "Please the logs and your SAS token should you be using one."
+                    "Please check the logs and your SAS token should you be using one."
                 ) from e
 
         if task_info.status != previous_status:
