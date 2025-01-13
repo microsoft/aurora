@@ -1,3 +1,5 @@
+"""Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
+
 import base64
 import tempfile
 
@@ -50,14 +52,14 @@ def variable_to_urldata(variable: xr.DataArray, cmap: str, vmin: float, vmax: fl
             return f"data:image/png;base64,{base64_utf8_str}"
 
 
-def interactive_plot(prediction: Batch) -> Map:
+def interactive_plot(prediction: Batch, width: str = "1000px", height: str = "500px") -> Map:
     m = Map(
         layers=[],
         center=(20, 10),
         zoom=2,
         interpolation="nearest",
         crs=projections.EPSG4326,
-        layout=Layout(width="1200px", height="600px"),
+        layout=Layout(width=width, height=height),
     )
 
     with tempfile.NamedTemporaryFile(suffix=".nc") as tf:
