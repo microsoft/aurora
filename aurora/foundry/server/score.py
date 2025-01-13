@@ -5,7 +5,17 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from uuid import uuid4
 
-from azureml_inference_server_http.api.aml_request import AMLRequest, rawhttp
+try:
+    from azureml_inference_server_http.api.aml_request import AMLRequest, rawhttp
+except ImportError:
+    # It's OK if this is not available.
+
+    AMLRequest = dict
+
+    def rawhttp(x):
+        return x
+
+
 from pydantic import BaseModel, HttpUrl
 
 import aurora.foundry.server._hook  # noqa: F401
@@ -132,7 +142,7 @@ def run(input_data: AMLRequest) -> dict:
         input_data (AMLRequest): Mostly a Flask `Request` object.
 
     Returns:
-        dict: The response to the request. These `dict`s are implicitly 200 `AMLResponses`.
+        dict: The response to the request. This `dict` is implicitly a status 200 `AMLResponse`.
     """
     logger.info("Received request.")
 
