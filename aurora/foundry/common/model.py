@@ -13,13 +13,6 @@ __all__ = ["Model", "models"]
 
 logger = logging.getLogger(__name__)
 
-if torch.cuda.is_available():
-    logger.info("GPU detected. Running on GPU.")
-    target_device = torch.device("cuda")
-else:
-    logger.warning("No GPU available. Running on CPU.")
-    target_device = torch.device("cpu")
-
 
 class Model(metaclass=abc.ABCMeta):
     """A model that can run predictions."""
@@ -27,10 +20,17 @@ class Model(metaclass=abc.ABCMeta):
     def __init__(self):
         """Initialise.
 
-        This creates and loads the model.
+        This creates and loads the model and determines the device the run the model on.
         """
         self.model = self.create_model()
         self.model.eval()
+
+        if torch.cuda.is_available():
+            logger.info("GPU detected. Running on GPU.")
+            self.target_device = torch.device("cuda")
+        else:
+            logger.warning("No GPU available. Running on CPU.")
+            self.target_device = torch.device("cpu")
 
     @abc.abstractmethod
     def create_model(self) -> aurora.Aurora:
@@ -52,8 +52,8 @@ class Model(metaclass=abc.ABCMeta):
             :class:`aurora.Aurora`: Model.
         """
         # Move batch and model to target device.
-        self.model.to(target_device)  # Modifies in-place!
-        batch = batch.to(target_device)
+        self.model.to(self.target_device)  # Modifies in-place!
+        batch = batch.to(self.target_device)
 
         # Perform predictions, immediately moving the output to the CPU.
         for pred in rollout(self.model, batch, steps=num_steps):
