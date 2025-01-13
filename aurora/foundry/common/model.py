@@ -13,6 +13,9 @@ __all__ = ["Model", "models"]
 
 logger = logging.getLogger(__name__)
 
+# A dictionary containing ``<name, artifact_path>`` entries, where ``artifact_path`` is an
+# absolute filesystem path to the artifact.
+MLFLOW_ARTIFACTS = dict()
 
 class Model(metaclass=abc.ABCMeta):
     """A model that can run predictions."""
@@ -70,7 +73,7 @@ class AuroraSmall(Model):
 
     def create_model(self) -> aurora.Aurora:
         model = aurora.AuroraSmall()
-        model.load_checkpoint_local("./checkpoints/aurora-0.25-small-pretrained.ckpt")
+        model.load_checkpoint_local(MLFLOW_ARTIFACTS[self.name])
         return model
 
 
@@ -80,7 +83,7 @@ class AuroraFineTuned(Model):
 
     def create_model(self) -> aurora.Aurora:
         model = aurora.Aurora()
-        model.load_checkpoint_local("./checkpoints/aurora-0.25-finetuned.ckpt")
+        model.load_checkpoint_local(MLFLOW_ARTIFACTS[self.name])
         return model
 
 

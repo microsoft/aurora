@@ -13,7 +13,7 @@ from aurora.foundry.common.channel import (
     BlobStorageChannel,
     iterate_prediction_files,
 )
-from aurora.foundry.common.model import models
+from aurora.foundry.common.model import models, MLFLOW_ARTIFACTS
 
 # Need to give the name explicitly here, because the script may be run stand-alone.
 logger = logging.getLogger("aurora.foundry.server.score")
@@ -117,6 +117,8 @@ class AuroraModelWrapper(mlflow.pyfunc.PythonModel):
         self.POOL = ThreadPoolExecutor(max_workers=1)
         self.TASKS = dict()
         self.POOL.__enter__()
+        
+        MLFLOW_ARTIFACTS.update(context.artifacts)
 
     def predict(self, context, model_input, params=None):
         data = json.loads(model_input["data"].item())
