@@ -6,8 +6,7 @@ Build the Docker image:
 make docker
 ```
 
-The resulting image will be tagged as `aurora-foundry:latest`.
-Upload this image to Azure AI foundry.
+Upload the resulting image to Azure AI foundry.
 
 Building the Docker image depends on a list of precompiled dependencies.
 If you change the requirements in `pyproject.toml`, this list must be updated:
