@@ -15,7 +15,8 @@ logger = logging.getLogger(__name__)
 
 # A dictionary containing ``<name, artifact_path>`` entries, where ``artifact_path`` is an
 # absolute filesystem path to the artifact.
-MLFLOW_ARTIFACTS = dict()
+MLFLOW_ARTIFACTS: dict[str, str] = dict()
+
 
 class Model(metaclass=abc.ABCMeta):
     """A model that can run predictions."""

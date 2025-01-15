@@ -3,15 +3,14 @@
 import abc
 import logging
 import os
-import subprocess
 import tempfile
 import time
 from pathlib import Path
 from typing import Generator, Literal
 
 import requests
-from pydantic import BaseModel, HttpUrl
 from azure.storage.blob import BlobClient
+from pydantic import BaseModel, HttpUrl
 
 from aurora import Batch
 

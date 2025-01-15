@@ -1,19 +1,17 @@
 import json
-
 import logging
 import time
 from concurrent.futures import ThreadPoolExecutor
 from uuid import uuid4
 
-from pydantic import BaseModel, HttpUrl
-
 import mlflow.pyfunc
+from pydantic import BaseModel, HttpUrl
 
 from aurora.foundry.common.channel import (
     BlobStorageChannel,
     iterate_prediction_files,
 )
-from aurora.foundry.common.model import models, MLFLOW_ARTIFACTS
+from aurora.foundry.common.model import MLFLOW_ARTIFACTS, models
 
 # Need to give the name explicitly here, because the script may be run stand-alone.
 logger = logging.getLogger("aurora.foundry.server.score")
@@ -117,7 +115,7 @@ class AuroraModelWrapper(mlflow.pyfunc.PythonModel):
         self.POOL = ThreadPoolExecutor(max_workers=1)
         self.TASKS = dict()
         self.POOL.__enter__()
-        
+
         MLFLOW_ARTIFACTS.update(context.artifacts)
 
     def predict(self, context, model_input, params=None):
@@ -132,7 +130,6 @@ class AuroraModelWrapper(mlflow.pyfunc.PythonModel):
 
         elif data["type"] == "task_info":
             logger.info("Processing an existing task.")
-
 
             task_id = data["msg"]["task_id"]
             if not task_id:

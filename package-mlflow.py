@@ -13,8 +13,12 @@ artifacts = {
 ckp_dir = Path("checkpoints")
 if not ckp_dir.exists():
     ckp_dir.mkdir()
-    hf_hub_download(repo_id="microsoft/aurora", filename="aurora-0.25-small-pretrained.ckpt", local_dir=ckp_dir)
-    hf_hub_download(repo_id="microsoft/aurora", filename="aurora-0.25-finetuned.ckpt", local_dir=ckp_dir)
+    hf_hub_download(
+        repo_id="microsoft/aurora", filename="aurora-0.25-small-pretrained.ckpt", local_dir=ckp_dir
+    )
+    hf_hub_download(
+        repo_id="microsoft/aurora", filename="aurora-0.25-finetuned.ckpt", local_dir=ckp_dir
+    )
 
 
 mlflow_pyfunc_model_path = "./aurora_mlflow_pyfunc"

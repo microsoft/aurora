@@ -1,8 +1,7 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
-import logging
-from typing import Literal
 import json
+import logging
 
 import requests
 
@@ -37,16 +36,16 @@ class FoundryClient:
             },
             json={
                 # "inputs": wrapped, # mlflow local testing only
-                "input_data": wrapped # AML
+                "input_data": wrapped  # AML
             },
         )
-    
+
     def _unwrap(self, answer: requests.Response) -> dict:
         if not answer.ok:
             logger.error(answer.text)
         answer.raise_for_status()
         obj = answer.json()
-        if "predictions" in obj: # local mlflow testing only
+        if "predictions" in obj:  # local mlflow testing only
             return obj["predictions"]
         return obj
 
@@ -71,5 +70,5 @@ class FoundryClient:
         Returns:
             dict: Progress information.
         """
-        answer = self._req({"type": "task_info", "msg": { "task_id": task_id }})
+        answer = self._req({"type": "task_info", "msg": {"task_id": task_id}})
         return self._unwrap(answer)
