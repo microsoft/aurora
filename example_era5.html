@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Example: Predictions for ERA5 &#8212; Aurora: A Foundation Model of the Atmosphere</title>
+    <title>Predictions for ERA5 &#8212; Aurora: A Foundation Model of the Atmosphere</title>
   
   
   
@@ -63,8 +63,8 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'example_era5';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Example: Predictions for HRES T0" href="example_hres_t0.html" />
-    <link rel="prev" title="Fine-Tuning" href="finetuning.html" />
+    <link rel="next" title="Predictions for HRES T0" href="example_hres_t0.html" />
+    <link rel="prev" title="Application Programming Interface" href="api.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -168,17 +168,29 @@
                 </a>
             </li>
         </ul>
-        <ul class="current nav bd-sidenav">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Main Usage</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="batch.html">Form of a Batch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="models.html">Available Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="beware.html">Beware!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Fine-Tuning</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Example: Predictions for ERA5</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example_hres_t0.html">Example: Predictions for HRES T0</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example_hres_0.1.html">Example: Predictions for HRES at 0.1 degrees</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ai_models_plugin.html">Plugin for ECMWF’s <code class="docutils literal notranslate"><span class="pre">ai-models</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">Application Programming Interface</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Predictions for ERA5</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_hres_t0.html">Predictions for HRES T0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_hres_0.1.html">Predictions for HRES at 0.1 degrees</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="foundry/intro.html">Aurora on Azure AI Foundry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="foundry/submission.html">Submitting Predictions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="foundry/server.html">Hosting Aurora</a></li>
+<li class="toctree-l1"><a class="reference internal" href="foundry/demo_hres_t0.html">Demo: HRES T0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="foundry/api.html">Application Programming Interface</a></li>
 </ul>
 
     </div>
@@ -361,7 +373,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Example: Predictions for ERA5</h1>
+    <h1>Predictions for ERA5</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -385,22 +397,22 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="example-predictions-for-era5">
-<h1>Example: Predictions for ERA5<a class="headerlink" href="#example-predictions-for-era5" title="Link to this heading">#</a></h1>
+  <section id="predictions-for-era5">
+<h1>Predictions for ERA5<a class="headerlink" href="#predictions-for-era5" title="Link to this heading">#</a></h1>
 <p>In this example, we will download ERA5 data for 1 Jan 2023 at 0.25 degrees resolution and run Aurora on this data. The fine-tuned version of Aurora specifically only works with IFS HRES T0, so we use the non-fine-tuned version of Aurora in this example.</p>
 <p>Running this notebook requires additional Python packages. You can install these as follows:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">cdsapi</span> <span class="n">xarray</span> <span class="n">netcdf4</span> <span class="n">matplotlib</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">cdsapi</span> <span class="n">matplotlib</span>
 </pre></div>
 </div>
 <section id="downloading-the-data">
 <h2>Downloading the Data<a class="headerlink" href="#downloading-the-data" title="Link to this heading">#</a></h2>
-<p>To begin with, register an account with the <a class="reference external" href="https://cds-beta.climate.copernicus.eu/">Climate Data Store</a> and create <code class="docutils literal notranslate"><span class="pre">$HOME/.cdsapirc</span></code> with the following content:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">url</span><span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">cds</span><span class="o">-</span><span class="n">beta</span><span class="o">.</span><span class="n">climate</span><span class="o">.</span><span class="n">copernicus</span><span class="o">.</span><span class="n">eu</span><span class="o">/</span><span class="n">api</span>
+<p>To begin with, register an account with the <a class="reference external" href="https://cds.climate.copernicus.eu/">Climate Data Store</a> and create <code class="docutils literal notranslate"><span class="pre">$HOME/.cdsapirc</span></code> with the following content:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">url</span><span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">cds</span><span class="o">.</span><span class="n">climate</span><span class="o">.</span><span class="n">copernicus</span><span class="o">.</span><span class="n">eu</span><span class="o">/</span><span class="n">api</span>
 <span class="n">key</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">API</span> <span class="n">key</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>You can find your API key on your account page.</p>
-<p>In order to be able to download ERA5 data, you need to accept the terms of use in the <a class="reference external" href="https://cds-beta.climate.copernicus.eu/datasets/reanalysis-era5-single-levels?tab=download">dataset page</a>.</p>
+<p>In order to be able to download ERA5 data, you need to accept the terms of use in the <a class="reference external" href="https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels?tab=download">dataset page</a>.</p>
 <p>We now download the ERA5 data.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -646,12 +658,12 @@ Atmospheric variables downloaded!
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="finetuning.html"
+       href="api.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Fine-Tuning</p>
+        <p class="prev-next-title">Application Programming Interface</p>
       </div>
     </a>
     <a class="right-next"
@@ -659,7 +671,7 @@ Atmospheric variables downloaded!
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Example: Predictions for HRES T0</p>
+        <p class="prev-next-title">Predictions for HRES T0</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
