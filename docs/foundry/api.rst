@@ -24,6 +24,4 @@ These models need to be referred to by the value of their attribute `name`.
 
 Server
 ------
-.. autofunction:: aurora.foundry.server.score.init
-
-.. autofunction:: aurora.foundry.server.score.run
+.. autofunction:: aurora.foundry.server.mlflow_wrapper.AuroraModelWrapper

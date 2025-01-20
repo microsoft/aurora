@@ -1,8 +1,7 @@
 # Submitting Predictions
 
 To produce predictions on Azure AI Foundry, the client will communicate with the host through
-a blob storage container, so `azcopy` needs to be available in the local path.
-[See here for instructions on how to install `azcopy`.](https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-v10)
+a blob storage container.
 
 First, create a client that can communicate with your Azure AI Foundry endpoint:
 
@@ -21,13 +20,15 @@ Then set up a blob storage container for communication with the host:
 from aurora.foundry import BlobStorageChannel
 
 channel = BlobStorageChannel(
-    "https://my.blob.core.windows.net/container/folder?<SAS_TOKEN>"
+    "https://my.blob.core.windows.net/container/folder?<READ_WRITE_SAS_TOKEN>"
 )
 ```
 
-The SAS token needs read and write rights.
-This blob storage container will be used to send the initial condition to the host and to retrieve
+```warning
+The SAS token needs both read and write rights!
+The blob storage container will be used to send the initial condition to the host and to retrieve
 the predictions from the host.
+```
 
 You can now submit requests in the following way:
 

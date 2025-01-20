@@ -15,6 +15,8 @@ from aurora.foundry.common.channel import (
 )
 from aurora.foundry.common.model import MLFLOW_ARTIFACTS, models
 
+__all__ = ["AuroraModelWrapper"]
+
 # Need to give the name explicitly here, because the script may be run stand-alone.
 logger = logging.getLogger("aurora.foundry.server.score")
 
@@ -111,15 +113,17 @@ class Task:
 
 
 class AuroraModelWrapper(mlflow.pyfunc.PythonModel):
-    def load_context(self, context):
+    """A wrapper around an async workflow for making predictions with Aurora."""
+
+    def load_context(self, context) -> None:
         logging.getLogger("aurora").setLevel(logging.INFO)
         logger.info("Starting `ThreadPoolExecutor`.")
         self.POOL = ThreadPoolExecutor(max_workers=1)
-        self.TASKS = dict()
+        self.TASKS: dict[str, Task] = {}
         self.POOL.__enter__()
         MLFLOW_ARTIFACTS.update(context.artifacts)
 
-    def predict(self, context, model_input, params=None):
+    def predict(self, context, model_input: dict, params=None) -> dict:
         data = json.loads(model_input["data"].item())
 
         if data["type"] == "submission":
@@ -173,4 +177,4 @@ class AuroraModelWrapper(mlflow.pyfunc.PythonModel):
             return task.task_info.dict()
 
         else:
-            raise ValueError(f"Unknown data type: {data['type']}")
+            raise ValueError(f"Unknown data type: `{data['type']}`.")

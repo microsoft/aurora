@@ -34,20 +34,15 @@ class FoundryClient:
                 "Authorization": f"Bearer {self.token}",
                 "Content-Type": "application/json",
             },
-            json={
-                # "inputs": wrapped, # mlflow local testing only
-                "input_data": wrapped  # AML
-            },
+            json={"input_data": wrapped},
         )
 
-    def _unwrap(self, answer: requests.Response) -> dict:
-        if not answer.ok:
-            logger.error(answer.text)
-        answer.raise_for_status()
-        obj = answer.json()
-        if "predictions" in obj:  # Local mlflow testing only.
-            return obj["predictions"]
-        return obj
+    def _unwrap(self, response: requests.Response) -> dict:
+        if not response.ok:
+            logger.error(response.text)
+        response.raise_for_status()
+        response_json = response.json()
+        return response_json
 
     def submit_task(self, data: dict) -> dict:
         """Send `data` to the scoring path.

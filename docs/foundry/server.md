@@ -1,16 +1,14 @@
-# Running the Inference Server
+# Hosting Aurora
 
-Build the Docker image:
+The model is served via [MLflow](https://mlflow.org/).
+First, make sure that `mlflow` is installed:
 
 ```bash
-make docker
+pip install mlflow
 ```
 
-Then upload the resulting image to Azure AI foundry.
-
-Building the Docker image depends on a list of precompiled dependencies.
-If you change the requirements in `pyproject.toml`, this list must be updated:
+Then build the MLflow model as follows:
 
 ```bash
-make docker-requirements
+python package_mlflow.py
 ```
