@@ -1,13 +1,24 @@
 format: jb-book
 root: intro
-chapters:
-- file: usage
-- file: batch
-- file: models
-- file: beware
-- file: finetuning
-- file: example_era5
-- file: example_hres_t0
-- file: example_hres_0.1
-- file: ai_models_plugin
-- file: api
+parts:
+- caption: Main Usage
+  chapters:
+    - file: usage
+    - file: batch
+    - file: models
+    - file: beware
+    - file: finetuning
+    - file: ai_models_plugin
+    - file: api
+- caption: Examples
+  chapters:
+    - file: example_era5
+    - file: example_hres_t0
+    - file: example_hres_0.1
+- caption: Foundry
+  chapters:
+   - file: foundry/intro
+   - file: foundry/submission
+   - file: foundry/server
+   - file: foundry/demo_hres_t0
+   - file: foundry/api
