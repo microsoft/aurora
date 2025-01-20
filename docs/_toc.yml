@@ -19,6 +19,6 @@ parts:
   chapters:
    - file: foundry/intro
    - file: foundry/submission
-   - file: foundry/server
    - file: foundry/demo_hres_t0
+   - file: foundry/server
    - file: foundry/api
