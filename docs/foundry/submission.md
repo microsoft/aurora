@@ -24,10 +24,15 @@ channel = BlobStorageChannel(
 )
 ```
 
-```warning
-The SAS token needs both read and write rights!
+The SAS token needs both read and write rights.
 The blob storage container will be used to send the initial condition to the host and to retrieve
 the predictions from the host.
+
+```{warning}
+It is important that the SAS token has both read and write rights.
+
+To generate a SAS token with read and write rights, navigate to the container in Azure,
+go to "Shared access tokens", and select both "Read" and "Write" under "Permissions".
 ```
 
 You can now submit requests in the following way:
