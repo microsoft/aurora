@@ -45,7 +45,7 @@ class FoundryClient:
             logger.error(answer.text)
         answer.raise_for_status()
         obj = answer.json()
-        if "predictions" in obj:  # local mlflow testing only
+        if "predictions" in obj:  # Local mlflow testing only.
             return obj["predictions"]
         return obj
 

@@ -1,24 +1,28 @@
+"""Copyright (c) Microsoft Corporation. Licensed under the MIT license.
+
+Package the model with MLflow.
+"""
+
 from pathlib import Path
 
 import mlflow.pyfunc
 from huggingface_hub import hf_hub_download
 
+from aurora.foundry.common.model import models
 from aurora.foundry.server.mlflow_wrapper import AuroraModelWrapper
 
-artifacts = {
-    "aurora-0.25-small-pretrained": "checkpoints/aurora-0.25-small-pretrained.ckpt",
-    "aurora-0.25-finetuned": "checkpoints/aurora-0.25-finetuned.ckpt",
-}
+artifacts: dict[str, str] = {}
 
-ckp_dir = Path("checkpoints")
-if not ckp_dir.exists():
-    ckp_dir.mkdir()
+# Download all checkpoints into a local directory which will be included in the package.
+ckpt_dir = Path("checkpoints")
+ckpt_dir.mkdir(parents=True, exist_ok=True)
+for name in models:
     hf_hub_download(
-        repo_id="microsoft/aurora", filename="aurora-0.25-small-pretrained.ckpt", local_dir=ckp_dir
+        repo_id="microsoft/aurora",
+        filename=f"{name}.ckpt",
+        local_dir=ckpt_dir,
     )
-    hf_hub_download(
-        repo_id="microsoft/aurora", filename="aurora-0.25-finetuned.ckpt", local_dir=ckp_dir
-    )
+    artifacts = {name: str(ckpt_dir / f"{name}.ckpt")}
 
 
 mlflow_pyfunc_model_path = "./aurora_mlflow_pyfunc"

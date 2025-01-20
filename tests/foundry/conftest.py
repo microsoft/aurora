@@ -1,289 +1,153 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
 import json
-import os
-import re
-import subprocess
-import time
-from contextlib import contextmanager
+import traceback
 from pathlib import Path
-from typing import IO, Generator, Tuple
+from queue import Queue
+from threading import Thread
+from typing import IO, Generator, Generic, TypeVar
 from urllib.parse import urlparse
 
 import pytest
 import requests
+from azure.storage.blob import BlobClient
+from huggingface_hub import hf_hub_download
 
-from aurora.foundry.client.foundry import FoundryClient
-from aurora.foundry.common.channel import BlobStorageChannel
+from aurora.foundry import BlobStorageChannel, FoundryClient
+from aurora.foundry.server.mlflow_wrapper import AuroraModelWrapper
 
-MOCK_ADDRESS = "https://mock-foundry.azurewebsites.net"
-
-
-@contextmanager
-def runner_process(
-    azcopy_mock_work_path: Path | None,
-) -> Generator[Tuple[subprocess.Popen, IO, IO], None, None]:
-    """Launch a runner process that mocks the Azure ML Inference Server."""
-    score_script_path = Path(__file__).parents[2] / "aurora/foundry/server/score.py"
-    runner_path = Path(__file__).parents[0] / "runner.py"
-    p = subprocess.Popen(
-        [
-            "python",
-            runner_path,
-            *(
-                ["--azcopy-mock-work-path", str(azcopy_mock_work_path)]
-                if azcopy_mock_work_path
-                else []
-            ),
-            score_script_path,
-        ],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-    )
-    stdin = p.stdin
-    stdout = p.stdout
-    assert stdin is not None and stdout is not None
-    yield p, stdin, stdout
-    p.terminate()
-    p.wait()
+T = TypeVar("T")
 
 
-@contextmanager
-def mock_foundry_responses_subprocess(
-    stdin: IO, stdout: IO, requests_mock, base_address: str = MOCK_ADDRESS
-) -> Generator[None, None, None]:
-    """Mock requests to Foundry by redirecting them to the subprocess."""
+class _Wrapped(Generic[T]):
+    """Wrap an object to be accessible via `.item()`."""
 
-    def _mock_send(request, context) -> dict:
-        method = request.method.encode("unicode_escape")
-        text = request.text or ""
-        stdin.write(method + b"\n")
-        stdin.write(request.path.encode("unicode_escape") + b"\n")
-        stdin.write(request.url.partition("?")[2].encode("unicode_escape") + b"\n")
-        stdin.write(json.dumps(dict(request.headers)).encode("unicode_escape") + b"\n")
-        stdin.write(text.encode("unicode_escape") + b"\n")
-        stdin.flush()
+    def __init__(self, x: T) -> None:
+        self.x = x
 
-        output = stdout.readline()
-        if not output:
-            raise RuntimeError("Runner returned no answer. It likely crashed.")
-
-        return json.loads(output.decode("unicode_escape"))
-
-    requests_mock.post(
-        f"{base_address}/score",
-        json=_mock_send,
-    )
-    requests_mock.get(
-        re.compile(rf"{base_address}/score\?task_id=.*"),
-        json=_mock_send,
-    )
-    yield
+    def item(self) -> T:
+        return self.x
 
 
-def mock_azcopy(tmp_path: Path, monkeypatch, requests_mock) -> Tuple[Path, Path, str]:
-    """Mock `azcopy`."""
-    # Communicate via blob storage, so mock `azcopy` too.
-    azcopy_mock_work_path = tmp_path / "azcopy_work"
-    # It's important to already create the work folder. If we don't then the Docker image will
-    # create it, and the permissions will then be wrong.
-    azcopy_mock_work_path.mkdir(exist_ok=True, parents=True)
-    azcopy_path = Path(__file__).parents[0] / "azcopy.py"
-    monkeypatch.setattr(
-        BlobStorageChannel,
-        "_AZCOPY_EXECUTABLE",
-        ["python", str(azcopy_path), str(azcopy_mock_work_path)],
-    )
-    # The below test URL must start with `https`!
-    blob_url_with_sas = "https://storageaccount.blob.core.windows.net/container/folder?SAS"
+class _MockContext:
+    """MLflow artifacts available in the tests."""
 
-    def _matcher(request: requests.Request) -> requests.Response | None:
-        """Mock requests that check for the existence of blobs."""
-        url = urlparse(request.url)
-        path = url.path[1:]  # Remove leading slash.
+    artifacts = {
+        "aurora-0.25-small-pretrained": hf_hub_download(
+            repo_id="microsoft/aurora",
+            filename="aurora-0.25-small-pretrained.ckpt",
+        )
+    }
 
-        if url.hostname and url.hostname.endswith(".blob.core.windows.net"):
-            local_path = azcopy_mock_work_path / path
 
-            response = requests.Response()
+def _server_work(queue_in: Queue[dict | None], queue_out: Queue[dict]) -> None:
+    """Simulate a server. If it crashes, print the error.
+
+    The server can be shut down by sending it `None` via `queue_in`.
+    """
+    try:
+        context = _MockContext()
+
+        model = AuroraModelWrapper()
+        model.load_context(context)
+
+        while message := queue_in.get():
+            data = message["input_data"]["data"]
+            response = model.predict(context, {"data": _Wrapped(data)})
+            queue_out.put(response)
+    except Exception:
+        print("Server crashed with the following exception:")
+        print(traceback.format_exc())
+
+
+class _MockIO:
+    """Simple mock of an `IO`."""
+
+    def __init__(self, data: bytes) -> None:
+        self.data = data
+
+    def readall(self) -> bytes:
+        return self.data
+
+
+class _MockBlobClient:
+    """Mock of `BlobClient` that reads from and writes to a local directory.
+
+    Also checks for the presence of a SAS token.
+    """
+
+    def __init__(self, url: str, work_path: Path) -> None:
+        url_parsed = urlparse(url)
+
+        # Assert that a SAS token is present and right.
+        assert url_parsed.query == "SAS"
+
+        self.work_path = work_path / url_parsed.path.removeprefix("/")
+
+    def upload_blob(self, f: IO, overwrite: bool) -> None:
+        self.work_path.parent.mkdir(exist_ok=True, parents=True)
+        with open(self.work_path, "wb") as local_f:
+            local_f.write(f.read())
+
+    def download_blob(self) -> _MockIO:
+        with open(self.work_path, "rb") as local_f:
+            return _MockIO(local_f.read())
+
+
+@pytest.fixture()
+def mock_foundry_client(
+    request, monkeypatch, requests_mock, tmp_path
+) -> Generator[dict, None, None]:
+    blob_work_dir = tmp_path / "blob"
+
+    # Communication queues for the sever thread:
+    queue_in: Queue[dict | None] = Queue()
+    queue_out: Queue[dict] = Queue()
+
+    def _server_json(request, context) -> dict:
+        message = json.loads(request.text)
+        queue_in.put(message)
+        response = queue_out.get()
+        return response
+
+    # Mock communication with the server:
+    requests_mock.post("https://127.0.0.1", json=_server_json)
+
+    def _mock_head(url: str) -> requests.Response:
+        url_parsed = urlparse(url)
+        path = url_parsed.path.removeprefix("/")
+
+        response = requests.Response()
+        response.status_code = 404
+
+        if url_parsed.hostname and url_parsed.hostname.endswith(".blob.core.windows.net"):
+            local_path = blob_work_dir / path
+
             if local_path.exists():
                 response.status_code = 200
-            else:
-                response.status_code = 404
-            return response
 
-        return None
+        return response
 
-    requests_mock.add_matcher(_matcher)
+    # Mock HEAD requests that check for the existence of blobs:
+    monkeypatch.setattr(requests, "head", _mock_head)
 
-    return azcopy_path, azcopy_mock_work_path, blob_url_with_sas
+    def _mock_from_blob_url(url: str) -> object:
+        return _MockBlobClient(url, blob_work_dir)
 
+    # Mock `BlobClient`:
+    monkeypatch.setattr(BlobClient, "from_blob_url", _mock_from_blob_url)
 
-@pytest.fixture(
-    params=[
-        "subprocess",
-        "subprocess-real-container",
-        "docker",
-        "docker-real-container",
-    ]
-)
-def mock_foundry_client(
-    request,
-    tmp_path: Path,
-    monkeypatch,
-    requests_mock,
-) -> Generator[dict, None, None]:
-    if request.param == "subprocess":
-        azcopy_path, azcopy_mock_work_path, blob_url_with_sas = mock_azcopy(
-            tmp_path, monkeypatch, requests_mock
-        )
+    # Start a separate thread that models the server.
+    th = Thread(target=_server_work, args=(queue_in, queue_out))
+    th.start()
 
-        with runner_process(azcopy_mock_work_path) as (p, stdin, stdout):  # noqa: SIM117
-            with mock_foundry_responses_subprocess(stdin, stdout, requests_mock):
-                yield {
-                    "channel": BlobStorageChannel(blob_url_with_sas),
-                    "foundry_client": FoundryClient(MOCK_ADDRESS, "mock-token"),
-                }
+    yield {
+        "foundry_client": FoundryClient("https://127.0.0.1", "TOKEN"),
+        "channel": BlobStorageChannel(
+            "https://storageaccount.blob.core.windows.net/container/folder?SAS"
+        ),
+    }
 
-    elif request.param == "subprocess-real-container":
-        requests_mock.real_http = True
-
-        if "TEST_BLOB_URL_WITH_SAS" not in os.environ:
-            pytest.skip("`TEST_BLOB_URL_WITH_SAS` is not set, so test cannot be run.")
-        blob_url_with_sas = os.environ["TEST_BLOB_URL_WITH_SAS"]
-
-        with runner_process(None) as (p, stdin, stdout):  # noqa: SIM117
-            with mock_foundry_responses_subprocess(stdin, stdout, requests_mock):
-                yield {
-                    "channel": BlobStorageChannel(blob_url_with_sas),
-                    "foundry_client": FoundryClient(MOCK_ADDRESS, "mock-token"),
-                }
-
-    elif request.param == "docker":
-        azcopy_path, azcopy_mock_work_path, blob_url_with_sas = mock_azcopy(
-            tmp_path, monkeypatch, requests_mock
-        )
-
-        requests_mock.real_http = True
-
-        if "DOCKER_IMAGE" not in os.environ:
-            raise RuntimeError(
-                "Set the environment variable `DOCKER_IMAGE` "
-                "to the release image of Aurora Foundry."
-            )
-        docker_image = os.environ["DOCKER_IMAGE"]
-
-        # Run the Docker container. Assume that it has already been built. Insert the hook
-        # to mock things on the server side.
-        server_hook = Path(__file__).parents[0] / "docker_server_hook.py"
-        p = subprocess.Popen(
-            [
-                "docker",
-                "run",
-                "-p",
-                "5001:5001",
-                "--rm",
-                "-t",
-                "-v",
-                f"{azcopy_mock_work_path}:/azcopy_work",
-                "--mount",
-                f"type=bind,src={azcopy_path},dst=/aurora_foundry/azcopy.py,readonly",
-                "--mount",
-                (
-                    f"type=bind"
-                    f",src={server_hook}"
-                    f",dst=/aurora_foundry/aurora/foundry/server/_hook.py"
-                    f",readonly"
-                ),
-                docker_image,
-            ],
-        )
-
-        try:
-            # Wait for the server to come online.
-            start = time.time()
-            while True:
-                try:
-                    res = requests.get("http://127.0.0.1:5001/")
-                    res.raise_for_status()
-                except (requests.ConnectionError, requests.HTTPError) as e:
-                    # Try for at most 10 seconds.
-                    if time.time() - start < 10:
-                        time.sleep(0.5)
-                        continue
-                    else:
-                        raise e
-                break
-
-            yield {
-                "channel": BlobStorageChannel(blob_url_with_sas),
-                "foundry_client": FoundryClient("http://127.0.0.1:5001", "mock-token"),
-            }
-
-        finally:
-            p.terminate()
-            p.wait()
-
-    elif request.param == "docker-real-container":
-        requests_mock.real_http = True
-
-        if "TEST_BLOB_URL_WITH_SAS" not in os.environ:
-            pytest.skip("`TEST_BLOB_URL_WITH_SAS` is not set, so test cannot be run.")
-        blob_url_with_sas = os.environ["TEST_BLOB_URL_WITH_SAS"]
-
-        if "DOCKER_IMAGE" not in os.environ:
-            raise RuntimeError(
-                "Set the environment variable `DOCKER_IMAGE` "
-                "to the release image of Aurora Foundry."
-            )
-        docker_image = os.environ["DOCKER_IMAGE"]
-
-        # Run the Docker container. Assume that it has already been built. Insert the hook
-        # to mock things on the server side.
-        server_hook = Path(__file__).parents[0] / "docker_server_hook.py"
-        p = subprocess.Popen(
-            [
-                "docker",
-                "run",
-                "-p",
-                "5001:5001",
-                "--rm",
-                "-t",
-                "--mount",
-                (
-                    f"type=bind"
-                    f",src={server_hook}"
-                    f",dst=/aurora_foundry/aurora/foundry/server/_hook.py"
-                    f",readonly"
-                ),
-                docker_image,
-            ],
-        )
-
-        try:
-            # Wait for the server to come online.
-            start = time.time()
-            while True:
-                try:
-                    res = requests.get("http://127.0.0.1:5001/")
-                    res.raise_for_status()
-                except (requests.ConnectionError, requests.HTTPError) as e:
-                    # Try for at most 10 seconds.
-                    if time.time() - start < 10:
-                        time.sleep(0.5)
-                        continue
-                    else:
-                        raise e
-                break
-
-            yield {
-                "channel": BlobStorageChannel(blob_url_with_sas),
-                "foundry_client": FoundryClient("http://127.0.0.1:5001", "mock-token"),
-            }
-
-        finally:
-            p.terminate()
-            p.wait()
-
-    else:
-        raise ValueError(f"Bad Foundry mock mode: `{request.param}`.")
+    # Wait for the server to finish.
+    queue_in.put(None)  # Kill signal
+    th.join()

@@ -111,16 +111,14 @@ class Task:
 class AuroraModelWrapper(mlflow.pyfunc.PythonModel):
     def load_context(self, context):
         logging.getLogger("aurora").setLevel(logging.INFO)
-        logger.info("Starting ThreadPoolExecutor")
+        logger.info("Starting `ThreadPoolExecutor`.")
         self.POOL = ThreadPoolExecutor(max_workers=1)
         self.TASKS = dict()
         self.POOL.__enter__()
-
         MLFLOW_ARTIFACTS.update(context.artifacts)
 
     def predict(self, context, model_input, params=None):
         data = json.loads(model_input["data"].item())
-        # print(f"Inputs:\n{data}")
 
         if data["type"] == "submission":
             logger.info("Creating a new task.")
