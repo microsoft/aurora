@@ -43,7 +43,7 @@ dependencies = [
     "pydantic",
     "xarray",
     "netcdf4",
-    "azure-blob-storage",
+    "azure-storage-blob",
 ]
 
 [project.optional-dependencies]
