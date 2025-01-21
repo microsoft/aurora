@@ -1,20 +1,26 @@
 # Submitting Predictions
 
-To produce predictions on Azure AI Foundry, the client will communicate with the host through
-a blob storage container.
-
-First, create a client that can communicate with your Azure AI Foundry endpoint:
+To produce Aurora predictions on Azure AI Foundry,
+you need an endpoint that hosts Aurora.
+To create such an endpoint, find Aurora in the [Azure AI Foundry model catalog](https://ai.azure.com/explore/models),
+click "Deploy", and follow the instructions.
+Once the endpoint has been deployed,
+it will have an endpoint URL and access token.
+Then create a `FoundryClient` using this URL and token:
 
 ```python
 from aurora.foundry import FoundryClient
 
 foundry_client = FoundryClient(
-    endpoint="https://endpoint/",
+    endpoint="https://endpoint_url/",
     token="TOKEN",
 )
 ```
 
-Then set up a blob storage container for communication with the host:
+You will communicate with the endpoint through a blob storage container.
+You need to create this blob storage container yourself.
+Create one, and generate a URL that includes a SAS token _with both read and write rights_.
+Then create `BlobStorageChannel` with the blob storage container URL with SAS appended:
 
 ```python
 from aurora.foundry import BlobStorageChannel
@@ -24,9 +30,8 @@ channel = BlobStorageChannel(
 )
 ```
 
-The SAS token needs both read and write rights.
-The blob storage container will be used to send the initial condition to the host and to retrieve
-the predictions from the host.
+This blob storage container will be used to send the initial condition to the endpoint
+and to retrieve the predictions from the endpoint.
 
 ```{warning}
 It is important that the SAS token has both read and write rights.
@@ -35,7 +40,8 @@ To generate a SAS token with read and write rights, navigate to the container in
 go to "Shared access tokens", and select both "Read" and "Write" under "Permissions".
 ```
 
-You can now submit requests in the following way:
+You're all done now!
+You can submit requests for predictions in the following way:
 
 ```python
 from datetime import datetime
