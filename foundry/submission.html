@@ -63,7 +63,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'foundry/submission';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Hosting Aurora" href="server.html" />
+    <link rel="next" title="Demo: HRES T0" href="demo_hres_t0.html" />
     <link rel="prev" title="Aurora on Azure AI Foundry" href="intro.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -188,8 +188,8 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Aurora on Azure AI Foundry</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Submitting Predictions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="server.html">Hosting Aurora</a></li>
 <li class="toctree-l1"><a class="reference internal" href="demo_hres_t0.html">Demo: HRES T0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="server.html">Creating an Endpoint</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">Application Programming Interface</a></li>
 </ul>
 
@@ -387,18 +387,25 @@
                   
   <section id="submitting-predictions">
 <h1>Submitting Predictions<a class="headerlink" href="#submitting-predictions" title="Link to this heading">#</a></h1>
-<p>To produce predictions on Azure AI Foundry, the client will communicate with the host through
-a blob storage container.</p>
-<p>First, create a client that can communicate with your Azure AI Foundry endpoint:</p>
+<p>To produce Aurora predictions on Azure AI Foundry,
+you need an endpoint that hosts Aurora.
+To create such an endpoint, find Aurora in the <a class="reference external" href="https://ai.azure.com/explore/models">Azure AI Foundry model catalog</a>,
+click “Deploy”, and follow the instructions.
+Once the endpoint has been deployed,
+it will have an endpoint URL and access token.
+Then create a <code class="docutils literal notranslate"><span class="pre">FoundryClient</span></code> using this URL and token:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora.foundry</span><span class="w"> </span><span class="kn">import</span> <span class="n">FoundryClient</span>
 
 <span class="n">foundry_client</span> <span class="o">=</span> <span class="n">FoundryClient</span><span class="p">(</span>
-    <span class="n">endpoint</span><span class="o">=</span><span class="s2">&quot;https://endpoint/&quot;</span><span class="p">,</span>
+    <span class="n">endpoint</span><span class="o">=</span><span class="s2">&quot;https://endpoint_url/&quot;</span><span class="p">,</span>
     <span class="n">token</span><span class="o">=</span><span class="s2">&quot;TOKEN&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>Then set up a blob storage container for communication with the host:</p>
+<p>You will communicate with the endpoint through a blob storage container.
+You need to create this blob storage container yourself.
+Create one, and generate a URL that includes a SAS token <em>with both read and write rights</em>.
+Then create <code class="docutils literal notranslate"><span class="pre">BlobStorageChannel</span></code> with the blob storage container URL with SAS appended:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora.foundry</span><span class="w"> </span><span class="kn">import</span> <span class="n">BlobStorageChannel</span>
 
 <span class="n">channel</span> <span class="o">=</span> <span class="n">BlobStorageChannel</span><span class="p">(</span>
@@ -406,16 +413,16 @@ a blob storage container.</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>The SAS token needs both read and write rights.
-The blob storage container will be used to send the initial condition to the host and to retrieve
-the predictions from the host.</p>
+<p>This blob storage container will be used to send the initial condition to the endpoint
+and to retrieve the predictions from the endpoint.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>It is important that the SAS token has both read and write rights.</p>
 <p>To generate a SAS token with read and write rights, navigate to the container in Azure,
 go to “Shared access tokens”, and select both “Read” and “Write” under “Permissions”.</p>
 </div>
-<p>You can now submit requests in the following way:</p>
+<p>You’re all done now!
+You can submit requests for predictions in the following way:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
@@ -491,11 +498,11 @@ See the <a class="reference internal" href="../example_hres_t0.html"><span class
       </div>
     </a>
     <a class="right-next"
-       href="server.html"
+       href="demo_hres_t0.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Hosting Aurora</p>
+        <p class="prev-next-title">Demo: HRES T0</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
