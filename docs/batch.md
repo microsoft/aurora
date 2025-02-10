@@ -80,7 +80,7 @@ The following static variables are allowed:
 numerical values of the variables.
 The atmospheric variables must be of the form `(b, t, c, h, w)` where `b` is the batch size,
 `t` the history dimension, `c` the number of pressure levels, `h` the number of latitudes,
-and `h` the number of longitudes.
+and `w` the number of longitudes.
 All atmospheric variables must contain the same collection of pressure levels in the same order.
 
 The following atmospheric variables are allows:
