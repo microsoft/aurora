@@ -7,6 +7,7 @@
 [![CI](https://github.com/microsoft/Aurora/actions/workflows/ci.yaml/badge.svg)](https://github.com/microsoft/Aurora/actions/workflows/ci.yaml)
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://microsoft.github.io/aurora)
 [![Paper](https://img.shields.io/badge/arXiv-2405.13063-blue)](https://arxiv.org/abs/2405.13063)
+[![DOI](https://zenodo.org/badge/828987595.svg)](https://doi.org/10.5281/zenodo.14983583)
 
 Implementation of the Aurora model for Earth system forecasting.
 
