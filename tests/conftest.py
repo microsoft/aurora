@@ -64,12 +64,10 @@ def test_input_output() -> Generator[tuple[Batch, SavedBatch], None, None]:
 
         class PatchedDateTime(datetime):
             def timestamp(self) -> float:
+                # This is the value of `datetime(1950, 1, 1, 6, 0).timestamp()` on Linux.
                 return -631134000.0
 
-        dt = test_input["metadata"]["time"][0]
-        test_input["metadata"]["time"] = [
-            PatchedDateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute)
-        ]
+        test_input["metadata"]["time"] = [PatchedDateTime(1950, 1, 1, 6, 0)]
 
     static_vars = {
         k: interpolate_numpy(
