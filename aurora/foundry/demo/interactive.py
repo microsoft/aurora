@@ -29,6 +29,8 @@ def variable_to_urldata(variable: xr.DataArray, cmap: str, vmin: float, vmax: fl
     field = np.concatenate((field[:, ~first_half], field[:, first_half]), axis=1)
 
     with tempfile.NamedTemporaryFile(suffix=".png") as tf:
+        tf.close()  # We will only use the name.
+
         # Make the image that will be overlayed.
         fig = plt.figure()
         ax = fig.add_subplot(projection=ccrs.PlateCarree(), frameon=False)
@@ -63,6 +65,8 @@ def interactive_plot(prediction: Batch, width: str = "1000px", height: str = "50
     )
 
     with tempfile.NamedTemporaryFile(suffix=".nc") as tf:
+        tf.close()  # We will only use the name.
+
         prediction.to_netcdf(tf.name)
         ds = xr.load_dataset(tf.name).isel(batch=0, history=0, time=0)
         dt = ds.time.values.astype("datetime64[s]").tolist()
