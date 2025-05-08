@@ -1,5 +1,6 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
+import os
 import pickle
 from datetime import datetime
 from typing import Generator, TypedDict
@@ -49,6 +50,20 @@ def test_input_output() -> Generator[tuple[Batch, SavedBatch], None, None]:
     with open(path, "rb") as f:
         static_vars: dict[str, np.ndarray] = pickle.load(f)
 
+    # Load test output.
+    path = hf_hub_download(
+        repo_id="microsoft/aurora",
+        filename="aurora-0.25-small-pretrained-test-output.pickle",
+    )
+    with open(path, "rb") as f:
+        test_output: SavedBatch = pickle.load(f)
+
+    # Something goes wrong on Windows where the timestamps are corrupted, likely because the pickle
+    # was saved on Linux. Fix it manually.
+    if os.name == "nt":
+        test_input["metadata"]["time"] = [datetime(2000, 1, 1, 6, 0)]
+        test_output["metadata"]["time"] = [datetime(2000, 1, 1, 12, 0)]
+
     static_vars = {
         k: interpolate_numpy(
             v,
@@ -72,16 +87,5 @@ def test_input_output() -> Generator[tuple[Batch, SavedBatch], None, None]:
             time=tuple(test_input["metadata"]["time"]),
         ),
     )
-
-    # Load test output.
-    path = hf_hub_download(
-        repo_id="microsoft/aurora",
-        filename="aurora-0.25-small-pretrained-test-output.pickle",
-    )
-    with open(path, "rb") as f:
-        test_output: SavedBatch = pickle.load(f)
-
-    print(test_input["metadata"]["time"])
-    print(test_output["metadata"]["time"])
 
     yield batch, test_output

@@ -1,8 +1,6 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
 import os
-
-# import sys
 from datetime import timedelta
 
 import numpy as np
@@ -13,12 +11,6 @@ import torch.distributed as dist
 from tests.conftest import SavedBatch
 
 from aurora import Aurora, AuroraSmall, Batch
-
-# if sys.platform.startswith("win"):
-#     pytest.skip(
-#         "Skipping model tests for Windows due to some path issue.",
-#         allow_module_level=True,
-#     )
 
 
 @pytest.fixture(scope="session")
