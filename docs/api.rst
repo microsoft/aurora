@@ -9,11 +9,13 @@ Batch
 .. autoclass:: aurora.Metadata
     :members:
 
-Roll-Outs and Tropical Cyclone Tracking
----------------------------------------
+Roll-Outs
+---------
 .. autoclass:: aurora.rollout
     :members:
 
+Tropical Cyclone Tracking
+-------------------------
 .. autoclass:: aurora.Tracker
     :members:
 
