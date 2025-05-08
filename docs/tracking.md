@@ -1,9 +1,10 @@
-# Tropical cyclone tracking
+# Tropical Cyclone Tracking
 
 Aurora has the ability to track tropical cyclones (TCs).
 For tracking TCs, we recommend to use Aurora 0.25° Fine-Tuned.
 The tracker is available as `aurora.Tracker`.
 It should be used in conjunction with `aurora.rollout`.
+
 Here is an example:
 
 ```python
@@ -36,5 +37,5 @@ Afterwards, the track can be conveniently summarised in a DataFrame:
 track = tracker.results()
 ```
 
-[Here](example_tc_tracking) is a full example that runs the tracker to track
+[Here is a full example](example_tc_tracking) that runs the tracker to track
 [Typhoon Nanmadol](https://en.wikipedia.org/wiki/Typhoon_Nanmadol_(2022)).
