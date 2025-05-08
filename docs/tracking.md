@@ -17,7 +17,7 @@ model.load_checkpoint("microsoft/aurora", "aurora-0.25-finetuned.ckpt")
 
 initial_condition = Batch(...)  # Construct an initial condition for the model.
 
-# Initialise the tracker with the current position of the TC.
+# Initialise the tracker with the current position and time of the TC.
 tracker = Tracker(init_lat=..., init_lon=..., init_time=datetime(...))
 
 model.eval()
