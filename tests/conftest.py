@@ -58,11 +58,18 @@ def test_input_output() -> Generator[tuple[Batch, SavedBatch], None, None]:
     with open(path, "rb") as f:
         test_output: SavedBatch = pickle.load(f)
 
-    # Something goes wrong on Windows where the timestamps are corrupted, likely because the pickle
-    # was saved on Linux. Fix it manually.
+    # We unfortunately used a time in 1950. Windows cannot produce timestamps for `datetime`s before
+    # 1970. We fix this below.
     if os.name == "nt":
-        test_input["metadata"]["time"] = [datetime(2000, 1, 1, 6, 0)]
-        test_output["metadata"]["time"] = [datetime(2000, 1, 1, 12, 0)]
+
+        class PatchedDateTime(datetime):
+            def timestamp(self) -> float:
+                return -631134000.0
+
+        dt = test_input["metadata"]["time"][0]
+        test_input["metadata"]["time"] = [
+            PatchedDateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute)
+        ]
 
     static_vars = {
         k: interpolate_numpy(
