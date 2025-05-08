@@ -8,6 +8,7 @@ parts:
     - file: models
     - file: beware
     - file: finetuning
+    - file: tracking
     - file: ai_models_plugin
     - file: api
 - caption: Examples
@@ -15,6 +16,7 @@ parts:
     - file: example_era5
     - file: example_hres_t0
     - file: example_hres_0.1
+    - file: example_tc_tracking
 - caption: Foundry
   chapters:
    - file: foundry/intro
