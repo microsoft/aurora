@@ -5,7 +5,6 @@ import dataclasses
 import warnings
 from datetime import timedelta
 from functools import partial
-from pathlib import Path
 from typing import Optional
 
 import torch
@@ -254,8 +253,6 @@ class Aurora(torch.nn.Module):
                 parameters in the checkpoint. Defaults to `True`.
         """
         path = hf_hub_download(repo_id=repo, filename=name)
-        path = str(Path(path))
-        print(path)
         self.load_checkpoint_local(path, strict=strict)
 
     def load_checkpoint_local(self, path: str, strict: bool = True) -> None:
