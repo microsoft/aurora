@@ -81,4 +81,7 @@ def test_input_output() -> Generator[tuple[Batch, SavedBatch], None, None]:
     with open(path, "rb") as f:
         test_output: SavedBatch = pickle.load(f)
 
+    print(test_input["metadata"]["time"])
+    print(test_output["metadata"]["time"])
+
     yield batch, test_output
