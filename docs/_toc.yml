@@ -6,9 +6,9 @@ parts:
     - file: usage
     - file: batch
     - file: models
+    - file: tracking
     - file: beware
     - file: finetuning
-    - file: tracking
     - file: ai_models_plugin
     - file: api
 - caption: Examples
