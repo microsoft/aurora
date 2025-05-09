@@ -229,22 +229,26 @@ class BlobStorageChannel(CommunicationChannel):
 
     def _send(self, batch: Batch, name: str) -> None:
         with tempfile.NamedTemporaryFile() as tf:
+            tf.close()  # We will only use the name.
             batch.to_netcdf(tf.name)
             self._upload_blob(tf.name, name)
 
     def _receive(self, name: str) -> Batch:
         with tempfile.NamedTemporaryFile() as tf:
+            tf.close()  # We will only use the name.
             self._download_blob(name, tf.name)
             return Batch.from_netcdf(tf.name)
 
     def _write(self, data: bytes, name: str) -> None:
         with tempfile.NamedTemporaryFile() as tf:
+            tf.close()  # We will only use the name.
             with open(tf.name, "wb") as f:
                 f.write(data)
             self._upload_blob(tf.name, name)
 
     def _read(self, name: str) -> bytes:
         with tempfile.NamedTemporaryFile() as tf:
+            tf.close()  # We will only use the name.
             self._download_blob(name, tf.name)
             with open(tf.name, "rb") as f:
                 return f.read()
