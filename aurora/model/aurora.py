@@ -57,6 +57,10 @@ class Aurora(torch.nn.Module):
         lora_mode: LoRAMode = "single",
         surf_stats: Optional[dict[str, tuple[float, float]]] = None,
         autocast: bool = False,
+        level_condition: Optional[tuple[int | float, ...]] = None,
+        dynamic_vars: bool = False,
+        atmos_static_vars: bool = False,
+        separate_perceiver: Optional[tuple[str, ...]] = None,
     ) -> None:
         """Construct an instance of the model.
 
@@ -112,6 +116,18 @@ class Aurora(torch.nn.Module):
                 and scale.
             autocast (bool, optional): Use `torch.autocast` to reduce memory usage. Defaults to
                 `False`.
+            level_condition (tuple[int | float, ...], optional): Make the patch embeddings dependent
+                on pressure level. If you want to enable this feature, provide a tuple of all
+                possible pressure levels.
+            dynamic_vars (bool, optional): Use dynamically generated static variables, like time
+                of day. Defaults to `False`.
+            atmos_static_vars (bool, optional): Also concatenate the static variables to the
+                atmospheric variables. Defaults to `False`.
+            separate_perceiver (tuple[str, ...], optional): In the decoder, use a separate Perceiver
+                for specific atmospheric variables. This can be helpful at fine-tuning time to deal
+                with variables that have a significantly different behaviour. If you want to enable
+                this features, set this to the collection of variables that should be run on a
+                separate Perceiver.
         """
         super().__init__()
         self.surf_vars = surf_vars
@@ -145,6 +161,9 @@ class Aurora(torch.nn.Module):
             max_history_size=max_history_size,
             perceiver_ln_eps=perceiver_ln_eps,
             stabilise_level_agg=stabilise_level_agg,
+            level_condition=level_condition,
+            dynamic_vars=dynamic_vars,
+            atmos_static_vars=atmos_static_vars,
         )
 
         self.backbone = Swin3DTransformerBackbone(
@@ -175,6 +194,8 @@ class Aurora(torch.nn.Module):
             # We use a lower ratio here to keep the memory in check.
             mlp_ratio=dec_mlp_ratio,
             perceiver_ln_eps=perceiver_ln_eps,
+            level_condition=level_condition,
+            separate_perceiver=separate_perceiver,
         )
 
     def forward(self, batch: Batch) -> Batch:

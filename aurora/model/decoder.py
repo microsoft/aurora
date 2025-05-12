@@ -1,6 +1,7 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
 from datetime import timedelta
+from typing import Optional
 
 import torch
 from einops import rearrange
@@ -8,6 +9,7 @@ from torch import nn
 
 from aurora.batch import Batch, Metadata
 from aurora.model.fourier import levels_expansion
+from aurora.model.levelcond import LevelConditioned
 from aurora.model.perceiver import PerceiverResampler
 from aurora.model.util import (
     check_lat_lon_dtype,
@@ -33,6 +35,8 @@ class Perceiver3DDecoder(nn.Module):
         mlp_ratio: float = 4.0,
         drop_rate: float = 0.0,
         perceiver_ln_eps: float = 1e-5,
+        level_condition: Optional[tuple[int | float, ...]] = None,
+        separate_perceiver: Optional[tuple[str, ...]] = None,
     ) -> None:
         """Initialise.
 
@@ -52,6 +56,14 @@ class Perceiver3DDecoder(nn.Module):
             drop_rate (float, optional): Drop-out rate for input patches. Defaults to `0.0`.
             perceiver_ln_eps (float, optional): Layer norm. epsilon for the Perceiver blocks.
                 Defaults to `1e-5`.
+            level_condition (tuple[int | float, ...], optional): Make the patch embeddings dependent
+                on pressure level. If you want to enable this feature, provide a tuple of all
+                possible pressure levels.
+            separate_perceiver (tuple[str, ...], optional): In the decoder, use a separate Perceiver
+                for specific atmospheric variables. This can be helpful at fine-tuning time to deal
+                with variables that have a significantly different behaviour. If you want to enable
+                this features, set this to the collection of variables that should be run on a
+                separate Perceiver.
         """
         super().__init__()
 
@@ -59,6 +71,8 @@ class Perceiver3DDecoder(nn.Module):
         self.surf_vars = surf_vars
         self.atmos_vars = atmos_vars
         self.embed_dim = embed_dim
+        self.level_condition = level_condition
+        self.separate_perceiver = separate_perceiver
 
         self.level_decoder = PerceiverResampler(
             latent_dim=embed_dim,
@@ -71,13 +85,37 @@ class Perceiver3DDecoder(nn.Module):
             residual_latent=True,
             ln_eps=perceiver_ln_eps,
         )
+        if self.separate_perceiver:
+            self.separate_level_decoder = PerceiverResampler(
+                latent_dim=embed_dim,
+                context_dim=embed_dim,
+                depth=depth,
+                head_dim=head_dim,
+                num_heads=num_heads,
+                mlp_ratio=mlp_ratio,
+                drop=drop_rate,
+                residual_latent=True,
+                ln_eps=perceiver_ln_eps,
+            )
 
         self.surf_heads = nn.ParameterDict(
             {name: nn.Linear(embed_dim, patch_size**2) for name in surf_vars}
         )
-        self.atmos_heads = nn.ParameterDict(
-            {name: nn.Linear(embed_dim, patch_size**2) for name in atmos_vars}
-        )
+        if not level_condition:
+            self.atmos_heads = nn.ParameterDict(
+                {name: nn.Linear(embed_dim, patch_size**2) for name in atmos_vars}
+            )
+        else:
+            self.atmos_heads = nn.ParameterDict(
+                {
+                    name: LevelConditioned(
+                        lambda: nn.Linear(embed_dim, patch_size**2),
+                        levels=level_condition,
+                        levels_dim=-2,
+                    )
+                    for name in atmos_vars
+                }
+            )
 
         self.atmos_levels_embed = nn.Linear(embed_dim, embed_dim)
 
@@ -103,6 +141,7 @@ class Perceiver3DDecoder(nn.Module):
 
         x = self.level_decoder(level_embed, x)  # (BxL, C, D)
         x = x.reshape(B, L, C, D)
+        print(x.shape)
         return x
 
     def forward(
@@ -112,7 +151,7 @@ class Perceiver3DDecoder(nn.Module):
         patch_res: tuple[int, int, int],
         lead_time: timedelta,
     ) -> Batch:
-        """Forward pass of MultiScaleEncoder.
+        """Forward pass.
 
         Args:
             x (torch.Tensor): Backbone output of shape `(B, L, D)`.
@@ -162,7 +201,13 @@ class Perceiver3DDecoder(nn.Module):
         x_atmos = self.deaggregate_levels(levels_embed, x[..., 1:, :])  # (B, L, C_A, D)
 
         # Decode the atmospheric vars.
-        x_atmos = torch.stack([self.atmos_heads[name](x_atmos) for name in atmos_vars], dim=-1)
+        if not self.level_condition:
+            x_atmos = torch.stack([self.atmos_heads[name](x_atmos) for name in atmos_vars], dim=-1)
+        else:
+            x_atmos = torch.stack(
+                [self.atmos_heads[name](x_atmos, levels=atmos_levels) for name in atmos_vars],
+                dim=-1,
+            )
         x_atmos = x_atmos.reshape(*x_atmos.shape[:3], -1)  # (B, L, C_A, V_A*p*p)
         atmos_preds = unpatchify(x_atmos, len(atmos_vars), H, W, self.patch_size)
 
