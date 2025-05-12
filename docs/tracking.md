@@ -15,9 +15,12 @@ from aurora import Aurora, Batch, Tracker, rollout
 model = Aurora()
 model.load_checkpoint("microsoft/aurora", "aurora-0.25-finetuned.ckpt")
 
-initial_condition = Batch(...)  # Construct an initial condition for the model.
+# Construct an initial condition for the model. The TC will be tracked using
+# predictions for this initial condition.
+initial_condition = Batch(...)
 
-# Initialise the tracker with the current position and time of the TC.
+# Initialise the tracker with the current position and time of the TC. The time
+# should match with the above initial condition.
 tracker = Tracker(init_lat=..., init_lon=..., init_time=datetime(...))
 
 model.eval()
