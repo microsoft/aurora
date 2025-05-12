@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Predictions for HRES at 0.1 degrees &#8212; Aurora: A Foundation Model of the Atmosphere</title>
+    <title>Predictions for HRES at 0.1 Degrees &#8212; Aurora: A Foundation Model of the Atmosphere</title>
   
   
   
@@ -60,7 +60,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'example_hres_0.1';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Aurora on Azure AI Foundry" href="foundry/intro.html" />
+    <link rel="next" title="Track Predictions for Typhoon Nanmadol" href="example_tc_tracking.html" />
     <link rel="prev" title="Predictions for HRES T0" href="example_hres_t0.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -184,6 +184,7 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="batch.html">Form of a Batch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="models.html">Available Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tracking.html">Tropical Cyclone Tracking</a></li>
 <li class="toctree-l1"><a class="reference internal" href="beware.html">Beware!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Fine-Tuning</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ai_models_plugin.html">Plugin for ECMWF’s <code class="docutils literal notranslate"><span class="pre">ai-models</span></code></a></li>
@@ -193,7 +194,8 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="example_era5.html">Predictions for ERA5</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_hres_t0.html">Predictions for HRES T0</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Predictions for HRES at 0.1 degrees</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Predictions for HRES at 0.1 Degrees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
 <ul class="nav bd-sidenav">
@@ -387,7 +389,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Predictions for HRES at 0.1 degrees</h1>
+    <h1>Predictions for HRES at 0.1 Degrees</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -412,7 +414,7 @@ document.write(`
                 <article class="bd-article">
                   
   <section id="predictions-for-hres-at-0-1-degrees">
-<h1>Predictions for HRES at 0.1 degrees<a class="headerlink" href="#predictions-for-hres-at-0-1-degrees" title="Link to this heading">#</a></h1>
+<h1>Predictions for HRES at 0.1 Degrees<a class="headerlink" href="#predictions-for-hres-at-0-1-degrees" title="Link to this heading">#</a></h1>
 <p>In this example, we will download IFS HRES analysis data at 0.1 degrees resolution for 11 May 2022 from the <a class="reference external" href="https://rda.ucar.edu/datasets/d113001/#">Research Data Archive</a> and run Aurora on this data. We will use the version of Aurora that was fine-tuned on IFS HRES analysis at 0.1 degrees resolution.</p>
 <p>Running this notebook requires additional Python packages. You can install these as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">requests</span> <span class="n">cfgrib</span> <span class="n">matplotlib</span>
@@ -670,11 +672,11 @@ document.write(`
       </div>
     </a>
     <a class="right-next"
-       href="foundry/intro.html"
+       href="example_tc_tracking.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Aurora on Azure AI Foundry</p>
+        <p class="prev-next-title">Track Predictions for Typhoon Nanmadol</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

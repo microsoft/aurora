@@ -6,8 +6,9 @@
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; Aurora: A Foundation Model of the Atmosphere</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Tropical Cyclone Tracking &#8212; Aurora: A Foundation Model of the Atmosphere</title>
   
   
   
@@ -56,9 +57,11 @@
     <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
-    <link rel="index" title="Index" href="#" />
+    <script>DOCUMENTATION_OPTIONS.pagename = 'tracking';</script>
+    <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Beware!" href="beware.html" />
+    <link rel="prev" title="Available Models" href="models.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -121,8 +124,6 @@
       
       
       
-        
-      
       <div class="bd-sidebar-primary bd-sidebar">
         
 
@@ -179,11 +180,11 @@
             </li>
         </ul>
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Main Usage</span></p>
-<ul class="nav bd-sidenav">
+<ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="batch.html">Form of a Batch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="models.html">Available Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tracking.html">Tropical Cyclone Tracking</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Tropical Cyclone Tracking</a></li>
 <li class="toctree-l1"><a class="reference internal" href="beware.html">Beware!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Fine-Tuning</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ai_models_plugin.html">Plugin for ECMWF’s <code class="docutils literal notranslate"><span class="pre">ai-models</span></code></a></li>
@@ -274,7 +275,7 @@
       
       
       
-      <li><a href="https://github.com/microsoft/aurora/issues/new?title=Issue%20on%20page%20%2Fgenindex.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/microsoft/aurora/issues/new?title=Issue%20on%20page%20%2Ftracking.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -286,6 +287,54 @@
   </span>
 <span class="btn__text-container">Open issue</span>
 </a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/tracking.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
 </li>
       
   </ul>
@@ -338,7 +387,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1></h1>
+    <h1>Tropical Cyclone Tracking</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -352,189 +401,66 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
+  <section id="tropical-cyclone-tracking">
+<h1>Tropical Cyclone Tracking<a class="headerlink" href="#tropical-cyclone-tracking" title="Link to this heading">#</a></h1>
+<p>Aurora has the ability to track tropical cyclones (TCs).
+For tracking TCs, we recommend to use Aurora 0.25° Fine-Tuned.
+The tracker is available as <code class="docutils literal notranslate"><span class="pre">aurora.Tracker</span></code>.
+It should be used in conjunction with <code class="docutils literal notranslate"><span class="pre">aurora.rollout</span></code>.</p>
+<p>Here is an example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 
-<h1 id="index">Index</h1>
+<span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span><span class="p">,</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">Tracker</span><span class="p">,</span> <span class="n">rollout</span>
 
-<div class="genindex-jumpbox">
- <a href="#_"><strong>_</strong></a>
- | <a href="#A"><strong>A</strong></a>
- | <a href="#B"><strong>B</strong></a>
- | <a href="#C"><strong>C</strong></a>
- | <a href="#F"><strong>F</strong></a>
- | <a href="#L"><strong>L</strong></a>
- | <a href="#M"><strong>M</strong></a>
- | <a href="#N"><strong>N</strong></a>
- | <a href="#R"><strong>R</strong></a>
- | <a href="#S"><strong>S</strong></a>
- | <a href="#T"><strong>T</strong></a>
- | <a href="#U"><strong>U</strong></a>
- 
+<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-finetuned.ckpt&quot;</span><span class="p">)</span>
+
+<span class="c1"># Construct an initial condition for the model. The TC will be tracked using</span>
+<span class="c1"># predictions for this initial condition.</span>
+<span class="n">initial_condition</span> <span class="o">=</span> <span class="n">Batch</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Initialise the tracker with the current position and time of the TC. The time</span>
+<span class="c1"># should match with the above initial condition.</span>
+<span class="n">tracker</span> <span class="o">=</span> <span class="n">Tracker</span><span class="p">(</span><span class="n">init_lat</span><span class="o">=...</span><span class="p">,</span> <span class="n">init_lon</span><span class="o">=...</span><span class="p">,</span> <span class="n">init_time</span><span class="o">=</span><span class="n">datetime</span><span class="p">(</span><span class="o">...</span><span class="p">))</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+
+<span class="c1"># Run the tracker for predictions up to two days (8 six-hour steps).</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+        <span class="n">tracker</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+</pre></div>
 </div>
-<h2 id="_">_</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#aurora.Aurora.__init__">__init__() (aurora.Aurora method)</a>
+<p>Afterwards, the track can be conveniently summarised in a DataFrame:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">track</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">results</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="example_tc_tracking.html"><span class="doc std std-doc">Here is a full example</span></a> that runs the tracker to track
+<a class="reference external" href="https://en.wikipedia.org/wiki/Typhoon_Nanmadol_(2022)">Typhoon Nanmadol</a>.</p>
+</section>
 
-      <ul>
-        <li><a href="foundry/api.html#aurora.foundry.client.foundry.FoundryClient.__init__">(aurora.foundry.client.foundry.FoundryClient method)</a>
-</li>
-        <li><a href="foundry/api.html#aurora.foundry.common.channel.BlobStorageChannel.__init__">(aurora.foundry.common.channel.BlobStorageChannel method)</a>
-</li>
-      </ul></li>
-  </ul></td>
-</tr></table>
-
-<h2 id="A">A</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#aurora.Aurora.adapt_checkpoint_max_history_size">adapt_checkpoint_max_history_size() (aurora.Aurora method)</a>
-</li>
-      <li><a href="api.html#aurora.Aurora">Aurora (class in aurora)</a>
-</li>
-      <li><a href="foundry/api.html#aurora.foundry.common.model.AuroraFineTuned">AuroraFineTuned (class in aurora.foundry.common.model)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#aurora.AuroraHighRes">AuroraHighRes (in module aurora)</a>
-</li>
-      <li><a href="foundry/api.html#aurora.foundry.server.mlflow_wrapper.AuroraModelWrapper">AuroraModelWrapper() (in module aurora.foundry.server.mlflow_wrapper)</a>
-</li>
-      <li><a href="foundry/api.html#aurora.foundry.common.model.AuroraSmall">AuroraSmall (class in aurora.foundry.common.model)</a>
-
-      <ul>
-        <li><a href="api.html#aurora.AuroraSmall">(in module aurora)</a>
-</li>
-      </ul></li>
-  </ul></td>
-</tr></table>
-
-<h2 id="B">B</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#aurora.Batch">Batch (class in aurora)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="foundry/api.html#aurora.foundry.common.channel.BlobStorageChannel">BlobStorageChannel (class in aurora.foundry.common.channel)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="C">C</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#aurora.Aurora.configure_activation_checkpointing">configure_activation_checkpointing() (aurora.Aurora method)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#aurora.Batch.crop">crop() (aurora.Batch method)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="F">F</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#aurora.Aurora.forward">forward() (aurora.Aurora method)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="foundry/api.html#aurora.foundry.client.foundry.FoundryClient">FoundryClient (class in aurora.foundry.client.foundry)</a>
-</li>
-      <li><a href="api.html#aurora.Batch.from_netcdf">from_netcdf() (aurora.Batch class method)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="L">L</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#aurora.Aurora.load_checkpoint">load_checkpoint() (aurora.Aurora method)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#aurora.Aurora.load_checkpoint_local">load_checkpoint_local() (aurora.Aurora method)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="M">M</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#aurora.Metadata">Metadata (class in aurora)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="N">N</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="foundry/api.html#aurora.foundry.common.model.AuroraFineTuned.name">name (aurora.foundry.common.model.AuroraFineTuned attribute)</a>
-
-      <ul>
-        <li><a href="foundry/api.html#aurora.foundry.common.model.AuroraSmall.name">(aurora.foundry.common.model.AuroraSmall attribute)</a>
-</li>
-      </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#aurora.Batch.normalise">normalise() (aurora.Batch method)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="R">R</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#aurora.Batch.regrid">regrid() (aurora.Batch method)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#aurora.Tracker.results">results() (aurora.Tracker method)</a>
-</li>
-      <li><a href="api.html#aurora.rollout">rollout (class in aurora)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="S">S</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#aurora.Batch.spatial_shape">spatial_shape (aurora.Batch property)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#aurora.Tracker.step">step() (aurora.Tracker method)</a>
-</li>
-      <li><a href="foundry/api.html#aurora.foundry.client.api.submit">submit() (in module aurora.foundry.client.api)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="T">T</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#aurora.Batch.to">to() (aurora.Batch method)</a>
-</li>
-      <li><a href="api.html#aurora.Batch.to_netcdf">to_netcdf() (aurora.Batch method)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#aurora.Tracker">Tracker (class in aurora)</a>
-</li>
-      <li><a href="api.html#aurora.Batch.type">type() (aurora.Batch method)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="U">U</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#aurora.Batch.unnormalise">unnormalise() (aurora.Batch method)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
 
                 </article>
               
@@ -546,6 +472,24 @@ document.write(`
                 <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
+    <a class="left-prev"
+       href="models.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Available Models</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="beware.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Beware!</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
 </div>
                 </footer>
               

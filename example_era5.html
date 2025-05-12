@@ -184,6 +184,7 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="batch.html">Form of a Batch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="models.html">Available Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tracking.html">Tropical Cyclone Tracking</a></li>
 <li class="toctree-l1"><a class="reference internal" href="beware.html">Beware!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Fine-Tuning</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ai_models_plugin.html">Plugin for ECMWF’s <code class="docutils literal notranslate"><span class="pre">ai-models</span></code></a></li>
@@ -193,7 +194,8 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Predictions for ERA5</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_hres_t0.html">Predictions for HRES T0</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example_hres_0.1.html">Predictions for HRES at 0.1 degrees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_hres_0.1.html">Predictions for HRES at 0.1 Degrees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
 <ul class="nav bd-sidenav">
@@ -526,6 +528,10 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2025-05-07 13:25:04,823 INFO [2024-09-26T00:00:00] Watch our [Forum](https://forum.ecmwf.int/) for Announcements, news and other discussed topics.
+2025-05-07 13:25:04,825 WARNING [2024-06-16T00:00:00] CDS API syntax is changed and some keys or parameter names may have also changed. To avoid requests failing, please use the &quot;Show API request code&quot; tool on the dataset Download Form to check you are using the correct syntax for your API request.
+</pre></div>
+</div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Static variables downloaded!
 Surface-level variables downloaded!
 Atmospheric variables downloaded!
@@ -548,16 +554,14 @@ Atmospheric variables downloaded!
 <span class="n">surf_vars_ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-surface-level.nc&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;netcdf4&quot;</span><span class="p">)</span>
 <span class="n">atmos_vars_ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-atmospheric.nc&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;netcdf4&quot;</span><span class="p">)</span>
 
-<span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Select this time index in the downloaded data.</span>
-
 <span class="n">batch</span> <span class="o">=</span> <span class="n">Batch</span><span class="p">(</span>
     <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span>
-        <span class="c1"># First select time points `i` and `i - 1`. Afterwards, `[None]` inserts a</span>
-        <span class="c1"># batch dimension of size one.</span>
-        <span class="s2">&quot;2t&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;t2m&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
-        <span class="s2">&quot;10u&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;u10&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
-        <span class="s2">&quot;10v&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;v10&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
-        <span class="s2">&quot;msl&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;msl&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
+        <span class="c1"># First select the first two time points: 00:00 and 06:00. Afterwards, `[None]`</span>
+        <span class="c1"># inserts a batch dimension of size one.</span>
+        <span class="s2">&quot;2t&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;t2m&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">]),</span>
+        <span class="s2">&quot;10u&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;u10&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">]),</span>
+        <span class="s2">&quot;10v&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;v10&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">]),</span>
+        <span class="s2">&quot;msl&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;msl&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">]),</span>
     <span class="p">},</span>
     <span class="n">static_vars</span><span class="o">=</span><span class="p">{</span>
         <span class="c1"># The static variables are constant, so we just get them for the first time.</span>
@@ -566,22 +570,29 @@ Atmospheric variables downloaded!
         <span class="s2">&quot;lsm&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">static_vars_ds</span><span class="p">[</span><span class="s2">&quot;lsm&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
     <span class="p">},</span>
     <span class="n">atmos_vars</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
-        <span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;u&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
-        <span class="s2">&quot;v&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;v&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
-        <span class="s2">&quot;q&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
-        <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;z&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]][</span><span class="kc">None</span><span class="p">]),</span>
+        <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">]),</span>
+        <span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;u&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">]),</span>
+        <span class="s2">&quot;v&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;v&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">]),</span>
+        <span class="s2">&quot;q&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">]),</span>
+        <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;z&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">]),</span>
     <span class="p">},</span>
     <span class="n">metadata</span><span class="o">=</span><span class="n">Metadata</span><span class="p">(</span>
         <span class="n">lat</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
         <span class="n">lon</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
         <span class="c1"># Converting to `datetime64[s]` ensures that the output of `tolist()` gives</span>
         <span class="c1"># `datetime.datetime`s. Note that this needs to be a tuple of length one:</span>
-        <span class="c1"># one value for every batch element.</span>
-        <span class="n">time</span><span class="o">=</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">valid_time</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;datetime64[s]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="n">i</span><span class="p">],),</span>
+        <span class="c1"># one value for every batch element. Select element 1, corresponding to time</span>
+        <span class="c1"># 06:00.</span>
+        <span class="n">time</span><span class="o">=</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">valid_time</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;datetime64[s]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">1</span><span class="p">],),</span>
         <span class="n">atmos_levels</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">level</span><span class="p">)</span> <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="n">atmos_vars_ds</span><span class="o">.</span><span class="n">pressure_level</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
     <span class="p">),</span>
 <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/wbruinsma/miniforge3/envs/aurora/lib/python3.10/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+  from .autonotebook import tqdm as notebook_tqdm
 </pre></div>
 </div>
 </div>
@@ -635,7 +646,7 @@ Atmospheric variables downloaded!
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="_images/5f41ef895377cecb04f923784bad338ade509df8ddd768855e685a7fb2251b51.png" src="_images/5f41ef895377cecb04f923784bad338ade509df8ddd768855e685a7fb2251b51.png" />
+<img alt="_images/5636bf2b2aaddfc3093d486d7ce8dab5f9222c76930c4a30fc3340e01e3900b4.png" src="_images/5636bf2b2aaddfc3093d486d7ce8dab5f9222c76930c4a30fc3340e01e3900b4.png" />
 </div>
 </div>
 </section>

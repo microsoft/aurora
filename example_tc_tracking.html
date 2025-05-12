@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Predictions for HRES T0 &#8212; Aurora: A Foundation Model of the Atmosphere</title>
+    <title>Track Predictions for Typhoon Nanmadol &#8212; Aurora: A Foundation Model of the Atmosphere</title>
   
   
   
@@ -57,11 +57,11 @@
     <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'example_hres_t0';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'example_tc_tracking';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Predictions for HRES at 0.1 Degrees" href="example_hres_0.1.html" />
-    <link rel="prev" title="Predictions for ERA5" href="example_era5.html" />
+    <link rel="next" title="Aurora on Azure AI Foundry" href="foundry/intro.html" />
+    <link rel="prev" title="Predictions for HRES at 0.1 Degrees" href="example_hres_0.1.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -193,9 +193,9 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="example_era5.html">Predictions for ERA5</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Predictions for HRES T0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_hres_t0.html">Predictions for HRES T0</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_hres_0.1.html">Predictions for HRES at 0.1 Degrees</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Track Predictions for Typhoon Nanmadol</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
 <ul class="nav bd-sidenav">
@@ -275,7 +275,7 @@
       
       
       
-      <li><a href="https://github.com/microsoft/aurora/issues/new?title=Issue%20on%20page%20%2Fexample_hres_t0.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/microsoft/aurora/issues/new?title=Issue%20on%20page%20%2Fexample_tc_tracking.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -305,7 +305,7 @@
       
       
       
-      <li><a href="_sources/example_hres_t0.ipynb" target="_blank"
+      <li><a href="_sources/example_tc_tracking.ipynb" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -389,7 +389,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Predictions for HRES T0</h1>
+    <h1>Track Predictions for Typhoon Nanmadol</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -414,9 +414,9 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="predictions-for-hres-t0">
-<h1>Predictions for HRES T0<a class="headerlink" href="#predictions-for-hres-t0" title="Link to this heading">#</a></h1>
-<p>In this example, we will download HRES T0 data for 11 May 2022 from <a class="reference external" href="https://weatherbench2.readthedocs.io/">WeatherBench2</a> at 0.25 degrees resolution and run Aurora on this data. We will use the version of Aurora that was fine-tuned on IFS HRES T0 in this example.</p>
+  <section id="track-predictions-for-typhoon-nanmadol">
+<h1>Track Predictions for Typhoon Nanmadol<a class="headerlink" href="#track-predictions-for-typhoon-nanmadol" title="Link to this heading">#</a></h1>
+<p>In this example, we will download HRES T0 data for 17 Sep 2022 from <a class="reference external" href="https://weatherbench2.readthedocs.io/">WeatherBench2</a> at 0.25 degrees resolution and use this as an initial condition to predict the track <a class="reference external" href="https://en.wikipedia.org/wiki/Typhoon_Nanmadol_(2022)">Typhoon Nanmadol</a>.</p>
 <p>Running this notebook requires additional Python packages. You can install these as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">gcsfs</span> <span class="n">cdsapi</span> <span class="n">zarr</span> <span class="n">matplotlib</span>
 </pre></div>
@@ -442,7 +442,7 @@ document.write(`
 <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_zarr</span><span class="p">(</span><span class="n">fsspec</span><span class="o">.</span><span class="n">get_mapper</span><span class="p">(</span><span class="n">url</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
 <span class="c1"># Day to download. This will download all times for that day.</span>
-<span class="n">day</span> <span class="o">=</span> <span class="s2">&quot;2022-05-11&quot;</span>
+<span class="n">day</span> <span class="o">=</span> <span class="s2">&quot;2022-09-17&quot;</span>
 
 <span class="c1"># Download the surface-level variables. We write the downloaded data to another file to cache.</span>
 <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-surface-level.nc&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
@@ -527,8 +527,8 @@ To do so, register an account with the <a class="reference external" href="https
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2025-05-07 13:18:35,072 INFO [2024-09-26T00:00:00] Watch our [Forum](https://forum.ecmwf.int/) for Announcements, news and other discussed topics.
-2025-05-07 13:18:35,072 WARNING [2024-06-16T00:00:00] CDS API syntax is changed and some keys or parameter names may have also changed. To avoid requests failing, please use the &quot;Show API request code&quot; tool on the dataset Download Form to check you are using the correct syntax for your API request.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2025-05-08 10:03:42,563 INFO [2024-09-26T00:00:00] Watch our [Forum](https://forum.ecmwf.int/) for Announcements, news and other discussed topics.
+2025-05-08 10:03:42,564 WARNING [2024-06-16T00:00:00] CDS API syntax is changed and some keys or parameter names may have also changed. To avoid requests failing, please use the &quot;Show API request code&quot; tool on the dataset Download Form to check you are using the correct syntax for your API request.
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Static variables downloaded!
@@ -557,13 +557,13 @@ To do so, register an account with the <a class="reference external" href="https
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepare a variable.</span>
 
 <span class="sd">    This does the following things:</span>
-<span class="sd">    * Select the first two time steps: 00:00 and 06:00.</span>
+<span class="sd">    * Select time points two and three: hours 06:00 and 12:00.</span>
 <span class="sd">    * Insert an empty batch dimension with `[None]`.</span>
 <span class="sd">    * Flip along the latitude axis to ensure that the latitudes are decreasing.</span>
 <span class="sd">    * Copy the data, because the data must be contiguous when converting to PyTorch.</span>
 <span class="sd">    * Convert to PyTorch.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">x</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">][</span><span class="o">...</span><span class="p">,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">x</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]][</span><span class="kc">None</span><span class="p">][</span><span class="o">...</span><span class="p">,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
 
 
 <span class="n">batch</span> <span class="o">=</span> <span class="n">Batch</span><span class="p">(</span>
@@ -595,12 +595,17 @@ To do so, register an account with the <a class="reference external" href="https
         <span class="n">lon</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
         <span class="c1"># Converting to `datetime64[s]` ensures that the output of `tolist()` gives</span>
         <span class="c1"># `datetime.datetime`s. Note that this needs to be a tuple of length one:</span>
-        <span class="c1"># one value for every batch element. Select element 1, corresponding to time</span>
-        <span class="c1"># 06:00.</span>
-        <span class="n">time</span><span class="o">=</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;datetime64[s]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">1</span><span class="p">],),</span>
+        <span class="c1"># one value for every batch element. Select the third time point.</span>
+        <span class="n">time</span><span class="o">=</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;datetime64[s]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">2</span><span class="p">],),</span>
         <span class="n">atmos_levels</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">level</span><span class="p">)</span> <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="n">atmos_vars_ds</span><span class="o">.</span><span class="n">level</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
     <span class="p">),</span>
 <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/wbruinsma/miniforge3/envs/aurora/lib/python3.10/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+  from .autonotebook import tqdm as notebook_tqdm
 </pre></div>
 </div>
 </div>
@@ -611,16 +616,26 @@ To do so, register an account with the <a class="reference external" href="https
 <p>Finally, we are ready to load and run the model and visualise the predictions. We perform a roll-out for two steps, which produces predictions for hours 12:00 and 18:00.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span><span class="p">,</span> <span class="n">rollout</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span><span class="p">,</span> <span class="n">Tracker</span><span class="p">,</span> <span class="n">rollout</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">()</span>
 <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-finetuned.ckpt&quot;</span><span class="p">)</span>
 
+<span class="c1"># Initialise the tracker with the position of Nanmadol at 17 Sept 2022 at UTC 12. Taken from</span>
+<span class="c1"># IBTrACS: https://ncics.org/ibtracs/index.php?name=v04r01-2022254N24143</span>
+<span class="n">tracker</span> <span class="o">=</span> <span class="n">Tracker</span><span class="p">(</span><span class="n">init_lat</span><span class="o">=</span><span class="mf">27.50</span><span class="p">,</span> <span class="n">init_lon</span><span class="o">=</span><span class="mi">132</span><span class="p">,</span> <span class="n">init_time</span><span class="o">=</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2022</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
 <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
 
+<span class="n">preds</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
-    <span class="n">preds</span> <span class="o">=</span> <span class="p">[</span><span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">2</span><span class="p">)]</span>
+    <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>  <span class="c1"># Immediately free up the GPU.</span>
+        <span class="n">preds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
+        <span class="n">tracker</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
 </pre></div>
@@ -631,31 +646,58 @@ To do so, register an account with the <a class="reference external" href="https
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
-<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mf">6.5</span><span class="p">))</span>
+<span class="n">track</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">results</span><span class="p">()</span>
 
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
     <span class="n">pred</span> <span class="o">=</span> <span class="n">preds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="n">i</span> <span class="o">//</span> <span class="mi">4</span><span class="p">,</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">4</span><span class="p">]</span>
 
-    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;2t&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">-</span> <span class="mf">273.15</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
-    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Aurora Prediction&quot;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
-    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+    <span class="c1"># Cut a square around Nanmadol.</span>
+    <span class="n">lat_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">lat</span> <span class="o">&gt;=</span> <span class="mi">20</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">lat</span> <span class="o">&lt;=</span> <span class="mi">45</span><span class="p">)</span>
+    <span class="n">lon_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">lon</span> <span class="o">&gt;=</span> <span class="mi">120</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">lon</span> <span class="o">&lt;=</span> <span class="mi">140</span><span class="p">)</span>
 
-    <span class="n">ref</span> <span class="o">=</span> <span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;2m_temperature&quot;</span><span class="p">][</span><span class="mi">2</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
-    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">ref</span> <span class="o">-</span> <span class="mf">273.15</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;HRES T0&quot;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
-    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+    <span class="c1"># Show the forecast for MSL.</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span>
+        <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;msl&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">lat_mask</span><span class="p">][:,</span> <span class="n">lon_mask</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">/</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">vmin</span><span class="o">=</span><span class="mi">970</span><span class="p">,</span>
+        <span class="n">vmax</span><span class="o">=</span><span class="mi">1020</span><span class="p">,</span>
+        <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="mi">120</span><span class="p">,</span> <span class="mi">140</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">45</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+
+    <span class="c1"># Plot the whole track for Typhoon Nanmadol.</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">track</span><span class="o">.</span><span class="n">lon</span><span class="p">,</span> <span class="n">track</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+
+    <span class="c1"># Highlight the current step and also display it on the top left.</span>
+    <span class="n">this_step</span> <span class="o">=</span> <span class="n">track</span><span class="p">[</span><span class="n">track</span><span class="o">.</span><span class="n">time</span> <span class="o">==</span> <span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">this_step</span><span class="o">.</span><span class="n">lon</span><span class="p">,</span> <span class="n">this_step</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+        <span class="mf">0.05</span><span class="p">,</span>
+        <span class="mf">0.95</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;Lat.: </span><span class="si">{</span><span class="n">this_step</span><span class="o">.</span><span class="n">lat</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">$</span><span class="se">{{}}</span><span class="s2">^</span><span class="se">\\</span><span class="s2">circ$&quot;</span><span class="p">,</span>
+        <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+        <span class="n">va</span><span class="o">=</span><span class="s2">&quot;top&quot;</span><span class="p">,</span>
+        <span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+        <span class="mf">0.05</span><span class="p">,</span>
+        <span class="mf">0.875</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;Lon.: </span><span class="si">{</span><span class="n">this_step</span><span class="o">.</span><span class="n">lon</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">$</span><span class="se">{{}}</span><span class="s2">^</span><span class="se">\\</span><span class="s2">circ$&quot;</span><span class="p">,</span>
+        <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+        <span class="n">va</span><span class="o">=</span><span class="s2">&quot;top&quot;</span><span class="p">,</span>
+        <span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span>
+    <span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="_images/776d561a1501fead404c3686e3fd76d4f95d4591cb1f40b49d30766bda2667dd.png" src="_images/776d561a1501fead404c3686e3fd76d4f95d4591cb1f40b49d30766bda2667dd.png" />
+<img alt="_images/7b5aa2eae06f0e417a8b374c62285fe5369d0d748e6306830a576a42064795ad.png" src="_images/7b5aa2eae06f0e417a8b374c62285fe5369d0d748e6306830a576a42064795ad.png" />
 </div>
 </div>
 </section>
@@ -692,20 +734,20 @@ To do so, register an account with the <a class="reference external" href="https
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="example_era5.html"
+       href="example_hres_0.1.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Predictions for ERA5</p>
+        <p class="prev-next-title">Predictions for HRES at 0.1 Degrees</p>
       </div>
     </a>
     <a class="right-next"
-       href="example_hres_0.1.html"
+       href="foundry/intro.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Predictions for HRES at 0.1 Degrees</p>
+        <p class="prev-next-title">Aurora on Azure AI Foundry</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

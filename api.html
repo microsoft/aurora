@@ -184,6 +184,7 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="batch.html">Form of a Batch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="models.html">Available Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tracking.html">Tropical Cyclone Tracking</a></li>
 <li class="toctree-l1"><a class="reference internal" href="beware.html">Beware!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Fine-Tuning</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ai_models_plugin.html">Plugin for ECMWF’s <code class="docutils literal notranslate"><span class="pre">ai-models</span></code></a></li>
@@ -193,7 +194,8 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="example_era5.html">Predictions for ERA5</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_hres_t0.html">Predictions for HRES T0</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example_hres_0.1.html">Predictions for HRES at 0.1 degrees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_hres_0.1.html">Predictions for HRES at 0.1 Degrees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
 <ul class="nav bd-sidenav">
@@ -417,6 +419,14 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.rollout"><code class="docutils literal notranslate"><span class="pre">rollout</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tropical-cyclone-tracking">Tropical Cyclone Tracking</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Tracker"><code class="docutils literal notranslate"><span class="pre">Tracker</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Tracker.results"><code class="docutils literal notranslate"><span class="pre">Tracker.results()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Tracker.step"><code class="docutils literal notranslate"><span class="pre">Tracker.step()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#models">Models</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Aurora"><code class="docutils literal notranslate"><span class="pre">Aurora</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Aurora.__init__"><code class="docutils literal notranslate"><span class="pre">Aurora.__init__()</span></code></a></li>
@@ -585,6 +595,34 @@ separate LoRA for every roll-out step. Generally, you are safe to ignore this fi
 <dd class="field-even"><p><a class="reference internal" href="#aurora.Batch" title="aurora.batch.Batch"><code class="xref py py-class docutils literal notranslate"><span class="pre">aurora.batch.Batch</span></code></a> – The prediction after every step.</p>
 </dd>
 </dl>
+</dd></dl>
+
+</section>
+<section id="tropical-cyclone-tracking">
+<h2>Tropical Cyclone Tracking<a class="headerlink" href="#tropical-cyclone-tracking" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="aurora.Tracker">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">aurora.</span></span><span class="sig-name descname"><span class="pre">Tracker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init_lat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_lon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora/tracker.html#Tracker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora.Tracker" title="Link to this definition">#</a></dt>
+<dd><p>Simple tropical cyclone tracker.</p>
+<p>This algorithm was originally designed and implemented by Anna Allen. This particular
+implementation is by Wessel Bruinsma and features various improvements over the original design.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora.Tracker.results">
+<span class="sig-name descname"><span class="pre">results</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/aurora/tracker.html#Tracker.results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora.Tracker.results" title="Link to this definition">#</a></dt>
+<dd><p>Assemble the track into a convenient DataFrame.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora.Tracker.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#aurora.Batch" title="aurora.batch.Batch"><span class="pre">Batch</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/aurora/tracker.html#Tracker.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora.Tracker.step" title="Link to this definition">#</a></dt>
+<dd><p>Track the next step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<a class="reference internal" href="#aurora.Batch" title="aurora.batch.Batch"><code class="xref py py-class docutils literal notranslate"><span class="pre">aurora.batch.Batch</span></code></a>) – Prediction.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -826,6 +864,14 @@ parameters in the checkpoint. Defaults to <cite>True</cite>.</p></li>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#roll-outs">Roll-Outs</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.rollout"><code class="docutils literal notranslate"><span class="pre">rollout</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tropical-cyclone-tracking">Tropical Cyclone Tracking</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Tracker"><code class="docutils literal notranslate"><span class="pre">Tracker</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Tracker.results"><code class="docutils literal notranslate"><span class="pre">Tracker.results()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Tracker.step"><code class="docutils literal notranslate"><span class="pre">Tracker.step()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#models">Models</a><ul class="nav section-nav flex-column">
