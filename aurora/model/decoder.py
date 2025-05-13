@@ -72,7 +72,7 @@ class Perceiver3DDecoder(nn.Module):
         self.atmos_vars = atmos_vars
         self.embed_dim = embed_dim
         self.level_condition = level_condition
-        self.separate_perceiver = separate_perceiver
+        self.separate_perceiver = separate_perceiver if separate_perceiver else ()
 
         self.level_decoder = PerceiverResampler(
             latent_dim=embed_dim,
@@ -86,7 +86,7 @@ class Perceiver3DDecoder(nn.Module):
             ln_eps=perceiver_ln_eps,
         )
         if self.separate_perceiver:
-            self.separate_level_decoder = PerceiverResampler(
+            self.level_decoder_alternate = PerceiverResampler(
                 latent_dim=embed_dim,
                 context_dim=embed_dim,
                 depth=depth,
@@ -121,12 +121,18 @@ class Perceiver3DDecoder(nn.Module):
 
         self.apply(init_weights)
 
-    def deaggregate_levels(self, level_embed: torch.Tensor, x: torch.Tensor) -> torch.Tensor:
+    def deaggregate_levels(
+        self,
+        level_embed: torch.Tensor,
+        x: torch.Tensor,
+        level_decoder: nn.Module,
+    ) -> torch.Tensor:
         """Deaggregate pressure level information.
 
         Args:
             level_embed (torch.Tensor): Level embedding of shape `(B, L, C, D)`.
             x (torch.Tensor): Aggregated input of shape `(B, L, C', D)`.
+            level_decoder (nn.Module): Pressure level decoder.
 
         Returns:
             torch.Tensor: Deaggregate output of shape `(B, L, C, D)`.
@@ -139,9 +145,8 @@ class Perceiver3DDecoder(nn.Module):
         assert len(level_embed.shape) == 3, f"Expected 3 dims, found {level_embed.dims()}."
         assert x.dim() == 3, f"Expected 3 dims, found {x.dim()}."
 
-        x = self.level_decoder(level_embed, x)  # (BxL, C, D)
+        x = level_decoder(level_embed, x)  # (BxL, C, D)
         x = x.reshape(B, L, C, D)
-        print(x.shape)
         return x
 
     def forward(
@@ -198,14 +203,39 @@ class Perceiver3DDecoder(nn.Module):
 
         # De-aggregate the hidden levels into the physical levels.
         levels_embed = levels_embed.expand(B, x.size(1), -1, -1)
-        x_atmos = self.deaggregate_levels(levels_embed, x[..., 1:, :])  # (B, L, C_A, D)
+        x_atmos = self.deaggregate_levels(
+            levels_embed,
+            x[..., 1:, :],
+            self.level_decoder,
+        )  # (B, L, C_A, D)
+        if self.separate_perceiver:
+            x_atmos_alternate = self.deaggregate_levels(
+                levels_embed,
+                x[..., 1:, :],
+                self.level_decoder_alternate,
+            )
+        else:
+            # `x_atmos_alternate` won't be used, but we define the variable anyway for type
+            # stability.
+            x_atmos_alternate = x_atmos
 
-        # Decode the atmospheric vars.
+        # Decode the atmospheric vars. Per variable, first determine whether the main or alternate
+        # Perceiver pressure level decoder should be used.
+        head_inputs = [
+            x_atmos if name not in self.separate_perceiver else x_atmos_alternate
+            for name in atmos_vars
+        ]
         if not self.level_condition:
-            x_atmos = torch.stack([self.atmos_heads[name](x_atmos) for name in atmos_vars], dim=-1)
+            x_atmos = torch.stack(
+                [self.atmos_heads[name](x) for name, x in zip(atmos_vars, head_inputs)],
+                dim=-1,
+            )
         else:
             x_atmos = torch.stack(
-                [self.atmos_heads[name](x_atmos, levels=atmos_levels) for name in atmos_vars],
+                [
+                    self.atmos_heads[name](x, levels=atmos_levels)
+                    for name, x in zip(atmos_vars, head_inputs)
+                ],
                 dim=-1,
             )
         x_atmos = x_atmos.reshape(*x_atmos.shape[:3], -1)  # (B, L, C_A, V_A*p*p)

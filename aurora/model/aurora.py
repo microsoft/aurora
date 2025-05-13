@@ -19,7 +19,7 @@ from aurora.model.encoder import Perceiver3DEncoder
 from aurora.model.lora import LoRAMode
 from aurora.model.swin3d import BasicLayer3D, Swin3DTransformerBackbone
 
-__all__ = ["Aurora", "AuroraSmall", "AuroraHighRes"]
+__all__ = ["Aurora", "AuroraSmall", "AuroraHighRes", "AuroraAirPollution"]
 
 
 class Aurora(torch.nn.Module):
@@ -30,6 +30,7 @@ class Aurora(torch.nn.Module):
 
     def __init__(
         self,
+        *,
         surf_vars: tuple[str, ...] = ("2t", "10u", "10v", "msl"),
         static_vars: tuple[str, ...] = ("lsm", "z", "slt"),
         atmos_vars: tuple[str, ...] = ("z", "u", "v", "t", "q"),
@@ -420,3 +421,47 @@ AuroraHighRes = partial(
     encoder_depths=(6, 8, 8),
     decoder_depths=(8, 8, 6),
 )
+
+
+class AuroraAirPollution(Aurora):
+    """Fine-tuned version of Aurora for air pollution."""
+
+    def __init__(
+        self,
+        *,
+        surf_vars: tuple[str, ...] = (
+            ("2t", "10u", "10v", "msl")
+            + ("pm1", "pm2p5", "pm10", "tcco", "tc_no", "tcno2", "gtco3", "tcso2")
+        ),
+        static_vars: tuple[str, ...] = (
+            ("lsm", "z", "slt")
+            + ("static_ammonia", "static_ammonia_log", "static_co", "static_co_log")
+            + ("static_nox", "static_nox_log", "static_so2", "static_so2_log")
+        ),
+        atmos_vars: tuple[str, ...] = ("z", "u", "v", "t", "q", "co", "no", "no2", "go3", "so2"),
+        patch_size: int = 3,
+        level_condition: Optional[tuple[int | float, ...]] = (
+            (50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000)
+        ),
+        dynamic_vars: bool = True,
+        atmos_static_vars: bool = True,
+        separate_perceiver: Optional[tuple[str, ...]] = ("co", "no", "no2", "go3", "so2"),
+        **kw_args,
+    ) -> None:
+        """Instantiate.
+
+        See the :class:`aurora.model.aurora.Aurora` for a description of the arguments and keyword
+        arguments.
+        """
+        Aurora.__init__(
+            self,
+            surf_vars=surf_vars,
+            static_vars=static_vars,
+            atmos_vars=atmos_vars,
+            patch_size=patch_size,
+            level_condition=level_condition,
+            dynamic_vars=dynamic_vars,
+            atmos_static_vars=atmos_static_vars,
+            separate_perceiver=separate_perceiver,
+            **kw_args,
+        )
