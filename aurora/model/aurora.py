@@ -525,8 +525,8 @@ class AuroraAirPollution(Aurora):
         "go3": 1,
         "gtco3": 1,
     }
-    """dict[str, int]: For every variable name, the index into the history dimension that should be
-    used when predicting the difference."""
+    """dict[str, int]: For every variable that we want to predict the difference for, the index
+    into the history dimension that should be used when predicting the difference."""
 
     def __init__(
         self,
@@ -557,8 +557,8 @@ class AuroraAirPollution(Aurora):
     ) -> None:
         """Instantiate.
 
-        See the :class:`aurora.model.aurora.Aurora` for a description of the arguments and keyword
-        arguments.
+        See the constructor of :class:`aurora.model.aurora.Aurora` for a description of the
+        arguments and keyword arguments.
         """
         Aurora.__init__(
             self,
@@ -677,7 +677,7 @@ class AuroraAirPollution(Aurora):
             del d["encoder.atmos_token_embeds.bias"]
 
             for name in ("z", "u", "v", "t", "q"):
-                # The variable is doubly specified. Below we will remove  the latter specification.
+                # The variable is doubly specified. Below we will remove the latter specification.
                 # Convert the former to a pressure-level dependent specification by duplicating.
 
                 weight = d[f"encoder.atmos_token_embeds.weights.{name}"]
