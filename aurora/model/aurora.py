@@ -542,6 +542,7 @@ class AuroraAirPollution(Aurora):
         ),
         atmos_vars: tuple[str, ...] = ("z", "u", "v", "t", "q", "co", "no", "no2", "go3", "so2"),
         patch_size: int = 3,
+        timestep: timedelta = timedelta(hours=12),
         level_condition: Optional[tuple[int | float, ...]] = (
             (50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000)
         ),
@@ -566,6 +567,7 @@ class AuroraAirPollution(Aurora):
             static_vars=static_vars,
             atmos_vars=atmos_vars,
             patch_size=patch_size,
+            timestep=timestep,
             level_condition=level_condition,
             dynamic_vars=dynamic_vars,
             atmos_static_vars=atmos_static_vars,
