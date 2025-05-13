@@ -62,6 +62,7 @@ class Aurora(torch.nn.Module):
         dynamic_vars: bool = False,
         atmos_static_vars: bool = False,
         separate_perceiver: Optional[tuple[str, ...]] = None,
+        modulation_head: bool = False,
     ) -> None:
         """Construct an instance of the model.
 
@@ -129,6 +130,8 @@ class Aurora(torch.nn.Module):
                 with variables that have a significantly different behaviour. If you want to enable
                 this features, set this to the collection of variables that should be run on a
                 separate Perceiver.
+            modulation_head (bool, optional): Enable an additional head, the so-called modulation
+                head, that can be used to predict the difference. Defaults to `False`.
         """
         super().__init__()
         self.surf_vars = surf_vars
@@ -197,6 +200,7 @@ class Aurora(torch.nn.Module):
             perceiver_ln_eps=perceiver_ln_eps,
             level_condition=level_condition,
             separate_perceiver=separate_perceiver,
+            modulation_head=modulation_head,
         )
 
     def forward(self, batch: Batch) -> Batch:
@@ -446,6 +450,7 @@ class AuroraAirPollution(Aurora):
         dynamic_vars: bool = True,
         atmos_static_vars: bool = True,
         separate_perceiver: Optional[tuple[str, ...]] = ("co", "no", "no2", "go3", "so2"),
+        modulation_head: bool = True,
         **kw_args,
     ) -> None:
         """Instantiate.
@@ -463,5 +468,6 @@ class AuroraAirPollution(Aurora):
             dynamic_vars=dynamic_vars,
             atmos_static_vars=atmos_static_vars,
             separate_perceiver=separate_perceiver,
+            modulation_head=modulation_head,
             **kw_args,
         )
