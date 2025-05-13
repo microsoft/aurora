@@ -7,7 +7,9 @@ from datetime import timedelta
 from functools import partial
 from typing import Optional
 
+import numpy as np
 import torch
+import torch.nn as nn
 from huggingface_hub import hf_hub_download
 from torch.distributed.algorithms._checkpoint.checkpoint_wrapper import (
     apply_activation_checkpointing,
@@ -61,8 +63,10 @@ class Aurora(torch.nn.Module):
         level_condition: Optional[tuple[int | float, ...]] = None,
         dynamic_vars: bool = False,
         atmos_static_vars: bool = False,
-        separate_perceiver: Optional[tuple[str, ...]] = None,
+        separate_perceiver: tuple[str, ...] = (),
         modulation_head: bool = False,
+        positive_surf_vars: tuple[str, ...] = (),
+        positive_atmos_vars: tuple[str, ...] = (),
     ) -> None:
         """Construct an instance of the model.
 
@@ -132,6 +136,15 @@ class Aurora(torch.nn.Module):
                 separate Perceiver.
             modulation_head (bool, optional): Enable an additional head, the so-called modulation
                 head, that can be used to predict the difference. Defaults to `False`.
+            positive_surf_vars (tuple[str, ...], optional): Mark these surface-level variables as
+                positive. Clamp them before running them through the encoder, and also clamp them
+                when autoregressively rolling out the model. The variables are not clamped for the
+                first roll-out step.
+            positive_atmos_vars (tuple[str, ...], optional): Mark these atmospheric variables as
+                positive. Clamp them before running them through the encoder, and also clamp them
+                when autoregressively rolling out the model. The variables are not clamped for the
+                first roll-out step.
+
         """
         super().__init__()
         self.surf_vars = surf_vars
@@ -141,6 +154,8 @@ class Aurora(torch.nn.Module):
         self.autocast = autocast
         self.max_history_size = max_history_size
         self.timestep = timestep
+        self.positive_surf_vars = positive_surf_vars
+        self.positive_atmos_vars = positive_atmos_vars
 
         if self.surf_stats:
             warnings.warn(
@@ -233,8 +248,30 @@ class Aurora(torch.nn.Module):
             static_vars={k: v[None, None].repeat(B, T, 1, 1) for k, v in batch.static_vars.items()},
         )
 
+        transformed_batch = batch
+
+        # Clamp positive variables.
+        if self.positive_surf_vars:
+            transformed_batch = dataclasses.replace(
+                transformed_batch,
+                surf_vars={
+                    k: v.clamp(min=0) if k in self.positive_surf_vars else v
+                    for k, v in batch.surf_vars.items()
+                },
+            )
+        if self.positive_atmos_vars:
+            transformed_batch = dataclasses.replace(
+                transformed_batch,
+                atmos_vars={
+                    k: v.clamp(min=0) if k in self.positive_atmos_vars else v
+                    for k, v in batch.atmos_vars.items()
+                },
+            )
+
+        transformed_batch = self._pre_encoder_hook(transformed_batch)
+
         x = self.encoder(
-            batch,
+            transformed_batch,
             lead_time=self.timestep,
         )
         with torch.autocast(device_type="cuda") if self.autocast else contextlib.nullcontext():
@@ -264,8 +301,36 @@ class Aurora(torch.nn.Module):
             atmos_vars={k: v[:, None] for k, v in pred.atmos_vars.items()},
         )
 
+        pred = self._post_decoder_hook(batch, pred)
+
+        # Clamp positive variables.
+        if self.positive_surf_vars and pred.metadata.rollout_step > 1:
+            pred = dataclasses.replace(
+                pred,
+                surf_vars={
+                    k: v.clamp(min=0) if k in self.positive_surf_vars else v
+                    for k, v in pred.surf_vars.items()
+                },
+            )
+        if self.positive_atmos_vars and pred.metadata.rollout_step > 1:
+            pred = dataclasses.replace(
+                pred,
+                atmos_vars={
+                    k: v.clamp(min=0) if k in self.positive_atmos_vars else v
+                    for k, v in pred.atmos_vars.items()
+                },
+            )
+
         pred = pred.unnormalise(surf_stats=self.surf_stats)
 
+        return pred
+
+    def _pre_encoder_hook(self, batch: Batch) -> Batch:
+        """Transform the batch before it goes through the encoder."""
+        return batch
+
+    def _post_decoder_hook(self, batch: Batch, pred: Batch) -> Batch:
+        """Transform the prediction right after the decoder."""
         return pred
 
     def load_checkpoint(self, repo: str, name: str, strict: bool = True) -> None:
@@ -430,6 +495,24 @@ AuroraHighRes = partial(
 class AuroraAirPollution(Aurora):
     """Fine-tuned version of Aurora for air pollution."""
 
+    _predict_difference_history_dim_lookup = {
+        "pm1": 0,
+        "pm2p5": 0,
+        "pm10": 0,
+        "co": 1,
+        "tcco": 1,
+        "no": 0,
+        "tc_no": 0,
+        "no2": 0,
+        "tcno2": 0,
+        "so2": 1,
+        "tcso2": 1,
+        "go3": 1,
+        "gtco3": 1,
+    }
+    """dict[str, int]: For every variable name, the index into the history dimension that should be
+    used when predicting the difference."""
+
     def __init__(
         self,
         *,
@@ -449,8 +532,12 @@ class AuroraAirPollution(Aurora):
         ),
         dynamic_vars: bool = True,
         atmos_static_vars: bool = True,
-        separate_perceiver: Optional[tuple[str, ...]] = ("co", "no", "no2", "go3", "so2"),
+        separate_perceiver: tuple[str, ...] = ("co", "no", "no2", "go3", "so2"),
         modulation_head: bool = True,
+        positive_surf_vars: tuple[str, ...] = (
+            ("pm1", "pm2p5", "pm10", "tcco", "tc_no", "tcno2", "gtco3", "tcso2")
+        ),
+        positive_atmos_vars: tuple[str, ...] = ("co", "no", "no2", "go3", "so2"),
         **kw_args,
     ) -> None:
         """Instantiate.
@@ -469,5 +556,81 @@ class AuroraAirPollution(Aurora):
             atmos_static_vars=atmos_static_vars,
             separate_perceiver=separate_perceiver,
             modulation_head=modulation_head,
+            positive_surf_vars=positive_surf_vars,
+            positive_atmos_vars=positive_atmos_vars,
             **kw_args,
         )
+
+        self.surf_feature_combiner = torch.nn.ParameterDict(
+            {v: nn.Linear(2, 1, bias=True) for v in self.positive_surf_vars}
+        )
+        self.atmos_feature_combiner = torch.nn.ParameterDict(
+            {v: nn.Linear(2, 1, bias=True) for v in self.positive_atmos_vars}
+        )
+        for p in (*self.surf_feature_combiner.values(), *self.atmos_feature_combiner.values()):
+            nn.init.constant_(p.weight, 0.5)
+            nn.init.zeros_(p.bias)
+
+    def _pre_encoder_hook(self, batch: Batch) -> Batch:
+        eps = 1e-4
+        divisor = -np.log(eps)
+
+        def _transform(z: torch.Tensor, feature_combiner: nn.Module) -> torch.Tensor:
+            return feature_combiner(
+                torch.stack(
+                    [
+                        z.clamp(min=0, max=2.5),
+                        (torch.log(z.clamp(min=eps)) - np.log(eps)) / divisor,
+                    ],
+                    dim=-1,
+                )
+            )[..., 0]
+
+        return dataclasses.replace(
+            batch,
+            surf_vars={
+                k: _transform(v, self.surf_feature_combiner[k])
+                if k in self.surf_feature_combiner
+                else v
+                for k, v in batch.surf_vars.items()
+            },
+            atmos_vars={
+                k: _transform(v, self.atmos_feature_combiner[k])
+                if k in self.atmos_feature_combiner
+                else v
+                for k, v in batch.atmos_vars.items()
+            },
+        )
+
+    def _post_decoder_hook(self, batch: Batch, pred: Batch) -> Batch:
+        dim_lookup = AuroraAirPollution._predict_difference_history_dim_lookup
+
+        def _transform(
+            prev: dict[str, torch.Tensor],
+            model: dict[str, torch.Tensor],
+            name: str,
+        ) -> torch.Tensor:
+            if name in dim_lookup:
+                return model[name] + (1 + model[f"{name}_mod"]) * prev[name][:, dim_lookup[name]]
+            else:
+                return model[name]
+
+        pred = dataclasses.replace(
+            pred,
+            surf_vars={k: _transform(batch.surf_vars, pred.surf_vars, k) for k in batch.surf_vars},
+            atmos_vars={
+                k: _transform(batch.atmos_vars, pred.atmos_vars, k) for k in batch.atmos_vars
+            },
+        )
+
+        # When using LoRA, the lower-atmospheric levels of SO2 can be problematic and blow up.
+        # We attempt to fix that by some very aggressive output clipping.
+        parts: list[torch.Tensor] = []
+        for i, level in enumerate(pred.metadata.atmos_levels):
+            section = pred.atmos_vars["so2"][..., i, :, :]
+            if level >= 850:
+                section = section.clamp(max=1)
+            parts.append(section)
+        pred.atmos_vars["so2"] = torch.stack(parts, dim=-3)
+
+        return pred

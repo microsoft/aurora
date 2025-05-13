@@ -36,7 +36,7 @@ class Perceiver3DDecoder(nn.Module):
         drop_rate: float = 0.0,
         perceiver_ln_eps: float = 1e-5,
         level_condition: Optional[tuple[int | float, ...]] = None,
-        separate_perceiver: Optional[tuple[str, ...]] = None,
+        separate_perceiver: tuple[str, ...] = (),
         modulation_head: bool = False,
     ) -> None:
         """Initialise.
@@ -81,7 +81,7 @@ class Perceiver3DDecoder(nn.Module):
         self.atmos_vars = atmos_vars
         self.embed_dim = embed_dim
         self.level_condition = level_condition
-        self.separate_perceiver = separate_perceiver if separate_perceiver else ()
+        self.separate_perceiver = separate_perceiver
         self.modulation_head = modulation_head
 
         self.level_decoder = PerceiverResampler(
