@@ -1,30 +1,20 @@
+import os
 from datetime import datetime
 
 import torch
 
-from aurora import AuroraSmall, Batch, Metadata
+from aurora import AuroraAirPollution, Batch, Metadata
 
-model = AuroraSmall(
-    level_condition=(50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000),
-    dynamic_vars=True,
-    atmos_static_vars=True,
-    separate_perceiver=("v", "t", "q"),
-)
+model = AuroraAirPollution()
+model.load_checkpoint_local(os.path.expanduser("~/checkpoints/aurora-air-pollution.ckpt"))
 
 batch = Batch(
-    surf_vars={k: torch.randn(1, 2, 17, 32) for k in ("2t", "10u", "10v", "msl")},
-    static_vars={
-        k: torch.randn(17, 32)
-        for k in (
-            "lsm",
-            "z",
-            "slt",
-        )
-    },
-    atmos_vars={k: torch.randn(1, 2, 4, 17, 32) for k in ("z", "u", "v", "t", "q")},
+    surf_vars={k: torch.randn(1, 2, 16, 30) for k in ("2t", "10u", "10v", "msl", "tc_no")},
+    static_vars={k: torch.randn(16, 30) for k in ("lsm", "z", "slt")},
+    atmos_vars={k: torch.randn(1, 2, 4, 16, 30) for k in ("z", "u", "v", "co", "so2")},
     metadata=Metadata(
-        lat=torch.linspace(90, -90, 17),
-        lon=torch.linspace(0, 360, 32 + 1)[:-1],
+        lat=torch.linspace(90, -90, 16),
+        lon=torch.linspace(0, 360, 30 + 1)[:-1],
         time=(datetime(2020, 6, 1, 12, 0),),
         atmos_levels=(100, 250, 500, 850),
     ),

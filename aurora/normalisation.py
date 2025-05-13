@@ -1,5 +1,6 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
+from collections import defaultdict
 from functools import partial
 from typing import Optional
 
@@ -205,3 +206,8 @@ scales: dict[str, float] = {
     "q_925": 5.071058e-03,
     "q_1000": 5.913548e-03,
 }
+
+
+# Hack this for now, so we can prototype without the correct constants.
+locations = defaultdict(lambda: 0, locations)
+scales = defaultdict(lambda: 1, scales)
