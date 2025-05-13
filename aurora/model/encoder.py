@@ -100,12 +100,12 @@ class Perceiver3DEncoder(nn.Module):
                 static_vars = ()
             static_vars += ("tod_cos", "tod_sin", "dow_cos", "dow_sin", "doy_cos", "doy_sin")
 
-        # We treat the static variables as surface variables in the model (and possibly even atmos.
-        # variables!)
+        # We treat the static variables as surface variables in the model (and possibly even as
+        # atmospheric variables!).
         if static_vars:
             surf_vars += static_vars
             if atmos_static_vars:
-                # in this case, we prefix the static variables to avoid name clashes. e.g., `z` is
+                # In this case, we prefix the static variables to avoid name clashes. E.g., `z` is
                 # both a static variable and an atmospheric variable.
                 atmos_vars += tuple(f"static_{v}" for v in static_vars)
 
