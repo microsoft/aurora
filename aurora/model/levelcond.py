@@ -15,7 +15,12 @@ def _level_to_str(level: float) -> str:
     Returns:
         str: Consistent string representation.
     """
-    return str(round(float(level), 3))
+    level = round(float(level), 3)  # Deal with rounding errors.
+    # Return an integer representation whenever possible.
+    if level % 1 == 0:
+        level = int(level)
+    # Replace the decimal separator with an underscore to avoid parameter name conflicts.
+    return str(level).replace(".", "_")
 
 
 class LevelConditioned(nn.Module):
