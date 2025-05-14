@@ -6,11 +6,29 @@ from typing import Optional
 import torch
 
 __all__ = [
+    "level_to_str",
     "normalise_surf_var",
     "normalise_atmos_var",
     "unnormalise_surf_var",
     "unnormalise_atmos_var",
 ]
+
+
+def level_to_str(level: float) -> str:
+    """Convert a pressure level to a string in a consistent way.
+
+    Args:
+        level (float): Pressure level.
+
+    Returns:
+        str: Consistent string representation.
+    """
+    level = round(float(level), 3)  # Deal with rounding errors.
+    # Return an integer representation whenever possible.
+    if level % 1 == 0:
+        level = int(level)
+    # Replace the decimal separator with an underscore to avoid parameter name conflicts.
+    return str(level).replace(".", "_")
 
 
 def normalise_surf_var(
@@ -41,8 +59,8 @@ def normalise_atmos_var(
     level_locations: list[int | float] = []
     level_scales: list[int | float] = []
     for level in atmos_levels:
-        level_locations.append(locations[f"{name}_{level}"])
-        level_scales.append(scales[f"{name}_{level}"])
+        level_locations.append(locations[f"{name}_{level_to_str(level)}"])
+        level_scales.append(scales[f"{name}_{level_to_str(level)}"])
     location = torch.tensor(level_locations, dtype=x.dtype, device=x.device)
     scale = torch.tensor(level_scales, dtype=x.dtype, device=x.device)
 

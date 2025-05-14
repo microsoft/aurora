@@ -3,24 +3,9 @@ from typing import Callable
 import torch
 import torch.nn as nn
 
+from aurora.normalisation import level_to_str
+
 __all__ = ["LevelConditioned"]
-
-
-def _level_to_str(level: float) -> str:
-    """Convert a pressure level to a string in a consistent way.
-
-    Args:
-        level (float): Pressure level.
-
-    Returns:
-        str: Consistent string representation.
-    """
-    level = round(float(level), 3)  # Deal with rounding errors.
-    # Return an integer representation whenever possible.
-    if level % 1 == 0:
-        level = int(level)
-    # Replace the decimal separator with an underscore to avoid parameter name conflicts.
-    return str(level).replace(".", "_")
 
 
 class LevelConditioned(nn.Module):
@@ -43,7 +28,7 @@ class LevelConditioned(nn.Module):
         super().__init__()
         self.levels_dim = levels_dim
         self.layers = torch.nn.ParameterDict(
-            {_level_to_str(level): construct_module() for level in levels}
+            {level_to_str(level): construct_module() for level in levels}
         )
 
     def forward(
@@ -75,7 +60,7 @@ class LevelConditioned(nn.Module):
 
         return torch.stack(
             [
-                self.layers[_level_to_str(level)](x[index(i)], *args, **kw_args)
+                self.layers[level_to_str(level)](x[index(i)], *args, **kw_args)
                 for i, level in enumerate(levels)
             ],
             dim=levels_dim,

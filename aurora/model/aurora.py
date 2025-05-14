@@ -18,9 +18,9 @@ from torch.distributed.algorithms._checkpoint.checkpoint_wrapper import (
 from aurora.batch import Batch
 from aurora.model.decoder import Perceiver3DDecoder
 from aurora.model.encoder import Perceiver3DEncoder
-from aurora.model.levelcond import _level_to_str
 from aurora.model.lora import LoRAMode
 from aurora.model.swin3d import BasicLayer3D, Swin3DTransformerBackbone
+from aurora.normalisation import level_to_str
 
 __all__ = ["Aurora", "AuroraSmall", "AuroraHighRes", "AuroraAirPollution"]
 
@@ -697,12 +697,12 @@ class AuroraAirPollution(Aurora):
 
         for level in (50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000):
             # The patch embedding is doubly specified. Select the right one.
-            n1 = f"encoder.atmos_token_embeds_new.layers.{_level_to_str(level)}.weight"
+            n1 = f"encoder.atmos_token_embeds_new.layers.{level_to_str(level)}.weight"
             if n1 in d:
                 del d[n1]
 
-            n1 = f"encoder.atmos_token_embeds_new.layers.{_level_to_str(level)}.weight_new"
-            n2 = f"encoder.atmos_token_embeds.layers.{_level_to_str(level)}.weights.{{}}"
+            n1 = f"encoder.atmos_token_embeds_new.layers.{level_to_str(level)}.weight_new"
+            n2 = f"encoder.atmos_token_embeds.layers.{level_to_str(level)}.weights.{{}}"
             if n1 in d:
                 weight = d[n1]
                 del d[n1]
@@ -710,8 +710,8 @@ class AuroraAirPollution(Aurora):
                 for i, name in enumerate(("co", "no", "no2", "go3", "so2")):
                     d[n2.format(name)] = weight[:, [i]]
 
-            n1 = f"encoder.atmos_token_embeds_new.layers.{_level_to_str(level)}.weight_new2"
-            n2 = f"encoder.atmos_token_embeds.layers.{_level_to_str(level)}.weights.{{}}"
+            n1 = f"encoder.atmos_token_embeds_new.layers.{level_to_str(level)}.weight_new2"
+            n2 = f"encoder.atmos_token_embeds.layers.{level_to_str(level)}.weights.{{}}"
             if n1 in d:
                 weight = d[n1]
                 del d[n1]
@@ -728,8 +728,8 @@ class AuroraAirPollution(Aurora):
                 ):
                     d[n2.format(name)] = weight[:, [i]]
 
-            n1 = f"encoder.atmos_token_embeds_new.layers.{_level_to_str(level)}.bias"
-            n2 = f"encoder.atmos_token_embeds.layers.{_level_to_str(level)}.bias"
+            n1 = f"encoder.atmos_token_embeds_new.layers.{level_to_str(level)}.bias"
+            n2 = f"encoder.atmos_token_embeds.layers.{level_to_str(level)}.bias"
             if n1 in d:
                 d[n2] = d[n1]
                 del d[n1]
