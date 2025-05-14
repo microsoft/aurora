@@ -7,7 +7,9 @@ from datetime import timedelta
 from functools import partial
 from typing import Optional
 
+import numpy as np
 import torch
+import torch.nn as nn
 from huggingface_hub import hf_hub_download
 from torch.distributed.algorithms._checkpoint.checkpoint_wrapper import (
     apply_activation_checkpointing,
@@ -18,8 +20,9 @@ from aurora.model.decoder import Perceiver3DDecoder
 from aurora.model.encoder import Perceiver3DEncoder
 from aurora.model.lora import LoRAMode
 from aurora.model.swin3d import BasicLayer3D, Swin3DTransformerBackbone
+from aurora.normalisation import level_to_str
 
-__all__ = ["Aurora", "AuroraSmall", "AuroraHighRes"]
+__all__ = ["Aurora", "AuroraSmall", "AuroraHighRes", "AuroraAirPollution"]
 
 
 class Aurora(torch.nn.Module):
@@ -30,6 +33,7 @@ class Aurora(torch.nn.Module):
 
     def __init__(
         self,
+        *,
         surf_vars: tuple[str, ...] = ("2t", "10u", "10v", "msl"),
         static_vars: tuple[str, ...] = ("lsm", "z", "slt"),
         atmos_vars: tuple[str, ...] = ("z", "u", "v", "t", "q"),
@@ -57,6 +61,13 @@ class Aurora(torch.nn.Module):
         lora_mode: LoRAMode = "single",
         surf_stats: Optional[dict[str, tuple[float, float]]] = None,
         autocast: bool = False,
+        level_condition: Optional[tuple[int | float, ...]] = None,
+        dynamic_vars: bool = False,
+        atmos_static_vars: bool = False,
+        separate_perceiver: tuple[str, ...] = (),
+        modulation_head: bool = False,
+        positive_surf_vars: tuple[str, ...] = (),
+        positive_atmos_vars: tuple[str, ...] = (),
     ) -> None:
         """Construct an instance of the model.
 
@@ -112,6 +123,29 @@ class Aurora(torch.nn.Module):
                 and scale.
             autocast (bool, optional): Use `torch.autocast` to reduce memory usage. Defaults to
                 `False`.
+            level_condition (tuple[int | float, ...], optional): Make the patch embeddings dependent
+                on pressure level. If you want to enable this feature, provide a tuple of all
+                possible pressure levels.
+            dynamic_vars (bool, optional): Use dynamically generated static variables, like time
+                of day. Defaults to `False`.
+            atmos_static_vars (bool, optional): Also concatenate the static variables to the
+                atmospheric variables. Defaults to `False`.
+            separate_perceiver (tuple[str, ...], optional): In the decoder, use a separate Perceiver
+                for specific atmospheric variables. This can be helpful at fine-tuning time to deal
+                with variables that have a significantly different behaviour. If you want to enable
+                this features, set this to the collection of variables that should be run on a
+                separate Perceiver.
+            modulation_head (bool, optional): Enable an additional head, the so-called modulation
+                head, that can be used to predict the difference. Defaults to `False`.
+            positive_surf_vars (tuple[str, ...], optional): Mark these surface-level variables as
+                positive. Clamp them before running them through the encoder, and also clamp them
+                when autoregressively rolling out the model. The variables are not clamped for the
+                first roll-out step.
+            positive_atmos_vars (tuple[str, ...], optional): Mark these atmospheric variables as
+                positive. Clamp them before running them through the encoder, and also clamp them
+                when autoregressively rolling out the model. The variables are not clamped for the
+                first roll-out step.
+
         """
         super().__init__()
         self.surf_vars = surf_vars
@@ -121,6 +155,8 @@ class Aurora(torch.nn.Module):
         self.autocast = autocast
         self.max_history_size = max_history_size
         self.timestep = timestep
+        self.positive_surf_vars = positive_surf_vars
+        self.positive_atmos_vars = positive_atmos_vars
 
         if self.surf_stats:
             warnings.warn(
@@ -145,6 +181,9 @@ class Aurora(torch.nn.Module):
             max_history_size=max_history_size,
             perceiver_ln_eps=perceiver_ln_eps,
             stabilise_level_agg=stabilise_level_agg,
+            level_condition=level_condition,
+            dynamic_vars=dynamic_vars,
+            atmos_static_vars=atmos_static_vars,
         )
 
         self.backbone = Swin3DTransformerBackbone(
@@ -175,6 +214,9 @@ class Aurora(torch.nn.Module):
             # We use a lower ratio here to keep the memory in check.
             mlp_ratio=dec_mlp_ratio,
             perceiver_ln_eps=perceiver_ln_eps,
+            level_condition=level_condition,
+            separate_perceiver=separate_perceiver,
+            modulation_head=modulation_head,
         )
 
     def forward(self, batch: Batch) -> Batch:
@@ -207,8 +249,30 @@ class Aurora(torch.nn.Module):
             static_vars={k: v[None, None].repeat(B, T, 1, 1) for k, v in batch.static_vars.items()},
         )
 
+        transformed_batch = batch
+
+        # Clamp positive variables.
+        if self.positive_surf_vars:
+            transformed_batch = dataclasses.replace(
+                transformed_batch,
+                surf_vars={
+                    k: v.clamp(min=0) if k in self.positive_surf_vars else v
+                    for k, v in batch.surf_vars.items()
+                },
+            )
+        if self.positive_atmos_vars:
+            transformed_batch = dataclasses.replace(
+                transformed_batch,
+                atmos_vars={
+                    k: v.clamp(min=0) if k in self.positive_atmos_vars else v
+                    for k, v in batch.atmos_vars.items()
+                },
+            )
+
+        transformed_batch = self._pre_encoder_hook(transformed_batch)
+
         x = self.encoder(
-            batch,
+            transformed_batch,
             lead_time=self.timestep,
         )
         with torch.autocast(device_type="cuda") if self.autocast else contextlib.nullcontext():
@@ -238,8 +302,36 @@ class Aurora(torch.nn.Module):
             atmos_vars={k: v[:, None] for k, v in pred.atmos_vars.items()},
         )
 
+        pred = self._post_decoder_hook(batch, pred)
+
+        # Clamp positive variables.
+        if self.positive_surf_vars and pred.metadata.rollout_step > 1:
+            pred = dataclasses.replace(
+                pred,
+                surf_vars={
+                    k: v.clamp(min=0) if k in self.positive_surf_vars else v
+                    for k, v in pred.surf_vars.items()
+                },
+            )
+        if self.positive_atmos_vars and pred.metadata.rollout_step > 1:
+            pred = dataclasses.replace(
+                pred,
+                atmos_vars={
+                    k: v.clamp(min=0) if k in self.positive_atmos_vars else v
+                    for k, v in pred.atmos_vars.items()
+                },
+            )
+
         pred = pred.unnormalise(surf_stats=self.surf_stats)
 
+        return pred
+
+    def _pre_encoder_hook(self, batch: Batch) -> Batch:
+        """Transform the batch before it goes through the encoder."""
+        return batch
+
+    def _post_decoder_hook(self, batch: Batch, pred: Batch) -> Batch:
+        """Transform the prediction right after the decoder."""
         return pred
 
     def load_checkpoint(self, repo: str, name: str, strict: bool = True) -> None:
@@ -265,12 +357,36 @@ class Aurora(torch.nn.Module):
         """
         # Assume that all parameters are either on the CPU or on the GPU.
         device = next(self.parameters()).device
-
         d = torch.load(path, map_location=device, weights_only=True)
 
-        # You can safely ignore all cumbersome processing below. We modified the model after we
-        # trained it. The code below manually adapts the checkpoints, so the checkpoints are
-        # compatible with the new model.
+        d = self._adapt_checkpoint(d)
+
+        # Check if the history size is compatible and adjust weights if necessary.
+        current_history_size = d["encoder.surf_token_embeds.weights.2t"].shape[2]
+        if self.max_history_size > current_history_size:
+            self.adapt_checkpoint_max_history_size(d)
+        elif self.max_history_size < current_history_size:
+            raise AssertionError(
+                f"Cannot load checkpoint with `max_history_size` {current_history_size} "
+                f"into model with `max_history_size` {self.max_history_size}."
+            )
+
+        self.load_state_dict(d, strict=strict)
+
+    def _adapt_checkpoint(self, d: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
+        """Adapt an existing checkpoint to make it compatible with the open-source version of
+        Aurora.
+
+        You can safely ignore all cumbersome processing in this method. We modified the model after
+        we trained it. The code here adapts the checkpoints, so the checkpoints are compatible with
+        the new model.
+
+        Args:
+            d (dict[str, torch.Tensor]): Checkpoint.
+
+        Return:
+            dict[str, torch.Tensor]: Adapted checkpoint.
+        """
 
         # Remove possibly prefix from the keys.
         for k, v in list(d.items()):
@@ -325,17 +441,7 @@ class Aurora(torch.nn.Module):
                 d[f"decoder.atmos_heads.{name}.weight"] = weight[:, i]
                 d[f"decoder.atmos_heads.{name}.bias"] = bias[:, i]
 
-        # Check if the history size is compatible and adjust weights if necessary.
-        current_history_size = d["encoder.surf_token_embeds.weights.2t"].shape[2]
-        if self.max_history_size > current_history_size:
-            self.adapt_checkpoint_max_history_size(d)
-        elif self.max_history_size < current_history_size:
-            raise AssertionError(
-                f"Cannot load checkpoint with `max_history_size` {current_history_size} "
-                f"into model with `max_history_size` {self.max_history_size}."
-            )
-
-        self.load_state_dict(d, strict=strict)
+        return d
 
     def adapt_checkpoint_max_history_size(self, checkpoint: dict[str, torch.Tensor]) -> None:
         """Adapt a checkpoint with smaller `max_history_size` to a model with a larger
@@ -399,3 +505,326 @@ AuroraHighRes = partial(
     encoder_depths=(6, 8, 8),
     decoder_depths=(8, 8, 6),
 )
+
+
+class AuroraAirPollution(Aurora):
+    """Fine-tuned version of Aurora for air pollution."""
+
+    _predict_difference_history_dim_lookup = {
+        "pm1": 0,
+        "pm2p5": 0,
+        "pm10": 0,
+        "co": 1,
+        "tcco": 1,
+        "no": 0,
+        "tc_no": 0,
+        "no2": 0,
+        "tcno2": 0,
+        "so2": 1,
+        "tcso2": 1,
+        "go3": 1,
+        "gtco3": 1,
+    }
+    """dict[str, int]: For every variable that we want to predict the difference for, the index
+    into the history dimension that should be used when predicting the difference."""
+
+    def __init__(
+        self,
+        *,
+        surf_vars: tuple[str, ...] = (
+            ("2t", "10u", "10v", "msl")
+            + ("pm1", "pm2p5", "pm10", "tcco", "tc_no", "tcno2", "gtco3", "tcso2")
+        ),
+        static_vars: tuple[str, ...] = (
+            ("lsm", "z", "slt")
+            + ("static_ammonia", "static_ammonia_log", "static_co", "static_co_log")
+            + ("static_nox", "static_nox_log", "static_so2", "static_so2_log")
+        ),
+        atmos_vars: tuple[str, ...] = ("z", "u", "v", "t", "q", "co", "no", "no2", "go3", "so2"),
+        patch_size: int = 3,
+        timestep: timedelta = timedelta(hours=12),
+        level_condition: Optional[tuple[int | float, ...]] = (
+            (50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000)
+        ),
+        dynamic_vars: bool = True,
+        atmos_static_vars: bool = True,
+        separate_perceiver: tuple[str, ...] = ("co", "no", "no2", "go3", "so2"),
+        modulation_head: bool = True,
+        positive_surf_vars: tuple[str, ...] = (
+            ("pm1", "pm2p5", "pm10", "tcco", "tc_no", "tcno2", "gtco3", "tcso2")
+        ),
+        positive_atmos_vars: tuple[str, ...] = ("co", "no", "no2", "go3", "so2"),
+        **kw_args,
+    ) -> None:
+        """Instantiate.
+
+        See the constructor of :class:`aurora.model.aurora.Aurora` for a description of the
+        arguments and keyword arguments.
+        """
+        Aurora.__init__(
+            self,
+            surf_vars=surf_vars,
+            static_vars=static_vars,
+            atmos_vars=atmos_vars,
+            patch_size=patch_size,
+            timestep=timestep,
+            level_condition=level_condition,
+            dynamic_vars=dynamic_vars,
+            atmos_static_vars=atmos_static_vars,
+            separate_perceiver=separate_perceiver,
+            modulation_head=modulation_head,
+            positive_surf_vars=positive_surf_vars,
+            positive_atmos_vars=positive_atmos_vars,
+            **kw_args,
+        )
+
+        self.surf_feature_combiner = torch.nn.ParameterDict(
+            {v: nn.Linear(2, 1, bias=True) for v in self.positive_surf_vars}
+        )
+        self.atmos_feature_combiner = torch.nn.ParameterDict(
+            {v: nn.Linear(2, 1, bias=True) for v in self.positive_atmos_vars}
+        )
+        for p in (*self.surf_feature_combiner.values(), *self.atmos_feature_combiner.values()):
+            nn.init.constant_(p.weight, 0.5)
+            nn.init.zeros_(p.bias)
+
+    def _pre_encoder_hook(self, batch: Batch) -> Batch:
+        eps = 1e-4
+        divisor = -np.log(eps)
+
+        def _transform(z: torch.Tensor, feature_combiner: nn.Module) -> torch.Tensor:
+            return feature_combiner(
+                torch.stack(
+                    [
+                        z.clamp(min=0, max=2.5),
+                        (torch.log(z.clamp(min=eps)) - np.log(eps)) / divisor,
+                    ],
+                    dim=-1,
+                )
+            )[..., 0]
+
+        return dataclasses.replace(
+            batch,
+            surf_vars={
+                k: _transform(v, self.surf_feature_combiner[k])
+                if k in self.surf_feature_combiner
+                else v
+                for k, v in batch.surf_vars.items()
+            },
+            atmos_vars={
+                k: _transform(v, self.atmos_feature_combiner[k])
+                if k in self.atmos_feature_combiner
+                else v
+                for k, v in batch.atmos_vars.items()
+            },
+        )
+
+    def _post_decoder_hook(self, batch: Batch, pred: Batch) -> Batch:
+        dim_lookup = AuroraAirPollution._predict_difference_history_dim_lookup
+
+        def _transform(
+            prev: dict[str, torch.Tensor],
+            model: dict[str, torch.Tensor],
+            name: str,
+        ) -> torch.Tensor:
+            if name in dim_lookup:
+                return model[name] + (1 + model[f"{name}_mod"]) * prev[name][:, dim_lookup[name]]
+            else:
+                return model[name]
+
+        pred = dataclasses.replace(
+            pred,
+            surf_vars={k: _transform(batch.surf_vars, pred.surf_vars, k) for k in batch.surf_vars},
+            atmos_vars={
+                k: _transform(batch.atmos_vars, pred.atmos_vars, k) for k in batch.atmos_vars
+            },
+        )
+
+        # When using LoRA, the lower-atmospheric levels of SO2 can be problematic and blow up.
+        # We attempt to fix that by some very aggressive output clipping.
+        parts: list[torch.Tensor] = []
+        for i, level in enumerate(pred.metadata.atmos_levels):
+            section = pred.atmos_vars["so2"][..., i, :, :]
+            if level >= 850:
+                section = section.clamp(max=1)
+            parts.append(section)
+        pred.atmos_vars["so2"] = torch.stack(parts, dim=-3)
+
+        return pred
+
+    def _adapt_checkpoint(self, d: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
+        d = Aurora._adapt_checkpoint(self, d)
+
+        if "encoder.surf_token_embeds.weight_new" in d:
+            weight = d["encoder.surf_token_embeds.weight_new"]
+            del d["encoder.surf_token_embeds.weight_new"]
+
+            assert weight.shape[1] == (3 + 5) + 4 * 2 + 3 * 2
+            for i, name in enumerate(
+                ("pm1", "pm2p5", "pm10", "tcco", "tc_no", "tcno2", "gtco3", "tcso2")
+                + ("static_ammonia", "static_ammonia_log", "static_co", "static_co_log")
+                + ("static_nox", "static_nox_log", "static_so2", "static_so2_log")
+                + ("tod_cos", "tod_sin", "dow_cos")
+                + ("dow_sin", "doy_cos", "doy_sin")
+            ):
+                d[f"encoder.surf_token_embeds.weights.{name}"] = weight[:, [i]]
+
+        # Now fix the patch embeddings for the atmospheric variables. These are more complicated.
+
+        if (
+            "encoder.atmos_token_embeds.weights.z" in d
+            and "encoder.atmos_token_embeds_new.layers.50.weight" in d
+        ):
+            bias = d["encoder.atmos_token_embeds.bias"]
+            del d["encoder.atmos_token_embeds.bias"]
+
+            for name in ("z", "u", "v", "t", "q"):
+                # The variable is doubly specified. Below we will remove the latter specification.
+                # Convert the former to a pressure-level dependent specification by duplicating.
+
+                weight = d[f"encoder.atmos_token_embeds.weights.{name}"]
+                del d[f"encoder.atmos_token_embeds.weights.{name}"]
+
+                for level in (50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000):
+                    d[f"encoder.atmos_token_embeds.layers.{level}.weights.{name}"] = weight
+                    d[f"encoder.atmos_token_embeds.layers.{level}.bias"] = bias
+
+        if "encoder.atmos_token_embeds.weight_new" in d:
+            del d["encoder.atmos_token_embeds.weight_new"]
+
+        if "encoder.atmos_token_embeds.weight_new2" in d:
+            del d["encoder.atmos_token_embeds.weight_new2"]
+
+        for level in (50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000):
+            # The patch embedding is doubly specified. Select the right one.
+            n1 = f"encoder.atmos_token_embeds_new.layers.{level_to_str(level)}.weight"
+            if n1 in d:
+                del d[n1]
+
+            n1 = f"encoder.atmos_token_embeds_new.layers.{level_to_str(level)}.weight_new"
+            n2 = f"encoder.atmos_token_embeds.layers.{level_to_str(level)}.weights.{{}}"
+            if n1 in d:
+                weight = d[n1]
+                del d[n1]
+                assert weight.shape[1] == 5
+                for i, name in enumerate(("co", "no", "no2", "go3", "so2")):
+                    d[n2.format(name)] = weight[:, [i]]
+
+            n1 = f"encoder.atmos_token_embeds_new.layers.{level_to_str(level)}.weight_new2"
+            n2 = f"encoder.atmos_token_embeds.layers.{level_to_str(level)}.weights.{{}}"
+            if n1 in d:
+                weight = d[n1]
+                del d[n1]
+                assert weight.shape[1] == 17
+                for i, name in enumerate(
+                    ("static_lsm", "static_z", "static_slt")
+                    # For the atmospheric variables, there is _another_ prefix `static_`.
+                    + ("static_static_ammonia", "static_static_ammonia_log")
+                    + ("static_static_co", "static_static_co_log")
+                    + ("static_static_nox", "static_static_nox_log")
+                    + ("static_static_so2", "static_static_so2_log")
+                    + ("static_tod_cos", "static_tod_sin", "static_dow_cos")
+                    + ("static_dow_sin", "static_doy_cos", "static_doy_sin")
+                ):
+                    d[n2.format(name)] = weight[:, [i]]
+
+            n1 = f"encoder.atmos_token_embeds_new.layers.{level_to_str(level)}.bias"
+            n2 = f"encoder.atmos_token_embeds.layers.{level_to_str(level)}.bias"
+            if n1 in d:
+                d[n2] = d[n1]
+                del d[n1]
+
+        # Remove the feature combiners for the non-positive variables.
+        for name in ("2t", "10u", "10v", "msl"):
+            if f"surf_feature_combiner.{name}.weight" in d:
+                del d[f"surf_feature_combiner.{name}.weight"]
+                del d[f"surf_feature_combiner.{name}.bias"]
+            pass
+        for name in ("z", "u", "v", "t", "q"):
+            if f"atmos_feature_combiner.{name}.weight" in d:
+                del d[f"atmos_feature_combiner.{name}.weight"]
+                del d[f"atmos_feature_combiner.{name}.bias"]
+            pass
+
+        # Rename the second Perceiver in the decoder.
+        for k in list(d):
+            p1 = "decoder.level_decoder_new"
+            p2 = "decoder.level_decoder_alternate"
+            if k.startswith(p1):
+                d[p2 + k.removeprefix(p1)] = d[k]
+                del d[k]
+
+        # Do the same thing that we did for the encoder now for the decoder.
+
+        if "decoder.surf_head_new.weight" in d:
+            weight = d["decoder.surf_head_new.weight"]
+            bias = d["decoder.surf_head_new.bias"]
+            del d["decoder.surf_head_new.weight"]
+            del d["decoder.surf_head_new.bias"]
+
+            n = 8
+            assert weight.shape[0] == n * self.patch_size**2
+            assert bias.shape[0] == n * self.patch_size**2
+            weight = weight.reshape(self.patch_size**2, n, -1)
+            bias = bias.reshape(self.patch_size**2, n)
+
+            for i, name in enumerate(
+                ("pm1", "pm2p5", "pm10", "tcco", "tc_no", "tcno2", "gtco3", "tcso2")
+            ):
+                d[f"decoder.surf_heads.{name}.weight"] = weight[:, i]
+                d[f"decoder.surf_heads.{name}.bias"] = bias[:, i]
+
+        if "decoder.surf_head_mod.weight" in d:
+            weight = d["decoder.surf_head_mod.weight"]
+            bias = d["decoder.surf_head_mod.bias"]
+            del d["decoder.surf_head_mod.weight"]
+            del d["decoder.surf_head_mod.bias"]
+
+            n = 4 + 8
+            assert weight.shape[0] == n * self.patch_size**2
+            assert bias.shape[0] == n * self.patch_size**2
+            weight = weight.reshape(self.patch_size**2, n, -1)
+            bias = bias.reshape(self.patch_size**2, n)
+
+            for i, name in enumerate(
+                ("2t", "10u", "10v", "msl")
+                + ("pm1", "pm2p5", "pm10", "tcco", "tc_no", "tcno2", "gtco3", "tcso2"),
+            ):
+                d[f"decoder.surf_heads.{name}_mod.weight"] = weight[:, i]
+                d[f"decoder.surf_heads.{name}_mod.bias"] = bias[:, i]
+
+        for suffix in ("", "_mod"):
+            for level in (50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000):
+                if f"decoder.atmos_head{suffix}.layers.{level}.weight" in d:
+                    weight = d[f"decoder.atmos_head{suffix}.layers.{level}.weight"]
+                    bias = d[f"decoder.atmos_head{suffix}.layers.{level}.bias"]
+                    del d[f"decoder.atmos_head{suffix}.layers.{level}.weight"]
+                    del d[f"decoder.atmos_head{suffix}.layers.{level}.bias"]
+
+                    n = 5
+                    assert weight.shape[0] == n * self.patch_size**2
+                    assert bias.shape[0] == n * self.patch_size**2
+                    weight = weight.reshape(self.patch_size**2, n, -1)
+                    bias = bias.reshape(self.patch_size**2, n)
+
+                    for i, v in enumerate(("z", "u", "v", "t", "q")):
+                        d[f"decoder.atmos_heads.{v}{suffix}.layers.{level}.weight"] = weight[:, i]
+                        d[f"decoder.atmos_heads.{v}{suffix}.layers.{level}.bias"] = bias[:, i]
+
+                if f"decoder.atmos_head{suffix}_new.layers.{level}.weight" in d:
+                    weight = d[f"decoder.atmos_head{suffix}_new.layers.{level}.weight"]
+                    bias = d[f"decoder.atmos_head{suffix}_new.layers.{level}.bias"]
+                    del d[f"decoder.atmos_head{suffix}_new.layers.{level}.weight"]
+                    del d[f"decoder.atmos_head{suffix}_new.layers.{level}.bias"]
+
+                    n = 5
+                    assert weight.shape[0] == n * self.patch_size**2
+                    assert bias.shape[0] == n * self.patch_size**2
+                    weight = weight.reshape(self.patch_size**2, n, -1)
+                    bias = bias.reshape(self.patch_size**2, n)
+
+                    for i, v in enumerate(("co", "no", "no2", "go3", "so2")):
+                        d[f"decoder.atmos_heads.{v}{suffix}.layers.{level}.weight"] = weight[:, i]
+                        d[f"decoder.atmos_heads.{v}{suffix}.layers.{level}.bias"] = bias[:, i]
+
+        return d
