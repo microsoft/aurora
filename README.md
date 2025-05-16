@@ -1,6 +1,14 @@
-<p align="center">
+<!-- <p align="center">
     <img src="docs/aurora.jpg" alt="Aurora logo" width="200"/>
+</p> -->
+<p float="center">
+  <<img src="docs/gifs/high_res_2t.gif" alt="high res 2t gif" width="200"/>
+  &nbsp; &nbsp; &nbsp; &nbsp;
+  <img src="docs/gifs/no2.gif" alt="no2 gif" width="200"/>
+  &nbsp; &nbsp; &nbsp; &nbsp;
+  <img src="docs/gifs/wave_direction.gif" alt="wave direction gif" width="200"/>
 </p>
+
 
 # Aurora: A Foundation Model for the Earth System
 
