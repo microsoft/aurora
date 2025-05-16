@@ -1,9 +1,11 @@
 <p float="center">
-  <<img src="docs/gifs/high_res_2t.gif" alt="high res 2t gif" width="200"/>
+  <<img src="docs/gifs/high_res_2t.gif" alt="high res 2t gif" width="150"/>
   &nbsp; &nbsp; &nbsp; &nbsp;
-  <img src="docs/gifs/no2.gif" alt="no2 gif" width="200"/>
+  <img src="docs/gifs/no2.gif" alt="no2 gif" width="150"/>
   &nbsp; &nbsp; &nbsp; &nbsp;
-  <img src="docs/gifs/wave_direction.gif" alt="wave direction gif" width="200"/>
+  <img src="docs/gifs/wave_direction.gif" alt="wave direction gif" width="150"/>
+  &nbsp; &nbsp; &nbsp; &nbsp;
+  <img src="docs/gifs/tc_tracks.gif" alt="tc tracks gif" width="200"/>
 </p>
 
 
