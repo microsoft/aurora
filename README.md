@@ -1,6 +1,3 @@
-<!-- <p align="center">
-    <img src="docs/aurora.jpg" alt="Aurora logo" width="200"/>
-</p> -->
 <p float="center">
   <<img src="docs/gifs/high_res_2t.gif" alt="high res 2t gif" width="200"/>
   &nbsp; &nbsp; &nbsp; &nbsp;
