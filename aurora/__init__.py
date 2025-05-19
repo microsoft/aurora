@@ -8,7 +8,7 @@ __all__ = [
     "Aurora",
     "AuroraHighRes",
     "AuroraSmall",
-    "Aurora12",
+    "Aurora12h",
     "Batch",
     "Metadata",
     "rollout",
