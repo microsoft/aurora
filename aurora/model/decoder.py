@@ -75,6 +75,7 @@ class Perceiver3DDecoder(nn.Module):
         if modulation_head:
             surf_vars += tuple(f"{name}_mod" for name in surf_vars)
             atmos_vars += tuple(f"{name}_mod" for name in atmos_vars)
+            separate_perceiver += tuple(f"{name}_mod" for name in separate_perceiver)
 
         self.patch_size = patch_size
         self.surf_vars = surf_vars

@@ -50,6 +50,7 @@ class Perceiver3DEncoder(nn.Module):
         level_condition: Optional[tuple[int | float, ...]] = None,
         dynamic_vars: bool = False,
         atmos_static_vars: bool = False,
+        simulate_indexing_bug: bool = False,
     ) -> None:
         """Initialise.
 
@@ -83,7 +84,9 @@ class Perceiver3DEncoder(nn.Module):
                 of day. Defaults to `False`.
             atmos_static_vars (bool, optional): Also concatenate the static variables to the
                 atmospheric variables. Defaults to `False`.
-
+            simulate_indexing_bug (bool, optional): Simulate an indexing bug that's present for the
+                air pollution version of Aurora. This is necessary to obtain numerical equivalence
+                to the original implementation. Defaults to `False`.
         """
         super().__init__()
 
@@ -93,6 +96,7 @@ class Perceiver3DEncoder(nn.Module):
         self.level_condition = level_condition
         self.dynamic_vars = dynamic_vars
         self.atmos_static_vars = atmos_static_vars
+        self.simulate_indexing_bug = simulate_indexing_bug
 
         # Add in the dynamic variables first.
         if dynamic_vars:
@@ -283,6 +287,20 @@ class Perceiver3DEncoder(nn.Module):
         x_surf = rearrange(x_surf, "b t v h w -> b v t h w")
         x_surf = self.surf_token_embeds(x_surf, surf_vars)  # (B, L, D)
         dtype = x_surf.dtype  # When using mixed precision, we need to keep track of the dtype.
+
+        # In the original implementation, both `z` and `static_z` point towards the same index,
+        # meaning that they select the same slice. Simulate this bug.
+        if self.simulate_indexing_bug and "z" in atmos_vars:
+            i_z = atmos_vars.index("z")
+            i_static_z = atmos_vars.index("static_z")
+            x_atmos = torch.cat(
+                (
+                    x_atmos[:, :, :i_static_z],
+                    x_atmos[:, :, i_z : i_z + 1],
+                    x_atmos[:, :, i_static_z + 1 :],
+                ),
+                dim=2,
+            )
 
         # Patch embed the atmospheric levels.
         if not self.level_condition:

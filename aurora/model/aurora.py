@@ -68,6 +68,7 @@ class Aurora(torch.nn.Module):
         modulation_head: bool = False,
         positive_surf_vars: tuple[str, ...] = (),
         positive_atmos_vars: tuple[str, ...] = (),
+        simulate_indexing_bug: bool = False,
     ) -> None:
         """Construct an instance of the model.
 
@@ -145,7 +146,9 @@ class Aurora(torch.nn.Module):
                 positive. Clamp them before running them through the encoder, and also clamp them
                 when autoregressively rolling out the model. The variables are not clamped for the
                 first roll-out step.
-
+            simulate_indexing_bug (bool, optional): Simulate an indexing bug that's present for the
+                air pollution version of Aurora. This is necessary to obtain numerical equivalence
+                to the original implementation. Defaults to `False`.
         """
         super().__init__()
         self.surf_vars = surf_vars
@@ -155,6 +158,7 @@ class Aurora(torch.nn.Module):
         self.autocast = autocast
         self.max_history_size = max_history_size
         self.timestep = timestep
+        self.use_lora = use_lora
         self.positive_surf_vars = positive_surf_vars
         self.positive_atmos_vars = positive_atmos_vars
 
@@ -184,6 +188,7 @@ class Aurora(torch.nn.Module):
             level_condition=level_condition,
             dynamic_vars=dynamic_vars,
             atmos_static_vars=atmos_static_vars,
+            simulate_indexing_bug=simulate_indexing_bug,
         )
 
         self.backbone = Swin3DTransformerBackbone(
@@ -554,6 +559,7 @@ class AuroraAirPollution(Aurora):
             ("pm1", "pm2p5", "pm10", "tcco", "tc_no", "tcno2", "gtco3", "tcso2")
         ),
         positive_atmos_vars: tuple[str, ...] = ("co", "no", "no2", "go3", "so2"),
+        simulate_indexing_bug: bool = True,
         **kw_args,
     ) -> None:
         """Instantiate.
@@ -575,6 +581,7 @@ class AuroraAirPollution(Aurora):
             modulation_head=modulation_head,
             positive_surf_vars=positive_surf_vars,
             positive_atmos_vars=positive_atmos_vars,
+            simulate_indexing_bug=simulate_indexing_bug,
             **kw_args,
         )
 
@@ -642,13 +649,14 @@ class AuroraAirPollution(Aurora):
 
         # When using LoRA, the lower-atmospheric levels of SO2 can be problematic and blow up.
         # We attempt to fix that by some very aggressive output clipping.
-        parts: list[torch.Tensor] = []
-        for i, level in enumerate(pred.metadata.atmos_levels):
-            section = pred.atmos_vars["so2"][..., i, :, :]
-            if level >= 850:
-                section = section.clamp(max=1)
-            parts.append(section)
-        pred.atmos_vars["so2"] = torch.stack(parts, dim=-3)
+        if self.use_lora:
+            parts: list[torch.Tensor] = []
+            for i, level in enumerate(pred.metadata.atmos_levels):
+                section = pred.atmos_vars["so2"][..., i, :, :]
+                if level >= 850:
+                    section = section.clamp(max=1)
+                parts.append(section)
+            pred.atmos_vars["so2"] = torch.stack(parts, dim=-3)
 
         return pred
 
@@ -679,15 +687,34 @@ class AuroraAirPollution(Aurora):
             del d["encoder.atmos_token_embeds.bias"]
 
             for name in ("z", "u", "v", "t", "q"):
-                # The variable is doubly specified. Below we will remove the latter specification.
-                # Convert the former to a pressure-level dependent specification by duplicating.
-
                 weight = d[f"encoder.atmos_token_embeds.weights.{name}"]
                 del d[f"encoder.atmos_token_embeds.weights.{name}"]
 
                 for level in (50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000):
-                    d[f"encoder.atmos_token_embeds.layers.{level}.weights.{name}"] = weight
-                    d[f"encoder.atmos_token_embeds.layers.{level}.bias"] = bias
+                    # Clone them here to prevent mutation from doing something weird!
+                    d[f"encoder.atmos_token_embeds.layers.{level}.weights.{name}"] = weight.clone()
+                    d[f"encoder.atmos_token_embeds.layers.{level}.bias"] = bias.clone()
+
+        n1 = "encoder.atmos_token_embeds.weight_new2"
+        if n1 in d:
+            weight = d[n1]
+            del d[n1]
+            for level in (50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000):
+                n2 = f"encoder.atmos_token_embeds.layers.{level_to_str(level)}.weights.{{}}"
+
+                assert weight.shape[1] == 17
+                # These are all taken from `atmos_token_embeds`!
+                for i, name in enumerate(
+                    ("static_lsm", "static_z", "static_slt")
+                    # For the atmospheric variables, there is _another_ prefix `static_`.
+                    + ("static_static_ammonia", "static_static_ammonia_log")
+                    + ("static_static_co", "static_static_co_log")
+                    + ("static_static_nox", "static_static_nox_log")
+                    + ("static_static_so2", "static_static_so2_log")
+                    + ("static_tod_cos", "static_tod_sin", "static_dow_cos")
+                    + ("static_dow_sin", "static_doy_cos", "static_doy_sin")
+                ):
+                    d[n2.format(name)] = weight[:, [i]]
 
         if "encoder.atmos_token_embeds.weight_new" in d:
             del d["encoder.atmos_token_embeds.weight_new"]
@@ -710,29 +737,22 @@ class AuroraAirPollution(Aurora):
                 for i, name in enumerate(("co", "no", "no2", "go3", "so2")):
                     d[n2.format(name)] = weight[:, [i]]
 
-            n1 = f"encoder.atmos_token_embeds_new.layers.{level_to_str(level)}.weight_new2"
-            n2 = f"encoder.atmos_token_embeds.layers.{level_to_str(level)}.weights.{{}}"
-            if n1 in d:
-                weight = d[n1]
-                del d[n1]
-                assert weight.shape[1] == 17
-                for i, name in enumerate(
-                    ("static_lsm", "static_z", "static_slt")
-                    # For the atmospheric variables, there is _another_ prefix `static_`.
-                    + ("static_static_ammonia", "static_static_ammonia_log")
-                    + ("static_static_co", "static_static_co_log")
-                    + ("static_static_nox", "static_static_nox_log")
-                    + ("static_static_so2", "static_static_so2_log")
-                    + ("static_tod_cos", "static_tod_sin", "static_dow_cos")
-                    + ("static_dow_sin", "static_doy_cos", "static_doy_sin")
-                ):
-                    d[n2.format(name)] = weight[:, [i]]
+            # This simulates an indexing bug where `z` also uses the patch embedding for `static_z`.
+            d[f"encoder.atmos_token_embeds.layers.{level_to_str(level)}.weights.z"] = d[
+                f"encoder.atmos_token_embeds.layers.{level_to_str(level)}.weights.static_z"
+            ]
 
             n1 = f"encoder.atmos_token_embeds_new.layers.{level_to_str(level)}.bias"
             n2 = f"encoder.atmos_token_embeds.layers.{level_to_str(level)}.bias"
             if n1 in d:
-                d[n2] = d[n1]
+                assert n2 in d  # The bias is already defined!
+                # Because the original implementation had two separate patch embedding instances, we
+                # need to add the biases.
+                d[n2] += d[n1]
                 del d[n1]
+
+            if f"encoder.atmos_token_embeds_new.layers.{level_to_str(level)}.weight_new2" in d:
+                del d[f"encoder.atmos_token_embeds_new.layers.{level_to_str(level)}.weight_new2"]
 
         # Remove the feature combiners for the non-positive variables.
         for name in ("2t", "10u", "10v", "msl"):
