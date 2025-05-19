@@ -23,7 +23,7 @@ Cite us as follows:
 
 ```
 @misc{bodnar2024aurora,
-    title = {Aurora: A Foundation Model for the Earth System},
+    title = {A Foundation Model for the Earth System},
     author = {Cristian Bodnar and Wessel P. Bruinsma and Ana Lucic and Megan Stanley and Anna Allen and Johannes Brandstetter and Patrick Garvan and Maik Riechert and Jonathan A. Weyn and Haiyu Dong and Jayesh K. Gupta and Kit Thambiratnam and Alexander T. Archibald and Chun-Chieh Wu and Elizabeth Heider and Max Welling and Richard E. Turner and Paris Perdikaris},
     year = {2024},
     url = {https://arxiv.org/abs/2405.13063},
