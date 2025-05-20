@@ -1,12 +1,12 @@
-<p float="center">
-  <<img src="docs/gifs/high_res_2t.gif" alt="high res 2t gif" width="150"/>
-  &nbsp; &nbsp; &nbsp; &nbsp;
-  <img src="docs/gifs/no2.gif" alt="no2 gif" width="150"/>
-  &nbsp; &nbsp; &nbsp; &nbsp;
-  <img src="docs/gifs/wave_direction.gif" alt="wave direction gif" width="150"/>
-  &nbsp; &nbsp; &nbsp; &nbsp;
-  <img src="docs/gifs/tc_tracks.gif" alt="tc tracks gif" width="200"/>
-</p>
+<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+  <img src="docs/gifs/high_res_2t.gif" alt="high res 2t gif" style="width: 23%; height: auto;">
+  <img src="docs/gifs/no2.gif" alt="no2 gif" style="width: 23%; height: auto;">
+  <img src="docs/gifs/wave_direction.gif" alt="wave direction gif" style="width: 23%; height: auto;">
+  <div style="width: 23%; background-color: black; padding: 5px; box-sizing: border-box; display: flex; align-items: center; justify-content: center;">
+    <img src="docs/gifs/tc_tracks.gif" alt="tc tracks gif" style="width: 100%; height: auto; display: block;">
+  </div>
+</div>
+
 
 
 # Aurora: A Foundation Model for the Earth System
