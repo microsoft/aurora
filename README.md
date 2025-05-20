@@ -2,9 +2,7 @@
   <img src="docs/gifs/high_res_2t.gif" alt="high res 2t gif"  width="200">
   <img src="docs/gifs/no2.gif" alt="no2 gif" width="200">
   <img src="docs/gifs/wave_direction.gif" alt="wave direction gif" width="200">
-  <span style="background-color: black; display: inline-block; padding: 5px;">
-    <img src="docs/gifs/tc_tracks.gif" alt="tc tracks gif" width="280" style="display: block;">
-  </span>
+    <img src="docs/gifs/tc_tracks.gif" alt="tc tracks gif" width="280" style="background-color: black; display: inline-block; padding: 5px;">
 </div>
 
 
