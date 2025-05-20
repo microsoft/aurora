@@ -15,6 +15,7 @@ parts:
     - file: example_era5
     - file: example_hres_t0
     - file: example_hres_0.1
+    - file: example_cams
 - caption: Foundry
   chapters:
    - file: foundry/intro

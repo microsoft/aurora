@@ -197,3 +197,42 @@ from aurora import AuroraHighRes
 model = AuroraHighRes(use_lora=False)  # Disable LoRA for more realistic samples.
 model.load_checkpoint("microsoft/aurora", "aurora-0.1-finetuned.ckpt", strict=False)
 ```
+
+## Aurora 0.4° Air Pollution
+
+Aurora 0.4° Air Pollution is Aurora 0.25° Pretrained fine-tuned on
+[CAMS analysis data](https://ads.atmosphere.copernicus.eu/datasets/cams-global-atmospheric-composition-forecasts).
+This version of Aurora is capable of making air pollution forecasts.
+
+### Usage
+
+```python
+from aurora import AuroraAirPollution
+
+model = AuroraAirPollution()
+model.load_checkpoint("microsoft/aurora", "aurora-0.4-finetuned.ckpt")
+```
+
+### Recommended Use
+
+Use Aurora 0.4° Air Pollution if you aim to make predictions for CAMS analysis.
+
+**Important:**
+For optimal performance, it is crucial that you only use Aurora 0.4° Air Pollution for CAMS analysis.
+Producing predictions for any other data set might give sensible predictions,
+but performance may not be optimal anymore.
+
+For optimal performance, the model requires the following variables and pressure levels:
+
+| Name | Required |
+| - | - |
+| Surface-level variables | `2t`, `10u`, `10v`, `msl`, `pm1`, `pm2p5`, `pm10`, `tcco`, `tc_no`, `tcno2`, `tcso2`, `gtco3` |
+| Static variables | `lsm`, `slt`, `z`, `static_ammonia`, `static_ammonia_log`, `static_co`, `static_co_log`, `static_nox`, `static_nox_log`, `static_so2`, `static_so2_log`  |
+| Atmospheric variables | `t`, `u`, `v`, `q`, `z`, `co`, `no`, `no2`, `so2`, `go3` |
+| Pressure levels (hPa) | 50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000 |
+
+
+### Static Variables
+
+Aurora 0.4° Air Pollution requires
+[static variables from the HuggingFace repository](https://huggingface.co/microsoft/aurora/resolve/main/aurora-0.4-air-pollution-static.pickle).
