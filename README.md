@@ -1,13 +1,9 @@
 <div style="display: inline-block;">
-  <img src="docs/gifs/high_res_2t.gif" alt="high res 2t gif"  width="200">
-  <img src="docs/gifs/no2.gif" alt="no2 gif" width="200">
-  <img src="docs/gifs/wave_direction.gif" alt="wave direction gif" width="200">
-<img src="docs/gifs/tc_tracks.gif" alt="tc tracks gif" width="280" style="background: black; display: inline-block; padding: 5px;">
+<img src="docs/gifs/high_res_2t.gif" alt="high resolution (0.1 degree) temperature at 2m predictions gif"  width="185px">
+<img src="docs/gifs/no2.gif" alt="nitrogen dioxide predictions gif" width="185px">
+<img src="docs/gifs/wave_direction.gif" alt="ocean wave direction predictions gif" width="185px">
+<img src="docs/gifs/tc_tracks.gif" alt="tropical cyclone track predictions gif" width="260px" style="background: black; display: inline-block; padding: 5px;">
 </div>
-
-
-
-
 
 # Aurora: A Foundation Model for the Earth System
 
