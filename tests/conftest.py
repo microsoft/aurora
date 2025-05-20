@@ -1,5 +1,6 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
+import os
 import pickle
 from datetime import datetime
 from typing import Generator, TypedDict
@@ -49,6 +50,25 @@ def test_input_output() -> Generator[tuple[Batch, SavedBatch], None, None]:
     with open(path, "rb") as f:
         static_vars: dict[str, np.ndarray] = pickle.load(f)
 
+    # Load test output.
+    path = hf_hub_download(
+        repo_id="microsoft/aurora",
+        filename="aurora-0.25-small-pretrained-test-output.pickle",
+    )
+    with open(path, "rb") as f:
+        test_output: SavedBatch = pickle.load(f)
+
+    # We unfortunately used a time in 1950. Windows cannot produce timestamps for `datetime`s before
+    # 1970. We fix this below.
+    if os.name == "nt":
+
+        class PatchedDateTime(datetime):
+            def timestamp(self) -> float:
+                # This is the value of `datetime(1950, 1, 1, 6, 0).timestamp()` on Linux.
+                return -631134000.0
+
+        test_input["metadata"]["time"] = [PatchedDateTime(1950, 1, 1, 6, 0)]
+
     static_vars = {
         k: interpolate_numpy(
             v,
@@ -72,13 +92,5 @@ def test_input_output() -> Generator[tuple[Batch, SavedBatch], None, None]:
             time=tuple(test_input["metadata"]["time"]),
         ),
     )
-
-    # Load test output.
-    path = hf_hub_download(
-        repo_id="microsoft/aurora",
-        filename="aurora-0.25-small-pretrained-test-output.pickle",
-    )
-    with open(path, "rb") as f:
-        test_output: SavedBatch = pickle.load(f)
 
     yield batch, test_output

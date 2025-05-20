@@ -14,6 +14,11 @@ Roll-Outs
 .. autoclass:: aurora.rollout
     :members:
 
+Tropical Cyclone Tracking
+-------------------------
+.. autoclass:: aurora.Tracker
+    :members:
+
 Models
 ------
 .. autoclass:: aurora.Aurora
