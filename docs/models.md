@@ -120,9 +120,9 @@ model = Aurora(use_lora=False)  # Disable LoRA for more realistic samples.
 model.load_checkpoint("microsoft/aurora", "aurora-0.25-finetuned.ckpt", strict=False)
 ```
 
-## Aurora 0.25° 12-hour model
+## Aurora 0.25° 12-Hour Pretrained
 
-Aurora 12h is Aurora 0.25° pretrained with a 12-hour lead time.
+Aurora 0.25° 12-Hour Pretrained is Aurora 0.25° Pretrained with a 12-hour lead time.
 
 ### Usage
 
@@ -135,7 +135,7 @@ model.load_checkpoint("microsoft/aurora", "aurora-0.25-12h-pretrained.ckpt")
 
 ### Recommended Use
 
-Use Aurora 0.25° 12h if you wish to make predictions with a 12-hour lead time.
+Use Aurora 0.25° 12-Hour Pretrained if you wish to make predictions with a 12-hour lead time.
 
 For optimal performance, the model requires the following variables and pressure levels:
 
@@ -149,7 +149,7 @@ For optimal performance, the model requires the following variables and pressure
 
 ### Static Variables
 
-Aurora 0.25° 12-hour pretrained requires
+Aurora 0.25° 12-Hour Pretrained requires
 [static variables from ERA5](https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=form).
 For convenience, these are also available in
 [the HuggingFace repository](https://huggingface.co/microsoft/aurora/blob/main/aurora-0.25-static.pickle).
