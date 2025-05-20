@@ -1,11 +1,13 @@
-<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
-  <img src="docs/gifs/high_res_2t.gif" alt="high res 2t gif" style="width: 23%; height: auto;">
-  <img src="docs/gifs/no2.gif" alt="no2 gif" style="width: 23%; height: auto;">
-  <img src="docs/gifs/wave_direction.gif" alt="wave direction gif" style="width: 23%; height: auto;">
-  <div style="width: 23%; background-color: black; padding: 5px; box-sizing: border-box; display: flex; align-items: center; justify-content: center;">
-    <img src="docs/gifs/tc_tracks.gif" alt="tc tracks gif" style="width: 100%; height: auto; display: block;">
-  </div>
+<div style="display: inline-block;">
+  <img src="docs/gifs/high_res_2t.gif" alt="high res 2t gif"  width="200">
+  <img src="docs/gifs/no2.gif" alt="no2 gif" width="200">
+  <img src="docs/gifs/wave_direction.gif" alt="wave direction gif" width="200">
+  <span style="background-color: black; display: inline-block; padding: 5px;">
+    <img src="docs/gifs/tc_tracks.gif" alt="tc tracks gif" width="280" style="display: block;">
+  </span>
 </div>
+
+
 
 
 
