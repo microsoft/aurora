@@ -364,13 +364,7 @@ class Aurora(torch.nn.Module):
 
                 # Initialize the new weight tensor.
                 new_weight = torch.zeros(
-                    (
-                        weight.shape[0],
-                        1,
-                        self.max_history_size,
-                        weight.shape[3],
-                        weight.shape[4],
-                    ),
+                    (weight.shape[0], 1, self.max_history_size, weight.shape[3], weight.shape[4]),
                     device=weight.device,
                     dtype=weight.dtype,
                 )
