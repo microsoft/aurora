@@ -374,7 +374,7 @@ document.write(`
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.lora</span><span class="w"> </span><span class="kn">import</span> <span class="n">LoRAMode</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.swin3d</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasicLayer3D</span><span class="p">,</span> <span class="n">Swin3DTransformerBackbone</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;AuroraSmall&quot;</span><span class="p">,</span> <span class="s2">&quot;AuroraHighRes&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;AuroraSmall&quot;</span><span class="p">,</span> <span class="s2">&quot;AuroraHighRes&quot;</span><span class="p">,</span> <span class="s2">&quot;Aurora12h&quot;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="Aurora">
@@ -774,6 +774,12 @@ document.write(`
     <span class="n">patch_size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
     <span class="n">encoder_depths</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
     <span class="n">decoder_depths</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">Aurora12h</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+    <span class="n">Aurora</span><span class="p">,</span>
+    <span class="n">timestep</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">12</span><span class="p">),</span>
+    <span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 
