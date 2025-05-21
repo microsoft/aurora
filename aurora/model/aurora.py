@@ -19,7 +19,7 @@ from aurora.model.encoder import Perceiver3DEncoder
 from aurora.model.lora import LoRAMode
 from aurora.model.swin3d import BasicLayer3D, Swin3DTransformerBackbone
 
-__all__ = ["Aurora", "AuroraSmall", "AuroraHighRes"]
+__all__ = ["Aurora", "AuroraSmall", "AuroraHighRes", "Aurora12h"]
 
 
 class Aurora(torch.nn.Module):
@@ -398,4 +398,10 @@ AuroraHighRes = partial(
     patch_size=10,
     encoder_depths=(6, 8, 8),
     decoder_depths=(8, 8, 6),
+)
+
+Aurora12h = partial(
+    Aurora,
+    timestep=timedelta(hours=12),
+    use_lora=False,
 )
