@@ -9,9 +9,6 @@
 
 Implementation of the Aurora model for Earth system forecasting.
 
-_The package currently includes the pretrained model and the fine-tuned version for high-resolution weather forecasting._
-_We are working on the fine-tuned versions for air pollution and ocean wave forecasting, which will be included in due time._
-
 [Link to the paper on arXiv.](https://arxiv.org/abs/2405.13063)
 
 [Please see the documentation for detailed instructions and more examples.](https://microsoft.github.io/aurora)
@@ -41,6 +38,12 @@ Contents:
 - [Responsible AI Transparency Documentation](#responsible-ai-transparency-documentation)
 - [Trademarks](#trademarks)
 - [FAQ](#faq)
+
+Please email [AIWeatherClimate@microsoft.com](mailto:AIWeatherClimate@microsoft.com)
+if you are interested in using Aurora for commercial applications.
+For research-related questions or technical support with the code here,
+please [open an issue in the GitHub repository](https://github.com/microsoft/aurora/issues/new/choose)
+or reach out to the authors of the paper.
 
 ## What is Aurora?
 
@@ -131,7 +134,7 @@ To find out more, see [Responsible AI principles from Microsoft](https://www.m
 Our goal in publishing this code is
 (1) to facilitate reproducibility of our paper and
 (2) to support and accelerate further research into foundation model for atmospheric forecasting.
-This code has not been developed nor tested for non-academic purposes and hence should not be used as such.
+This code has not been developed nor tested for non-academic purposes and hence should only be used as such at completely your own risk.
 
 ### Limitations
 Although Aurora was trained to accurately predict future weather, air pollution, and ocean waves,
@@ -143,6 +146,12 @@ it is possible that Aurora inherits biases present in any one of those data sets
 A forecasting system like Aurora is only one piece of the puzzle in a weather prediction pipeline,
 and its outputs are not meant to be directly used by people or businesses to plan their operations.
 A series of additional verification tests are needed before it can become operationally useful.
+
+In addition to the above, the models published here are streamlined versions of the models
+originally developed internally.
+Whereas we tried to be as thorough as possible, it is possible that the models published here
+deviate from the original model in subtle, unintended ways.
+This may affect predictive performance.
 
 ### Data
 The models included in the code have been trained on a variety of publicly available data.
@@ -189,8 +198,3 @@ make docs
 ```
 
 To locally view the documentation, open `docs/_build/index.html` in your browser.
-
-### Why are the fine-tuned versions of Aurora for air quality and ocean wave forecasting missing?
-
-The package currently includes the pretrained model and the fine-tuned version for high-resolution weather forecasting.
-We are working on the fine-tuned versions for air pollution and ocean wave forecasting, which will be included in due time.

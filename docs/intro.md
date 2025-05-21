@@ -14,9 +14,6 @@ one for high-resolution weather prediction,
 one for air pollution prediction,
 and one for ocean wave prediction.
 
-The package currently includes the pretrained model and the fine-tuned version for high-resolution weather forecasting.
-We are working on the fine-tuned versions for air pollution and ocean wave forecasting, which will be included in due time.
-
 Cite us as follows:
 
 ```
@@ -30,3 +27,9 @@ Cite us as follows:
     primaryClass = {physics.ao-ph},
 }
 ```
+
+Please email [AIWeatherClimate@microsoft.com](mailto:AIWeatherClimate@microsoft.com)
+if you are interested in using Aurora for commercial applications.
+For research-related questions or technical support with the code here,
+please [open an issue in the GitHub repository](https://github.com/microsoft/aurora/issues/new/choose)
+or reach out to the authors of the paper.
