@@ -3,7 +3,7 @@
 Welcome to the documentation of Aurora!
 Here you will detailed instructions for using the model.
 If you just want to see the model in action, you can skip to [a full-fledged example that runs the model on ERA5](example_era5).
-For details on how exactly the model works, [please see the paper on arXiv.](https://arxiv.org/abs/2405.13063)
+For details on how exactly the model works, [please see the paper](https://www.nature.com/articles/s41586-025-09005-y).
 
 Aurora is a machine learning model that can predict atmospheric variables, such as temperature.
 It is a _foundation model_, which means that it was first generally trained on a lot of data,

@@ -12,7 +12,7 @@ Implementation of the Aurora model for Earth system forecasting.
 _The package currently includes the pretrained model and the fine-tuned version for high-resolution weather forecasting._
 _We are working on the fine-tuned versions for air pollution and ocean wave forecasting, which will be included in due time._
 
-[Link to the paper on arXiv.](https://arxiv.org/abs/2405.13063)
+[Link to the paper.](https://www.nature.com/articles/s41586-025-09005-y)
 
 [Please see the documentation for detailed instructions and more examples.](https://microsoft.github.io/aurora)
 You can also directly go to [a full-fledged example that runs the model on ERA5](https://microsoft.github.io/aurora/example_era5.html).
