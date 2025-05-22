@@ -25,3 +25,6 @@ Models
 
 .. autoclass:: aurora.AuroraHighRes
     :members:
+
+.. autoclass:: aurora.AuroraAirPollution
+    :members:
