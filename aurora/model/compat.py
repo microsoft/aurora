@@ -1,7 +1,7 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license.
 
-The code in this file is to make the published checkpoints compatible with the published version
-of the model. You can safely ignore all cumbersome processing in this method.
+The cumbersome checkpoint wrangling in this file is for making the published checkpoints compatible
+with the published versions of the model. You can safely ignore all of this.
 """
 
 import torch
