@@ -10,17 +10,13 @@ import torch.distributed as dist
 
 from tests.conftest import SavedBatch
 
-from aurora import Aurora, AuroraSmall, Batch
+from aurora import Aurora, AuroraSmallPretrained, Batch
 
 
 @pytest.fixture(scope="session")
 def aurora_small() -> Aurora:
-    model = AuroraSmall(use_lora=True)
-    model.load_checkpoint(
-        "microsoft/aurora",
-        "aurora-0.25-small-pretrained.ckpt",
-        strict=False,  # LoRA parameters not available.
-    )
+    model = AuroraSmallPretrained(use_lora=True)
+    model.load_checkpoint(strict=False)  # LoRA parameters not available.
     model = model.double()
     model.eval()
     return model
@@ -94,7 +90,7 @@ def test_aurora_small_ddp(
 
 
 def test_aurora_small_decoder_init() -> None:
-    aurora_small = AuroraSmall(use_lora=True)
+    aurora_small = AuroraSmallPretrained(use_lora=True)
 
     # Check that the decoder heads are properly initialised. The biases should be zero, but the
     # weights shouldn't.
@@ -154,7 +150,7 @@ def test_aurora_small_flags(test_input_output: tuple[Batch, SavedBatch]) -> None
 
     preds = []
     for flags in flag_collections:
-        model = AuroraSmall(use_lora=True, **flags)
+        model = AuroraSmallPretrained(use_lora=True, **flags)
         model.load_checkpoint(
             "microsoft/aurora",
             "aurora-0.25-small-pretrained.ckpt",

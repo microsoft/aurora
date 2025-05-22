@@ -4,12 +4,12 @@ import numpy as np
 import pytest
 import torch
 
-from aurora.model.aurora import AuroraSmall
+from aurora.model.aurora import AuroraSmallPretrained
 
 
 @pytest.fixture
 def model(request):
-    return AuroraSmall(max_history_size=request.param)
+    return AuroraSmallPretrained(max_history_size=request.param)
 
 
 @pytest.fixture

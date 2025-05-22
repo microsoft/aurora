@@ -1,6 +1,7 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
 from datetime import timedelta
+from typing import Optional
 
 import torch
 from einops import rearrange
@@ -8,6 +9,7 @@ from torch import nn
 
 from aurora.batch import Batch, Metadata
 from aurora.model.fourier import levels_expansion
+from aurora.model.levelcond import LevelConditioned
 from aurora.model.perceiver import PerceiverResampler
 from aurora.model.util import (
     check_lat_lon_dtype,
@@ -33,6 +35,9 @@ class Perceiver3DDecoder(nn.Module):
         mlp_ratio: float = 4.0,
         drop_rate: float = 0.0,
         perceiver_ln_eps: float = 1e-5,
+        level_condition: Optional[tuple[int | float, ...]] = None,
+        separate_perceiver: tuple[str, ...] = (),
+        modulation_head: bool = False,
     ) -> None:
         """Initialise.
 
@@ -52,13 +57,33 @@ class Perceiver3DDecoder(nn.Module):
             drop_rate (float, optional): Drop-out rate for input patches. Defaults to `0.0`.
             perceiver_ln_eps (float, optional): Layer norm. epsilon for the Perceiver blocks.
                 Defaults to `1e-5`.
+            level_condition (tuple[int | float, ...], optional): Make the patch embeddings dependent
+                on pressure level. If you want to enable this feature, provide a tuple of all
+                possible pressure levels.
+            separate_perceiver (tuple[str, ...], optional): In the decoder, use a separate Perceiver
+                for specific atmospheric variables. This can be helpful at fine-tuning time to deal
+                with variables that have a significantly different behaviour. If you want to enable
+                this features, set this to the collection of variables that should be run on a
+                separate Perceiver.
+            modulation_head (bool, optional): Enable an additional head, the so-called modulation
+                head, that can be used to predict the difference. Defaults to `False`.
         """
         super().__init__()
+
+        # If additional modulation heads are required, simulate them as different variables with
+        # the suffix `_mod`.
+        if modulation_head:
+            surf_vars += tuple(f"{name}_mod" for name in surf_vars)
+            atmos_vars += tuple(f"{name}_mod" for name in atmos_vars)
+            separate_perceiver += tuple(f"{name}_mod" for name in separate_perceiver)
 
         self.patch_size = patch_size
         self.surf_vars = surf_vars
         self.atmos_vars = atmos_vars
         self.embed_dim = embed_dim
+        self.level_condition = level_condition
+        self.separate_perceiver = separate_perceiver
+        self.modulation_head = modulation_head
 
         self.level_decoder = PerceiverResampler(
             latent_dim=embed_dim,
@@ -71,24 +96,54 @@ class Perceiver3DDecoder(nn.Module):
             residual_latent=True,
             ln_eps=perceiver_ln_eps,
         )
+        if self.separate_perceiver:
+            self.level_decoder_alternate = PerceiverResampler(
+                latent_dim=embed_dim,
+                context_dim=embed_dim,
+                depth=depth,
+                head_dim=head_dim,
+                num_heads=num_heads,
+                mlp_ratio=mlp_ratio,
+                drop=drop_rate,
+                residual_latent=True,
+                ln_eps=perceiver_ln_eps,
+            )
 
         self.surf_heads = nn.ParameterDict(
             {name: nn.Linear(embed_dim, patch_size**2) for name in surf_vars}
         )
-        self.atmos_heads = nn.ParameterDict(
-            {name: nn.Linear(embed_dim, patch_size**2) for name in atmos_vars}
-        )
+        if not self.level_condition:
+            self.atmos_heads = nn.ParameterDict(
+                {name: nn.Linear(embed_dim, patch_size**2) for name in atmos_vars}
+            )
+        else:
+            self.atmos_heads = nn.ParameterDict(
+                {
+                    name: LevelConditioned(
+                        lambda: nn.Linear(embed_dim, patch_size**2),
+                        levels=self.level_condition,
+                        levels_dim=-2,
+                    )
+                    for name in atmos_vars
+                }
+            )
 
         self.atmos_levels_embed = nn.Linear(embed_dim, embed_dim)
 
         self.apply(init_weights)
 
-    def deaggregate_levels(self, level_embed: torch.Tensor, x: torch.Tensor) -> torch.Tensor:
+    def deaggregate_levels(
+        self,
+        level_embed: torch.Tensor,
+        x: torch.Tensor,
+        level_decoder: nn.Module,
+    ) -> torch.Tensor:
         """Deaggregate pressure level information.
 
         Args:
             level_embed (torch.Tensor): Level embedding of shape `(B, L, C, D)`.
             x (torch.Tensor): Aggregated input of shape `(B, L, C', D)`.
+            level_decoder (nn.Module): Pressure level decoder.
 
         Returns:
             torch.Tensor: Deaggregate output of shape `(B, L, C, D)`.
@@ -101,7 +156,7 @@ class Perceiver3DDecoder(nn.Module):
         assert len(level_embed.shape) == 3, f"Expected 3 dims, found {level_embed.dims()}."
         assert x.dim() == 3, f"Expected 3 dims, found {x.dim()}."
 
-        x = self.level_decoder(level_embed, x)  # (BxL, C, D)
+        x = level_decoder(level_embed, x)  # (BxL, C, D)
         x = x.reshape(B, L, C, D)
         return x
 
@@ -112,7 +167,7 @@ class Perceiver3DDecoder(nn.Module):
         patch_res: tuple[int, int, int],
         lead_time: timedelta,
     ) -> Batch:
-        """Forward pass of MultiScaleEncoder.
+        """Forward pass.
 
         Args:
             x (torch.Tensor): Backbone output of shape `(B, L, D)`.
@@ -126,6 +181,12 @@ class Perceiver3DDecoder(nn.Module):
         surf_vars = tuple(batch.surf_vars.keys())
         atmos_vars = tuple(batch.atmos_vars.keys())
         atmos_levels = batch.metadata.atmos_levels
+
+        # If additional modulation heads are required, simulate them as different variables with
+        # the suffix `_mod`.
+        if self.modulation_head:
+            surf_vars += tuple(f"{name}_mod" for name in surf_vars)
+            atmos_vars += tuple(f"{name}_mod" for name in atmos_vars)
 
         # Compress the latent dimension from the U-net skip concatenation.
         B, L, D = x.shape
@@ -159,10 +220,41 @@ class Perceiver3DDecoder(nn.Module):
 
         # De-aggregate the hidden levels into the physical levels.
         levels_embed = levels_embed.expand(B, x.size(1), -1, -1)
-        x_atmos = self.deaggregate_levels(levels_embed, x[..., 1:, :])  # (B, L, C_A, D)
+        x_atmos = self.deaggregate_levels(
+            levels_embed,
+            x[..., 1:, :],
+            self.level_decoder,
+        )  # (B, L, C_A, D)
+        if self.separate_perceiver:
+            x_atmos_alternate = self.deaggregate_levels(
+                levels_embed,
+                x[..., 1:, :],
+                self.level_decoder_alternate,
+            )
+        else:
+            # `x_atmos_alternate` won't be used, but we define the variable anyway for type
+            # stability.
+            x_atmos_alternate = x_atmos
 
-        # Decode the atmospheric vars.
-        x_atmos = torch.stack([self.atmos_heads[name](x_atmos) for name in atmos_vars], dim=-1)
+        # Decode the atmospheric vars. Per variable, first determine whether the main or alternate
+        # Perceiver pressure level decoder should be used.
+        head_inputs = [
+            x_atmos if name not in self.separate_perceiver else x_atmos_alternate
+            for name in atmos_vars
+        ]
+        if not self.level_condition:
+            x_atmos = torch.stack(
+                [self.atmos_heads[name](x) for name, x in zip(atmos_vars, head_inputs)],
+                dim=-1,
+            )
+        else:
+            x_atmos = torch.stack(
+                [
+                    self.atmos_heads[name](x, levels=atmos_levels)
+                    for name, x in zip(atmos_vars, head_inputs)
+                ],
+                dim=-1,
+            )
         x_atmos = x_atmos.reshape(*x_atmos.shape[:3], -1)  # (B, L, C_A, V_A*p*p)
         atmos_preds = unpatchify(x_atmos, len(atmos_vars), H, W, self.patch_size)
 

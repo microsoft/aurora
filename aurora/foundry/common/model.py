@@ -68,22 +68,62 @@ class Model(metaclass=abc.ABCMeta):
         self.model.cpu()  # Modifies in-place!
 
 
-class AuroraSmall(Model):
-    name = "aurora-0.25-small-pretrained"
-    """str: Name of the model."""
-
-    def create_model(self) -> aurora.Aurora:
-        model = aurora.AuroraSmall()
-        model.load_checkpoint_local(MLFLOW_ARTIFACTS[self.name])
-        return model
-
-
 class AuroraFineTuned(Model):
     name = "aurora-0.25-finetuned"
     """str: Name of the model."""
 
     def create_model(self) -> aurora.Aurora:
         model = aurora.Aurora()
+        model.load_checkpoint_local(MLFLOW_ARTIFACTS[self.name])
+        return model
+
+
+class AuroraPretrained(Model):
+    name = "aurora-0.25-pretrained"
+    """str: Name of the model."""
+
+    def create_model(self) -> aurora.Aurora:
+        model = aurora.AuroraPretrained()
+        model.load_checkpoint_local(MLFLOW_ARTIFACTS[self.name])
+        return model
+
+
+class AuroraSmallPretrained(Model):
+    name = "aurora-0.25-small-pretrained"
+    """str: Name of the model."""
+
+    def create_model(self) -> aurora.Aurora:
+        model = aurora.AuroraSmallPretrained()
+        model.load_checkpoint_local(MLFLOW_ARTIFACTS[self.name])
+        return model
+
+
+class Aurora12hPretrained(Model):
+    name = "aurora-0.25-12h-pretrained"
+    """str: Name of the model."""
+
+    def create_model(self) -> aurora.Aurora:
+        model = aurora.Aurora12hPretrained()
+        model.load_checkpoint_local(MLFLOW_ARTIFACTS[self.name])
+        return model
+
+
+class AuroraHighRes(Model):
+    name = "aurora-0.1-finetuned"
+    """str: Name of the model."""
+
+    def create_model(self) -> aurora.Aurora:
+        model = aurora.AuroraHighRes()
+        model.load_checkpoint_local(MLFLOW_ARTIFACTS[self.name])
+        return model
+
+
+class AuroraAirPollution(Model):
+    name = "aurora-0.4-air-pollution"
+    """str: Name of the model."""
+
+    def create_model(self) -> aurora.Aurora:
+        model = aurora.AuroraAirPollution()
         model.load_checkpoint_local(MLFLOW_ARTIFACTS[self.name])
         return model
 

@@ -79,11 +79,10 @@ from datetime import datetime
 
 import torch
 
-from aurora import AuroraSmall, Batch, Metadata
+from aurora import AuroraSmallPretrained, Batch, Metadata
 
-model = AuroraSmall()
-
-model.load_checkpoint("microsoft/aurora", "aurora-0.25-small-pretrained.ckpt")
+model = AuroraSmallPretrained()
+model.load_checkpoint()
 
 batch = Batch(
     surf_vars={k: torch.randn(1, 2, 17, 32) for k in ("2t", "10u", "10v", "msl")},

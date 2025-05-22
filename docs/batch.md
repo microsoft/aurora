@@ -58,6 +58,19 @@ The following surface-level variables are allowed:
 | `10v` | Ten-meter southward wind speed in `m/s` |
 | `msl` | Mean sea-level pressure in `Pa` |
 
+For [Aurora 0.4° Air Pollution](aurora-air-pollution), the following surface-level variables are
+also allowed:
+
+| Name | Description |
+| - | - |
+| `pm1` | Particulate matter less than `1 um` in `kg/m^3` |
+| `pm2p5` | Particulate matter less than `2.5 um` in `kg/m^3` |
+| `pm10` | Particulate matter less than `10 um` in `kg/m^3` |
+| `tcco` | Total column carbon monoxide in `kg/m^2` |
+| `tc_no` | Total column nitrogen monoxide in `kg/m^2` |
+| `tcno2` | Total column nitrogen dioxide in `kg/m^2` |
+| `tcso2` | Total column sulphur dioxide in `kg/m^2` |
+| `gtco3` | Total column ozone in `kg/m^2` |
 
 ## `Batch.static_vars`
 
@@ -72,7 +85,7 @@ The following static variables are allowed:
 | - | - |
 | `lsm` | [Land-sea mask](https://codes.ecmwf.int/grib/param-db/172) |
 | `slt` | [Soil type](https://codes.ecmwf.int/grib/param-db/43) |
-| `z` | Surface-level geopotential in `m^2 / s^2` |
+| `z` | Surface-level geopotential in `m^2/s^2` |
 
 ## `Batch.atmos_vars`
 
@@ -83,15 +96,26 @@ The atmospheric variables must be of the form `(b, t, c, h, w)` where `b` is the
 and `w` the number of longitudes.
 All atmospheric variables must contain the same collection of pressure levels in the same order.
 
-The following atmospheric variables are allows:
+The following atmospheric variables are allowed:
 
 | Name | Description |
 | - | - |
 | `t` | Temperature in `K` |
 | `u` | Eastward wind speed in `m/s` |
 | `v` | Southward wind speed in `m/s` |
-| `q` | Specific humidity in `kg / kg` |
-| `z` | Geopotential in `m^2 / s^2` |
+| `q` | Specific humidity in `kg/kg` |
+| `z` | Geopotential in `m^2/s^2` |
+
+For [Aurora 0.4° Air Pollution](aurora-air-pollution), the following atmospheric variables are
+also allowed:
+
+| Name | Description |
+| - | - |
+| `co` | Carbon monoxide in `kg/kg` |
+| `no` | Nitrogen monoxide in `kg/kg` |
+| `no2` | Nitrogen dioxide in `kg/kg` |
+| `so2` | Sulphur dioxide in `kg/kg` |
+| `go3` | Ozone in `kg/kg` |
 
 ## `Batch.metadata`
 

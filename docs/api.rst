@@ -25,8 +25,17 @@ Models
     :special-members: __init__
     :members:
 
-.. autoclass:: aurora.AuroraSmall
+.. autoclass:: aurora.AuroraPretrained
+    :members:
+
+.. autoclass:: aurora.AuroraSmallPretrained
+    :members:
+
+.. autoclass:: aurora.Aurora12hPretrained
     :members:
 
 .. autoclass:: aurora.AuroraHighRes
+    :members:
+
+.. autoclass:: aurora.AuroraAirPollution
     :members:
