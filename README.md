@@ -20,7 +20,7 @@ Cite us as follows:
 @article{bodnar2025aurora,
     title = {A Foundation Model for the Earth System},
     author = {Cristian Bodnar and Wessel P. Bruinsma and Ana Lucic and Megan Stanley and Anna Allen and Johannes Brandstetter and Patrick Garvan and Maik Riechert and Jonathan A. Weyn and Haiyu Dong and Jayesh K. Gupta and Kit Thambiratnam and Alexander T. Archibald and Chun-Chieh Wu and Elizabeth Heider and Max Welling and Richard E. Turner and Paris Perdikaris},
-    journal ={Nature},
+    journal = {Nature},
     year = {2025},
     month = {May},
     day = {21},
@@ -44,7 +44,7 @@ Contents:
 Please email [AIWeatherClimate@microsoft.com](mailto:AIWeatherClimate@microsoft.com)
 if you are interested in using Aurora for commercial applications.
 For research-related questions or technical support with the code here,
-please [open an issue in the GitHub repository](https://github.com/microsoft/aurora/issues/new/choose)
+please [open an issue](https://github.com/microsoft/aurora/issues/new/choose)
 or reach out to the authors of the paper.
 
 ## What is Aurora?

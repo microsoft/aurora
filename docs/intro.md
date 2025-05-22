@@ -33,5 +33,5 @@ Cite us as follows:
 Please email [AIWeatherClimate@microsoft.com](mailto:AIWeatherClimate@microsoft.com)
 if you are interested in using Aurora for commercial applications.
 For research-related questions or technical support with the code here,
-please [open an issue in the GitHub repository](https://github.com/microsoft/aurora/issues/new/choose)
+please [open an issue](https://github.com/microsoft/aurora/issues/new/choose)
 or reach out to the authors of the paper.
