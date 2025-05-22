@@ -13,7 +13,7 @@ from datetime import datetime
 from aurora import Aurora, Batch, Tracker, rollout
 
 model = Aurora()
-model.load_checkpoint("microsoft/aurora", "aurora-0.25-finetuned.ckpt")
+model.load_checkpoint()
 
 # Construct an initial condition for the model. The TC will be tracked using
 # predictions for this initial condition.

@@ -195,6 +195,7 @@
 <li class="toctree-l1"><a class="reference internal" href="example_era5.html">Predictions for ERA5</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_hres_t0.html">Predictions for HRES T0</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_hres_0.1.html">Predictions for HRES at 0.1 Degrees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_cams.html">Predictions for Air Pollution</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
@@ -485,6 +486,42 @@ and <code class="docutils literal notranslate"><span class="pre">surf_vars[:,</s
 </tbody>
 </table>
 </div>
+<p>For <a class="reference internal" href="models.html#aurora-air-pollution"><span class="std std-ref">Aurora 0.4° Air Pollution</span></a>, the following surface-level variables are
+also allowed:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">pm1</span></code></p></td>
+<td><p>Particulate matter less than <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">um</span></code> in <code class="docutils literal notranslate"><span class="pre">kg/m^3</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">pm2p5</span></code></p></td>
+<td><p>Particulate matter less than <code class="docutils literal notranslate"><span class="pre">2.5</span> <span class="pre">um</span></code> in <code class="docutils literal notranslate"><span class="pre">kg/m^3</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">pm10</span></code></p></td>
+<td><p>Particulate matter less than <code class="docutils literal notranslate"><span class="pre">10</span> <span class="pre">um</span></code> in <code class="docutils literal notranslate"><span class="pre">kg/m^3</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">tcco</span></code></p></td>
+<td><p>Total column carbon monoxide in <code class="docutils literal notranslate"><span class="pre">kg/m^2</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">tc_no</span></code></p></td>
+<td><p>Total column nitrogen monoxide in <code class="docutils literal notranslate"><span class="pre">kg/m^2</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">tcno2</span></code></p></td>
+<td><p>Total column nitrogen dioxide in <code class="docutils literal notranslate"><span class="pre">kg/m^2</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">tcso2</span></code></p></td>
+<td><p>Total column sulphur dioxide in <code class="docutils literal notranslate"><span class="pre">kg/m^2</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">gtco3</span></code></p></td>
+<td><p>Total column ozone in <code class="docutils literal notranslate"><span class="pre">kg/m^2</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </section>
 <section id="batch-static-vars">
 <h2><code class="docutils literal notranslate"><span class="pre">Batch.static_vars</span></code><a class="headerlink" href="#batch-static-vars" title="Link to this heading">#</a></h2>
@@ -507,7 +544,7 @@ and <code class="docutils literal notranslate"><span class="pre">w</span></code>
 <td><p><a class="reference external" href="https://codes.ecmwf.int/grib/param-db/43">Soil type</a></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">z</span></code></p></td>
-<td><p>Surface-level geopotential in <code class="docutils literal notranslate"><span class="pre">m^2</span> <span class="pre">/</span> <span class="pre">s^2</span></code></p></td>
+<td><p>Surface-level geopotential in <code class="docutils literal notranslate"><span class="pre">m^2/s^2</span></code></p></td>
 </tr>
 </tbody>
 </table>
@@ -521,7 +558,7 @@ The atmospheric variables must be of the form <code class="docutils literal notr
 <code class="docutils literal notranslate"><span class="pre">t</span></code> the history dimension, <code class="docutils literal notranslate"><span class="pre">c</span></code> the number of pressure levels, <code class="docutils literal notranslate"><span class="pre">h</span></code> the number of latitudes,
 and <code class="docutils literal notranslate"><span class="pre">w</span></code> the number of longitudes.
 All atmospheric variables must contain the same collection of pressure levels in the same order.</p>
-<p>The following atmospheric variables are allows:</p>
+<p>The following atmospheric variables are allowed:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
 <tr class="row-odd"><th class="head"><p>Name</p></th>
@@ -539,10 +576,37 @@ All atmospheric variables must contain the same collection of pressure levels in
 <td><p>Southward wind speed in <code class="docutils literal notranslate"><span class="pre">m/s</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">q</span></code></p></td>
-<td><p>Specific humidity in <code class="docutils literal notranslate"><span class="pre">kg</span> <span class="pre">/</span> <span class="pre">kg</span></code></p></td>
+<td><p>Specific humidity in <code class="docutils literal notranslate"><span class="pre">kg/kg</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">z</span></code></p></td>
-<td><p>Geopotential in <code class="docutils literal notranslate"><span class="pre">m^2</span> <span class="pre">/</span> <span class="pre">s^2</span></code></p></td>
+<td><p>Geopotential in <code class="docutils literal notranslate"><span class="pre">m^2/s^2</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>For <a class="reference internal" href="models.html#aurora-air-pollution"><span class="std std-ref">Aurora 0.4° Air Pollution</span></a>, the following atmospheric variables are
+also allowed:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">co</span></code></p></td>
+<td><p>Carbon monoxide in <code class="docutils literal notranslate"><span class="pre">kg/kg</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">no</span></code></p></td>
+<td><p>Nitrogen monoxide in <code class="docutils literal notranslate"><span class="pre">kg/kg</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">no2</span></code></p></td>
+<td><p>Nitrogen dioxide in <code class="docutils literal notranslate"><span class="pre">kg/kg</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">so2</span></code></p></td>
+<td><p>Sulphur dioxide in <code class="docutils literal notranslate"><span class="pre">kg/kg</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">go3</span></code></p></td>
+<td><p>Ozone in <code class="docutils literal notranslate"><span class="pre">kg/kg</span></code></p></td>
 </tr>
 </tbody>
 </table>

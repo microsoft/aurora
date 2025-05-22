@@ -61,7 +61,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Aurora on Azure AI Foundry" href="foundry/intro.html" />
-    <link rel="prev" title="Predictions for HRES at 0.1 Degrees" href="example_hres_0.1.html" />
+    <link rel="prev" title="Predictions for Air Pollution" href="example_cams.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -195,6 +195,7 @@
 <li class="toctree-l1"><a class="reference internal" href="example_era5.html">Predictions for ERA5</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_hres_t0.html">Predictions for HRES T0</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_hres_0.1.html">Predictions for HRES at 0.1 Degrees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_cams.html">Predictions for Air Pollution</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Track Predictions for Typhoon Nanmadol</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
@@ -613,7 +614,7 @@ To do so, register an account with the <a class="reference external" href="https
 </section>
 <section id="loading-and-running-the-model">
 <h2>Loading and Running the Model<a class="headerlink" href="#loading-and-running-the-model" title="Link to this heading">#</a></h2>
-<p>Finally, we are ready to load and run the model and visualise the predictions. We perform a roll-out for two steps, which produces predictions for hours 12:00 and 18:00.</p>
+<p>Finally, we are ready to load and run the model and visualise the predictions. We perform a roll-out for eight steps, which produces predictions for up to two days into the future.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
@@ -734,12 +735,12 @@ To do so, register an account with the <a class="reference external" href="https
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="example_hres_0.1.html"
+       href="example_cams.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Predictions for HRES at 0.1 Degrees</p>
+        <p class="prev-next-title">Predictions for Air Pollution</p>
       </div>
     </a>
     <a class="right-next"

@@ -194,6 +194,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../example_era5.html">Predictions for ERA5</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../example_hres_t0.html">Predictions for HRES T0</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../example_hres_0.1.html">Predictions for HRES at 0.1 Degrees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../example_cams.html">Predictions for Air Pollution</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
@@ -359,22 +360,32 @@ document.write(`
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">huggingface_hub</span><span class="w"> </span><span class="kn">import</span> <span class="n">hf_hub_download</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.algorithms._checkpoint.checkpoint_wrapper</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">apply_activation_checkpointing</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.batch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Batch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.compat</span><span class="w"> </span><span class="kn">import</span> <span class="n">_adapt_checkpoint_air_pollution</span><span class="p">,</span> <span class="n">_adapt_checkpoint_pretrained</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.decoder</span><span class="w"> </span><span class="kn">import</span> <span class="n">Perceiver3DDecoder</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.encoder</span><span class="w"> </span><span class="kn">import</span> <span class="n">Perceiver3DEncoder</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.lora</span><span class="w"> </span><span class="kn">import</span> <span class="n">LoRAMode</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.swin3d</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasicLayer3D</span><span class="p">,</span> <span class="n">Swin3DTransformerBackbone</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;AuroraSmall&quot;</span><span class="p">,</span> <span class="s2">&quot;AuroraHighRes&quot;</span><span class="p">,</span> <span class="s2">&quot;Aurora12h&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;Aurora&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AuroraPretrained&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AuroraSmallPretrained&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AuroraSmall&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Aurora12hPretrained&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AuroraHighRes&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AuroraAirPollution&quot;</span><span class="p">,</span>
+<span class="p">]</span>
 
 
 <div class="viewcode-block" id="Aurora">
@@ -382,13 +393,20 @@ document.write(`
 <span class="k">class</span><span class="w"> </span><span class="nc">Aurora</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The Aurora model.</span>
 
-<span class="sd">    Defaults to to the 1.3 B parameter configuration.</span>
+<span class="sd">    Defaults to the 1.3 B parameter configuration.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">default_checkpoint_repo</span> <span class="o">=</span> <span class="s2">&quot;microsoft/aurora&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Name of the HuggingFace repository to load the default checkpoint from.&quot;&quot;&quot;</span>
+
+    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-finetuned.ckpt&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Name of the default checkpoint.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Aurora.__init__">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;2t&quot;</span><span class="p">,</span> <span class="s2">&quot;10u&quot;</span><span class="p">,</span> <span class="s2">&quot;10v&quot;</span><span class="p">,</span> <span class="s2">&quot;msl&quot;</span><span class="p">),</span>
         <span class="n">static_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;lsm&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;slt&quot;</span><span class="p">),</span>
         <span class="n">atmos_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">),</span>
@@ -416,6 +434,14 @@ document.write(`
         <span class="n">lora_mode</span><span class="p">:</span> <span class="n">LoRAMode</span> <span class="o">=</span> <span class="s2">&quot;single&quot;</span><span class="p">,</span>
         <span class="n">surf_stats</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">autocast</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">level_condition</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">dynamic_vars</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">atmos_static_vars</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">separate_perceiver</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="n">modulation_head</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">positive_surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="n">positive_atmos_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="n">simulate_indexing_bug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct an instance of the model.</span>
 
@@ -471,6 +497,31 @@ document.write(`
 <span class="sd">                and scale.</span>
 <span class="sd">            autocast (bool, optional): Use `torch.autocast` to reduce memory usage. Defaults to</span>
 <span class="sd">                `False`.</span>
+<span class="sd">            level_condition (tuple[int | float, ...], optional): Make the patch embeddings dependent</span>
+<span class="sd">                on pressure level. If you want to enable this feature, provide a tuple of all</span>
+<span class="sd">                possible pressure levels.</span>
+<span class="sd">            dynamic_vars (bool, optional): Use dynamically generated static variables, like time</span>
+<span class="sd">                of day. Defaults to `False`.</span>
+<span class="sd">            atmos_static_vars (bool, optional): Also concatenate the static variables to the</span>
+<span class="sd">                atmospheric variables. Defaults to `False`.</span>
+<span class="sd">            separate_perceiver (tuple[str, ...], optional): In the decoder, use a separate Perceiver</span>
+<span class="sd">                for specific atmospheric variables. This can be helpful at fine-tuning time to deal</span>
+<span class="sd">                with variables that have a significantly different behaviour. If you want to enable</span>
+<span class="sd">                this features, set this to the collection of variables that should be run on a</span>
+<span class="sd">                separate Perceiver.</span>
+<span class="sd">            modulation_head (bool, optional): Enable an additional head, the so-called modulation</span>
+<span class="sd">                head, that can be used to predict the difference. Defaults to `False`.</span>
+<span class="sd">            positive_surf_vars (tuple[str, ...], optional): Mark these surface-level variables as</span>
+<span class="sd">                positive. Clamp them before running them through the encoder, and also clamp them</span>
+<span class="sd">                when autoregressively rolling out the model. The variables are not clamped for the</span>
+<span class="sd">                first roll-out step.</span>
+<span class="sd">            positive_atmos_vars (tuple[str, ...], optional): Mark these atmospheric variables as</span>
+<span class="sd">                positive. Clamp them before running them through the encoder, and also clamp them</span>
+<span class="sd">                when autoregressively rolling out the model. The variables are not clamped for the</span>
+<span class="sd">                first roll-out step.</span>
+<span class="sd">            simulate_indexing_bug (bool, optional): Simulate an indexing bug that&#39;s present for the</span>
+<span class="sd">                air pollution version of Aurora. This is necessary to obtain numerical equivalence</span>
+<span class="sd">                to the original implementation. Defaults to `False`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">surf_vars</span> <span class="o">=</span> <span class="n">surf_vars</span>
@@ -480,6 +531,9 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">autocast</span> <span class="o">=</span> <span class="n">autocast</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_history_size</span> <span class="o">=</span> <span class="n">max_history_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">timestep</span> <span class="o">=</span> <span class="n">timestep</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_lora</span> <span class="o">=</span> <span class="n">use_lora</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">positive_surf_vars</span> <span class="o">=</span> <span class="n">positive_surf_vars</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">positive_atmos_vars</span> <span class="o">=</span> <span class="n">positive_atmos_vars</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">surf_stats</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
@@ -504,6 +558,10 @@ document.write(`
             <span class="n">max_history_size</span><span class="o">=</span><span class="n">max_history_size</span><span class="p">,</span>
             <span class="n">perceiver_ln_eps</span><span class="o">=</span><span class="n">perceiver_ln_eps</span><span class="p">,</span>
             <span class="n">stabilise_level_agg</span><span class="o">=</span><span class="n">stabilise_level_agg</span><span class="p">,</span>
+            <span class="n">level_condition</span><span class="o">=</span><span class="n">level_condition</span><span class="p">,</span>
+            <span class="n">dynamic_vars</span><span class="o">=</span><span class="n">dynamic_vars</span><span class="p">,</span>
+            <span class="n">atmos_static_vars</span><span class="o">=</span><span class="n">atmos_static_vars</span><span class="p">,</span>
+            <span class="n">simulate_indexing_bug</span><span class="o">=</span><span class="n">simulate_indexing_bug</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span> <span class="o">=</span> <span class="n">Swin3DTransformerBackbone</span><span class="p">(</span>
@@ -534,6 +592,9 @@ document.write(`
             <span class="c1"># We use a lower ratio here to keep the memory in check.</span>
             <span class="n">mlp_ratio</span><span class="o">=</span><span class="n">dec_mlp_ratio</span><span class="p">,</span>
             <span class="n">perceiver_ln_eps</span><span class="o">=</span><span class="n">perceiver_ln_eps</span><span class="p">,</span>
+            <span class="n">level_condition</span><span class="o">=</span><span class="n">level_condition</span><span class="p">,</span>
+            <span class="n">separate_perceiver</span><span class="o">=</span><span class="n">separate_perceiver</span><span class="p">,</span>
+            <span class="n">modulation_head</span><span class="o">=</span><span class="n">modulation_head</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
@@ -569,8 +630,30 @@ document.write(`
             <span class="n">static_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">static_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
         <span class="p">)</span>
 
+        <span class="n">transformed_batch</span> <span class="o">=</span> <span class="n">batch</span>
+
+        <span class="c1"># Clamp positive variables.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_surf_vars</span><span class="p">:</span>
+            <span class="n">transformed_batch</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                <span class="n">transformed_batch</span><span class="p">,</span>
+                <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span>
+                    <span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_surf_vars</span> <span class="k">else</span> <span class="n">v</span>
+                    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="p">},</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_atmos_vars</span><span class="p">:</span>
+            <span class="n">transformed_batch</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                <span class="n">transformed_batch</span><span class="p">,</span>
+                <span class="n">atmos_vars</span><span class="o">=</span><span class="p">{</span>
+                    <span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_atmos_vars</span> <span class="k">else</span> <span class="n">v</span>
+                    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">atmos_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="p">},</span>
+            <span class="p">)</span>
+
+        <span class="n">transformed_batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pre_encoder_hook</span><span class="p">(</span><span class="n">transformed_batch</span><span class="p">)</span>
+
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span>
-            <span class="n">batch</span><span class="p">,</span>
+            <span class="n">transformed_batch</span><span class="p">,</span>
             <span class="n">lead_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timestep</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autocast</span><span class="p">(</span><span class="n">device_type</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">autocast</span> <span class="k">else</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">nullcontext</span><span class="p">():</span>
@@ -600,23 +683,58 @@ document.write(`
             <span class="n">atmos_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">atmos_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
         <span class="p">)</span>
 
+        <span class="n">pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_post_decoder_hook</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
+
+        <span class="c1"># Clamp positive variables.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_surf_vars</span> <span class="ow">and</span> <span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">rollout_step</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                <span class="n">pred</span><span class="p">,</span>
+                <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span>
+                    <span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_surf_vars</span> <span class="k">else</span> <span class="n">v</span>
+                    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="p">},</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_atmos_vars</span> <span class="ow">and</span> <span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">rollout_step</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                <span class="n">pred</span><span class="p">,</span>
+                <span class="n">atmos_vars</span><span class="o">=</span><span class="p">{</span>
+                    <span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_atmos_vars</span> <span class="k">else</span> <span class="n">v</span>
+                    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">atmos_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="p">},</span>
+            <span class="p">)</span>
+
         <span class="n">pred</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">unnormalise</span><span class="p">(</span><span class="n">surf_stats</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">surf_stats</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">pred</span></div>
 
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_pre_encoder_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform the batch before it goes through the encoder.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">batch</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_post_decoder_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform the prediction right after the decoder.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">pred</span>
+
 <div class="viewcode-block" id="Aurora.load_checkpoint">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora.load_checkpoint">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">repo</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_checkpoint</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">repo</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a checkpoint from HuggingFace.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            repo (str): Name of the repository of the form `user/repo`.</span>
-<span class="sd">            name (str): Path to the checkpoint relative to the root of the repository, e.g.</span>
-<span class="sd">                `checkpoint.cpkt`.</span>
+<span class="sd">            repo (str, optional): Name of the repository of the form `user/repo`.</span>
+<span class="sd">            name (str, optional): Path to the checkpoint relative to the root of the repository,</span>
+<span class="sd">                e.g. `checkpoint.cpkt`.</span>
 <span class="sd">            strict (bool, optional): Error if the model parameters are not exactly equal to the</span>
 <span class="sd">                parameters in the checkpoint. Defaults to `True`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">repo</span> <span class="o">=</span> <span class="n">repo</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_checkpoint_repo</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_checkpoint_name</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">hf_hub_download</span><span class="p">(</span><span class="n">repo_id</span><span class="o">=</span><span class="n">repo</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">load_checkpoint_local</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">)</span></div>
 
@@ -633,65 +751,9 @@ document.write(`
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Assume that all parameters are either on the CPU or on the GPU.</span>
         <span class="n">device</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span><span class="o">.</span><span class="n">device</span>
-
         <span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">weights_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-        <span class="c1"># You can safely ignore all cumbersome processing below. We modified the model after we</span>
-        <span class="c1"># trained it. The code below manually adapts the checkpoints, so the checkpoints are</span>
-        <span class="c1"># compatible with the new model.</span>
-
-        <span class="c1"># Remove possibly prefix from the keys.</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
-            <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;net.&quot;</span><span class="p">):</span>
-                <span class="k">del</span> <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
-                <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">[</span><span class="mi">4</span><span class="p">:]]</span> <span class="o">=</span> <span class="n">v</span>
-
-        <span class="c1"># Convert the ID-based parametrization to a name-based parametrization.</span>
-        <span class="k">if</span> <span class="s2">&quot;encoder.surf_token_embeds.weight&quot;</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
-            <span class="n">weight</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;encoder.surf_token_embeds.weight&quot;</span><span class="p">]</span>
-            <span class="k">del</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;encoder.surf_token_embeds.weight&quot;</span><span class="p">]</span>
-
-            <span class="k">assert</span> <span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">4</span> <span class="o">+</span> <span class="mi">3</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">((</span><span class="s2">&quot;2t&quot;</span><span class="p">,</span> <span class="s2">&quot;10u&quot;</span><span class="p">,</span> <span class="s2">&quot;10v&quot;</span><span class="p">,</span> <span class="s2">&quot;msl&quot;</span><span class="p">,</span> <span class="s2">&quot;lsm&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;slt&quot;</span><span class="p">)):</span>
-                <span class="n">d</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;encoder.surf_token_embeds.weights.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">weight</span><span class="p">[:,</span> <span class="p">[</span><span class="n">i</span><span class="p">]]</span>
-
-        <span class="k">if</span> <span class="s2">&quot;encoder.atmos_token_embeds.weight&quot;</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
-            <span class="n">weight</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;encoder.atmos_token_embeds.weight&quot;</span><span class="p">]</span>
-            <span class="k">del</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;encoder.atmos_token_embeds.weight&quot;</span><span class="p">]</span>
-
-            <span class="k">assert</span> <span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">5</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">((</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">)):</span>
-                <span class="n">d</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;encoder.atmos_token_embeds.weights.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">weight</span><span class="p">[:,</span> <span class="p">[</span><span class="n">i</span><span class="p">]]</span>
-
-        <span class="k">if</span> <span class="s2">&quot;decoder.surf_head.weight&quot;</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
-            <span class="n">weight</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;decoder.surf_head.weight&quot;</span><span class="p">]</span>
-            <span class="n">bias</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;decoder.surf_head.bias&quot;</span><span class="p">]</span>
-            <span class="k">del</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;decoder.surf_head.weight&quot;</span><span class="p">]</span>
-            <span class="k">del</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;decoder.surf_head.bias&quot;</span><span class="p">]</span>
-
-            <span class="k">assert</span> <span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span><span class="o">**</span><span class="mi">2</span>
-            <span class="k">assert</span> <span class="n">bias</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span><span class="o">**</span><span class="mi">2</span>
-            <span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">bias</span> <span class="o">=</span> <span class="n">bias</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">((</span><span class="s2">&quot;2t&quot;</span><span class="p">,</span> <span class="s2">&quot;10u&quot;</span><span class="p">,</span> <span class="s2">&quot;10v&quot;</span><span class="p">,</span> <span class="s2">&quot;msl&quot;</span><span class="p">)):</span>
-                <span class="n">d</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;decoder.surf_heads.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.weight&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">weight</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
-                <span class="n">d</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;decoder.surf_heads.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.bias&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bias</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="s2">&quot;decoder.atmos_head.weight&quot;</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
-            <span class="n">weight</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;decoder.atmos_head.weight&quot;</span><span class="p">]</span>
-            <span class="n">bias</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;decoder.atmos_head.bias&quot;</span><span class="p">]</span>
-            <span class="k">del</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;decoder.atmos_head.weight&quot;</span><span class="p">]</span>
-            <span class="k">del</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;decoder.atmos_head.bias&quot;</span><span class="p">]</span>
-
-            <span class="k">assert</span> <span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span><span class="o">**</span><span class="mi">2</span>
-            <span class="k">assert</span> <span class="n">bias</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span><span class="o">**</span><span class="mi">2</span>
-            <span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">bias</span> <span class="o">=</span> <span class="n">bias</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
-
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">((</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">)):</span>
-                <span class="n">d</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;decoder.atmos_heads.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.weight&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">weight</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
-                <span class="n">d</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;decoder.atmos_heads.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.bias&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bias</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adapt_checkpoint</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
 
         <span class="c1"># Check if the history size is compatible and adjust weights if necessary.</span>
         <span class="n">current_history_size</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;encoder.surf_token_embeds.weights.2t&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
@@ -705,6 +767,17 @@ document.write(`
 
         <span class="bp">self</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">)</span></div>
 
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_adapt_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adapt an existing checkpoint to make it compatible with the current version of the model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            d (dict[str, torch.Tensor]): Checkpoint.</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">            dict[str, torch.Tensor]: Adapted checkpoint.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_adapt_checkpoint_pretrained</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Aurora.adapt_checkpoint_max_history_size">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora.adapt_checkpoint_max_history_size">[docs]</a>
@@ -758,29 +831,273 @@ document.write(`
 
 
 
-<span class="n">AuroraSmall</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
-    <span class="n">Aurora</span><span class="p">,</span>
-    <span class="n">encoder_depths</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
-    <span class="n">encoder_num_heads</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span>
-    <span class="n">decoder_depths</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
-    <span class="n">decoder_num_heads</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
-    <span class="n">embed_dim</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
-    <span class="n">num_heads</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-    <span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span>
+<div class="viewcode-block" id="AuroraPretrained">
+<a class="viewcode-back" href="../../../api.html#aurora.AuroraPretrained">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AuroraPretrained</span><span class="p">(</span><span class="n">Aurora</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pretrained version of Aurora.&quot;&quot;&quot;</span>
 
-<span class="n">AuroraHighRes</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
-    <span class="n">Aurora</span><span class="p">,</span>
-    <span class="n">patch_size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-    <span class="n">encoder_depths</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
-    <span class="n">decoder_depths</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
-<span class="p">)</span>
+    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span>
 
-<span class="n">Aurora12h</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
-    <span class="n">Aurora</span><span class="p">,</span>
-    <span class="n">timestep</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">12</span><span class="p">),</span>
-    <span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">use_lora</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">Aurora</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">use_lora</span><span class="o">=</span><span class="n">use_lora</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="AuroraSmallPretrained">
+<a class="viewcode-back" href="../../../api.html#aurora.AuroraSmallPretrained">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AuroraSmallPretrained</span><span class="p">(</span><span class="n">Aurora</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Small pretrained version of Aurora.</span>
+
+<span class="sd">    Should only be used for debugging.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-small-pretrained.ckpt&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">encoder_depths</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+        <span class="n">encoder_num_heads</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span>
+        <span class="n">decoder_depths</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+        <span class="n">decoder_num_heads</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+        <span class="n">embed_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span>
+        <span class="n">num_heads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+        <span class="n">use_lora</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">Aurora</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">encoder_depths</span><span class="o">=</span><span class="n">encoder_depths</span><span class="p">,</span>
+            <span class="n">encoder_num_heads</span><span class="o">=</span><span class="n">encoder_num_heads</span><span class="p">,</span>
+            <span class="n">decoder_depths</span><span class="o">=</span><span class="n">decoder_depths</span><span class="p">,</span>
+            <span class="n">decoder_num_heads</span><span class="o">=</span><span class="n">decoder_num_heads</span><span class="p">,</span>
+            <span class="n">embed_dim</span><span class="o">=</span><span class="n">embed_dim</span><span class="p">,</span>
+            <span class="n">num_heads</span><span class="o">=</span><span class="n">num_heads</span><span class="p">,</span>
+            <span class="n">use_lora</span><span class="o">=</span><span class="n">use_lora</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+
+<span class="n">AuroraSmall</span> <span class="o">=</span> <span class="n">AuroraSmallPretrained</span>  <span class="c1">#: Alias for backwards compatibility</span>
+
+
+<div class="viewcode-block" id="Aurora12hPretrained">
+<a class="viewcode-back" href="../../../api.html#aurora.Aurora12hPretrained">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Aurora12hPretrained</span><span class="p">(</span><span class="n">Aurora</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pretrained version of Aurora with time step 12 hours.&quot;&quot;&quot;</span>
+
+    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-12h-pretrained.ckpt&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">timestep</span><span class="p">:</span> <span class="n">timedelta</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">12</span><span class="p">),</span>
+        <span class="n">use_lora</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">Aurora</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">timestep</span><span class="o">=</span><span class="n">timestep</span><span class="p">,</span>
+            <span class="n">use_lora</span><span class="o">=</span><span class="n">use_lora</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="AuroraHighRes">
+<a class="viewcode-back" href="../../../api.html#aurora.AuroraHighRes">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AuroraHighRes</span><span class="p">(</span><span class="n">Aurora</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;High-resolution version of Aurora.&quot;&quot;&quot;</span>
+
+    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.1-finetuned.ckpt&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__init</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">patch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">encoder_depths</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+        <span class="n">decoder_depths</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
+        <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">Aurora</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">patch_size</span><span class="o">=</span><span class="n">patch_size</span><span class="p">,</span>
+            <span class="n">encoder_depths</span><span class="o">=</span><span class="n">encoder_depths</span><span class="p">,</span>
+            <span class="n">decoder_depths</span><span class="o">=</span><span class="n">decoder_depths</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="AuroraAirPollution">
+<a class="viewcode-back" href="../../../api.html#aurora.AuroraAirPollution">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AuroraAirPollution</span><span class="p">(</span><span class="n">Aurora</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fine-tuned version of Aurora for air pollution.&quot;&quot;&quot;</span>
+
+    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.4-air-pollution.ckpt&quot;</span>
+
+    <span class="n">_predict_difference_history_dim_lookup</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;pm1&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;pm2p5&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;pm10&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;co&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;tcco&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;no&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;tc_no&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;no2&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;tcno2&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;so2&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;tcso2&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;go3&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;gtco3&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;dict[str, int]: For every variable that we want to predict the difference for, the index</span>
+<span class="sd">    into the history dimension that should be used when predicting the difference.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;2t&quot;</span><span class="p">,</span> <span class="s2">&quot;10u&quot;</span><span class="p">,</span> <span class="s2">&quot;10v&quot;</span><span class="p">,</span> <span class="s2">&quot;msl&quot;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;pm1&quot;</span><span class="p">,</span> <span class="s2">&quot;pm2p5&quot;</span><span class="p">,</span> <span class="s2">&quot;pm10&quot;</span><span class="p">,</span> <span class="s2">&quot;tcco&quot;</span><span class="p">,</span> <span class="s2">&quot;tc_no&quot;</span><span class="p">,</span> <span class="s2">&quot;tcno2&quot;</span><span class="p">,</span> <span class="s2">&quot;gtco3&quot;</span><span class="p">,</span> <span class="s2">&quot;tcso2&quot;</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">static_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;lsm&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;slt&quot;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;static_ammonia&quot;</span><span class="p">,</span> <span class="s2">&quot;static_ammonia_log&quot;</span><span class="p">,</span> <span class="s2">&quot;static_co&quot;</span><span class="p">,</span> <span class="s2">&quot;static_co_log&quot;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;static_nox&quot;</span><span class="p">,</span> <span class="s2">&quot;static_nox_log&quot;</span><span class="p">,</span> <span class="s2">&quot;static_so2&quot;</span><span class="p">,</span> <span class="s2">&quot;static_so2_log&quot;</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">atmos_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">,</span> <span class="s2">&quot;co&quot;</span><span class="p">,</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="s2">&quot;no2&quot;</span><span class="p">,</span> <span class="s2">&quot;go3&quot;</span><span class="p">,</span> <span class="s2">&quot;so2&quot;</span><span class="p">),</span>
+        <span class="n">patch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">timestep</span><span class="p">:</span> <span class="n">timedelta</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">12</span><span class="p">),</span>
+        <span class="n">level_condition</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">250</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">700</span><span class="p">,</span> <span class="mi">850</span><span class="p">,</span> <span class="mi">925</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">dynamic_vars</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">atmos_static_vars</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">separate_perceiver</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;co&quot;</span><span class="p">,</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="s2">&quot;no2&quot;</span><span class="p">,</span> <span class="s2">&quot;go3&quot;</span><span class="p">,</span> <span class="s2">&quot;so2&quot;</span><span class="p">),</span>
+        <span class="n">modulation_head</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">positive_surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;pm1&quot;</span><span class="p">,</span> <span class="s2">&quot;pm2p5&quot;</span><span class="p">,</span> <span class="s2">&quot;pm10&quot;</span><span class="p">,</span> <span class="s2">&quot;tcco&quot;</span><span class="p">,</span> <span class="s2">&quot;tc_no&quot;</span><span class="p">,</span> <span class="s2">&quot;tcno2&quot;</span><span class="p">,</span> <span class="s2">&quot;gtco3&quot;</span><span class="p">,</span> <span class="s2">&quot;tcso2&quot;</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">positive_atmos_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;co&quot;</span><span class="p">,</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="s2">&quot;no2&quot;</span><span class="p">,</span> <span class="s2">&quot;go3&quot;</span><span class="p">,</span> <span class="s2">&quot;so2&quot;</span><span class="p">),</span>
+        <span class="n">simulate_indexing_bug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">Aurora</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">surf_vars</span><span class="o">=</span><span class="n">surf_vars</span><span class="p">,</span>
+            <span class="n">static_vars</span><span class="o">=</span><span class="n">static_vars</span><span class="p">,</span>
+            <span class="n">atmos_vars</span><span class="o">=</span><span class="n">atmos_vars</span><span class="p">,</span>
+            <span class="n">patch_size</span><span class="o">=</span><span class="n">patch_size</span><span class="p">,</span>
+            <span class="n">timestep</span><span class="o">=</span><span class="n">timestep</span><span class="p">,</span>
+            <span class="n">level_condition</span><span class="o">=</span><span class="n">level_condition</span><span class="p">,</span>
+            <span class="n">dynamic_vars</span><span class="o">=</span><span class="n">dynamic_vars</span><span class="p">,</span>
+            <span class="n">atmos_static_vars</span><span class="o">=</span><span class="n">atmos_static_vars</span><span class="p">,</span>
+            <span class="n">separate_perceiver</span><span class="o">=</span><span class="n">separate_perceiver</span><span class="p">,</span>
+            <span class="n">modulation_head</span><span class="o">=</span><span class="n">modulation_head</span><span class="p">,</span>
+            <span class="n">positive_surf_vars</span><span class="o">=</span><span class="n">positive_surf_vars</span><span class="p">,</span>
+            <span class="n">positive_atmos_vars</span><span class="o">=</span><span class="n">positive_atmos_vars</span><span class="p">,</span>
+            <span class="n">simulate_indexing_bug</span><span class="o">=</span><span class="n">simulate_indexing_bug</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">surf_feature_combiner</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ParameterDict</span><span class="p">(</span>
+            <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_surf_vars</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atmos_feature_combiner</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ParameterDict</span><span class="p">(</span>
+            <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_atmos_vars</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">surf_feature_combiner</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">atmos_feature_combiner</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">constant_</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">zeros_</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_pre_encoder_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
+        <span class="c1"># Transform the spikey variables with a specific log-transform before feeding them</span>
+        <span class="c1"># to the encoder. See the paper for a motivation for the precise form of the transform.</span>
+
+        <span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-4</span>
+        <span class="n">divisor</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">eps</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_transform</span><span class="p">(</span><span class="n">z</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">feature_combiner</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">feature_combiner</span><span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="n">z</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">2.5</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="n">eps</span><span class="p">))</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">eps</span><span class="p">))</span> <span class="o">/</span> <span class="n">divisor</span><span class="p">,</span>
+                    <span class="p">],</span>
+                    <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+            <span class="n">batch</span><span class="p">,</span>
+            <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span>
+                <span class="n">k</span><span class="p">:</span> <span class="n">_transform</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">surf_feature_combiner</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">surf_feature_combiner</span>
+                <span class="k">else</span> <span class="n">v</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">},</span>
+            <span class="n">atmos_vars</span><span class="o">=</span><span class="p">{</span>
+                <span class="n">k</span><span class="p">:</span> <span class="n">_transform</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">atmos_feature_combiner</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">atmos_feature_combiner</span>
+                <span class="k">else</span> <span class="n">v</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">atmos_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_post_decoder_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
+        <span class="c1"># For this version of the model, we predict the difference. Specifically w.r.t. which</span>
+        <span class="c1"># previous timestep (12 hours ago or 24 hours ago) is given by</span>
+        <span class="c1"># `Aurora._predict_difference_history_dim_lookup`.</span>
+
+        <span class="n">dim_lookup</span> <span class="o">=</span> <span class="n">AuroraAirPollution</span><span class="o">.</span><span class="n">_predict_difference_history_dim_lookup</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_transform</span><span class="p">(</span>
+            <span class="n">prev</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+            <span class="n">model</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+            <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">dim_lookup</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">model</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">model</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_mod&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="n">prev</span><span class="p">[</span><span class="n">name</span><span class="p">][:,</span> <span class="n">dim_lookup</span><span class="p">[</span><span class="n">name</span><span class="p">]]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">model</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+            <span class="n">pred</span><span class="p">,</span>
+            <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">_transform</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">},</span>
+            <span class="n">atmos_vars</span><span class="o">=</span><span class="p">{</span>
+                <span class="n">k</span><span class="p">:</span> <span class="n">_transform</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">atmos_vars</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">atmos_vars</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">atmos_vars</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="c1"># When using LoRA, the lower-atmospheric levels of SO2 can be problematic and blow up.</span>
+        <span class="c1"># We attempt to fix that by some very aggressive output clipping.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_lora</span><span class="p">:</span>
+            <span class="n">parts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">level</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">atmos_levels</span><span class="p">):</span>
+                <span class="n">section</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">atmos_vars</span><span class="p">[</span><span class="s2">&quot;so2&quot;</span><span class="p">][</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+                <span class="k">if</span> <span class="n">level</span> <span class="o">&gt;=</span> <span class="mi">850</span><span class="p">:</span>
+                    <span class="n">section</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">section</span><span class="p">)</span>
+            <span class="n">pred</span><span class="o">.</span><span class="n">atmos_vars</span><span class="p">[</span><span class="s2">&quot;so2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">parts</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">3</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pred</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_adapt_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">Aurora</span><span class="o">.</span><span class="n">_adapt_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">_adapt_checkpoint_air_pollution</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">d</span></div>
+
 </pre></div>
 
                 </article>

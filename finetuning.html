@@ -195,6 +195,7 @@
 <li class="toctree-l1"><a class="reference internal" href="example_era5.html">Predictions for ERA5</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_hres_t0.html">Predictions for HRES T0</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_hres_0.1.html">Predictions for HRES at 0.1 Degrees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_cams.html">Predictions for Air Pollution</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
@@ -419,10 +420,10 @@ document.write(`
 <h1>Fine-Tuning<a class="headerlink" href="#fine-tuning" title="Link to this heading">#</a></h1>
 <p>Generally, if you wish to fine-tune Aurora for a specific application,
 you should build on the pretrained version:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraPretrained</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Model is not fine-tuned.</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraPretrained</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">()</span>
 </pre></div>
 </div>
 <section id="computing-gradients">
@@ -431,13 +432,10 @@ you should build on the pretrained version:</p>
 In addition, you will need to use <a class="reference external" href="https://pytorch.org/docs/stable/amp.html">PyTorch AMP</a>
 and gradient checkpointing.
 You can do this as follows:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraPretrained</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span>
-    <span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># Model was not fine-tuned.</span>
-    <span class="n">autocast</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Use AMP.</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraPretrained</span><span class="p">(</span><span class="n">autocast</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># Use AMP.</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">()</span>
 
 <span class="n">batch</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># Load some data.</span>
 
@@ -468,14 +466,11 @@ You can stabilise the level aggregation of the model
 by setting the following flag in the constructor: <code class="docutils literal notranslate"><span class="pre">stabilise_level_agg=True</span></code>.
 Note that <code class="docutils literal notranslate"><span class="pre">stabilise_level_agg=True</span></code> will considerably perturb the model,
 so significant additional fine-tuning may be required to get to the desired level of performance.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraPretrained</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.normalisation</span><span class="w"> </span><span class="kn">import</span> <span class="n">locations</span><span class="p">,</span> <span class="n">scales</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span>
-    <span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">stabilise_level_agg</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Insert extra layer norm. to mitigate exploding gradients.</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraPretrained</span><span class="p">(</span><span class="n">stabilise_level_agg</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># Insert extra layer norm. to mitigate exploding gradients.</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -484,16 +479,15 @@ so significant additional fine-tuning may be required to get to the desired leve
 <p>Aurora can be extended with new variables by adjusting the keyword arguments <code class="docutils literal notranslate"><span class="pre">surf_vars</span></code>,
 <code class="docutils literal notranslate"><span class="pre">static_vars</span></code>, and <code class="docutils literal notranslate"><span class="pre">atmos_vars</span></code>.
 When you add a new variable, you also need to set the normalisation statistics.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraPretrained</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.normalisation</span><span class="w"> </span><span class="kn">import</span> <span class="n">locations</span><span class="p">,</span> <span class="n">scales</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span>
-    <span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraPretrained</span><span class="p">(</span>
     <span class="n">surf_vars</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;2t&quot;</span><span class="p">,</span> <span class="s2">&quot;10u&quot;</span><span class="p">,</span> <span class="s2">&quot;10v&quot;</span><span class="p">,</span> <span class="s2">&quot;msl&quot;</span><span class="p">,</span> <span class="s2">&quot;new_surf_var&quot;</span><span class="p">),</span>
     <span class="n">static_vars</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;lsm&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;slt&quot;</span><span class="p">,</span> <span class="s2">&quot;new_static_var&quot;</span><span class="p">),</span>
     <span class="n">atmos_vars</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">,</span> <span class="s2">&quot;new_atmos_var&quot;</span><span class="p">),</span>
 <span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 <span class="c1"># Normalisation means:</span>
 <span class="n">locations</span><span class="p">[</span><span class="s2">&quot;new_surf_var&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
@@ -521,16 +515,16 @@ The relevant parameter dictionaries are <code class="docutils literal notranslat
 <h2>Other Model Extensions<a class="headerlink" href="#other-model-extensions" title="Link to this heading">#</a></h2>
 <p>It is possible to extend to model in any way you like.
 If you do this, you will likely add or remove parameters.
-Then <code class="docutils literal notranslate"><span class="pre">Aurora.load_checkpoint</span></code> will error,
+Then <code class="docutils literal notranslate"><span class="pre">model.load_checkpoint</span></code> will error,
 because the existing checkpoint now mismatches with the model’s parameters.
-Simply set <code class="docutils literal notranslate"><span class="pre">Aurora.load_checkpoint(...,</span> <span class="pre">strict=False)</span></code> to ignore the mismatches:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span>
+Simply set <code class="docutils literal notranslate"><span class="pre">model.load_checkpoint(...,</span> <span class="pre">strict=False)</span></code> to ignore the mismatches:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraPretrained</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraPretrained</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 
 <span class="o">...</span> <span class="c1"># Modify `model`.</span>
 
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

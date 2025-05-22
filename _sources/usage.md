@@ -80,13 +80,21 @@ model = Aurora()
 In this example, however, we use a smaller version:
 
 ```python
-from aurora import AuroraSmall
+from aurora import AuroraSmallPretrained
 
-model = AuroraSmall()
+model = AuroraSmallPretrained()
 ```
 
-A checkpoint can then be loaded with `model.load_checkpoint` by specifying a checkpoint file in a HuggingFace repository.
-In this case, we use `aurora-0.25-small-pretrained.ckpt` from the repository `microsoft/aurora`:
+The checkpoint can then be loaded with `model.load_checkpoint`:
+
+```python
+model.load_checkpoint()
+```
+
+Instead of loading the default checkpoint,
+you can also load another checkpoint by specifying a checkpoint file in a HuggingFace repository.
+For example, we could use `aurora-0.25-small-pretrained.ckpt` from the repository
+`microsoft/aurora` (which is the default in this case):
 
 ```python
 model.load_checkpoint("microsoft/aurora", "aurora-0.25-small-pretrained.ckpt")

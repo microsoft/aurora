@@ -194,6 +194,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../example_era5.html">Predictions for ERA5</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../example_hres_t0.html">Predictions for HRES T0</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../example_hres_0.1.html">Predictions for HRES at 0.1 Degrees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example_cams.html">Predictions for Air Pollution</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
@@ -423,19 +424,6 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>  <span class="c1"># Modifies in-place!</span>
 
 
-<div class="viewcode-block" id="AuroraSmall">
-<a class="viewcode-back" href="../../../../foundry/api.html#aurora.foundry.common.model.AuroraSmall">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">AuroraSmall</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-small-pretrained&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Name of the model.&quot;&quot;&quot;</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora</span><span class="p">:</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">aurora</span><span class="o">.</span><span class="n">AuroraSmall</span><span class="p">()</span>
-        <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint_local</span><span class="p">(</span><span class="n">MLFLOW_ARTIFACTS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">model</span></div>
-
-
-
 <div class="viewcode-block" id="AuroraFineTuned">
 <a class="viewcode-back" href="../../../../foundry/api.html#aurora.foundry.common.model.AuroraFineTuned">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AuroraFineTuned</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
@@ -444,6 +432,71 @@ document.write(`
 
     <span class="k">def</span><span class="w"> </span><span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora</span><span class="p">:</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora</span><span class="p">()</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint_local</span><span class="p">(</span><span class="n">MLFLOW_ARTIFACTS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="AuroraPretrained">
+<a class="viewcode-back" href="../../../../foundry/api.html#aurora.foundry.common.model.AuroraPretrained">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AuroraPretrained</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-pretrained&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Name of the model.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">aurora</span><span class="o">.</span><span class="n">AuroraPretrained</span><span class="p">()</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint_local</span><span class="p">(</span><span class="n">MLFLOW_ARTIFACTS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="AuroraSmallPretrained">
+<a class="viewcode-back" href="../../../../foundry/api.html#aurora.foundry.common.model.AuroraSmallPretrained">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AuroraSmallPretrained</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-small-pretrained&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Name of the model.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">aurora</span><span class="o">.</span><span class="n">AuroraSmallPretrained</span><span class="p">()</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint_local</span><span class="p">(</span><span class="n">MLFLOW_ARTIFACTS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="Aurora12hPretrained">
+<a class="viewcode-back" href="../../../../foundry/api.html#aurora.foundry.common.model.Aurora12hPretrained">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Aurora12hPretrained</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-12h-pretrained&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Name of the model.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora12hPretrained</span><span class="p">()</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint_local</span><span class="p">(</span><span class="n">MLFLOW_ARTIFACTS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="AuroraHighRes">
+<a class="viewcode-back" href="../../../../foundry/api.html#aurora.foundry.common.model.AuroraHighRes">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AuroraHighRes</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.1-finetuned&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Name of the model.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">aurora</span><span class="o">.</span><span class="n">AuroraHighRes</span><span class="p">()</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint_local</span><span class="p">(</span><span class="n">MLFLOW_ARTIFACTS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="AuroraAirPollution">
+<a class="viewcode-back" href="../../../../foundry/api.html#aurora.foundry.common.model.AuroraAirPollution">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AuroraAirPollution</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.4-air-pollution&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Name of the model.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">aurora</span><span class="o">.</span><span class="n">AuroraAirPollution</span><span class="p">()</span>
         <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint_local</span><span class="p">(</span><span class="n">MLFLOW_ARTIFACTS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">model</span></div>
 

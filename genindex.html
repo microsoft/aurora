@@ -194,6 +194,7 @@
 <li class="toctree-l1"><a class="reference internal" href="example_era5.html">Predictions for ERA5</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_hres_t0.html">Predictions for HRES T0</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_hres_0.1.html">Predictions for HRES at 0.1 Degrees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_cams.html">Predictions for Air Pollution</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
@@ -360,6 +361,7 @@ document.write(`
  | <a href="#A"><strong>A</strong></a>
  | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
@@ -391,18 +393,40 @@ document.write(`
 </li>
       <li><a href="api.html#aurora.Aurora">Aurora (class in aurora)</a>
 </li>
+      <li><a href="api.html#aurora.Aurora12hPretrained">Aurora12hPretrained (class in aurora)</a>
+
+      <ul>
+        <li><a href="foundry/api.html#aurora.foundry.common.model.Aurora12hPretrained">(class in aurora.foundry.common.model)</a>
+</li>
+      </ul></li>
+      <li><a href="api.html#aurora.AuroraAirPollution">AuroraAirPollution (class in aurora)</a>
+
+      <ul>
+        <li><a href="foundry/api.html#aurora.foundry.common.model.AuroraAirPollution">(class in aurora.foundry.common.model)</a>
+</li>
+      </ul></li>
       <li><a href="foundry/api.html#aurora.foundry.common.model.AuroraFineTuned">AuroraFineTuned (class in aurora.foundry.common.model)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#aurora.AuroraHighRes">AuroraHighRes (in module aurora)</a>
-</li>
-      <li><a href="foundry/api.html#aurora.foundry.server.mlflow_wrapper.AuroraModelWrapper">AuroraModelWrapper() (in module aurora.foundry.server.mlflow_wrapper)</a>
-</li>
-      <li><a href="foundry/api.html#aurora.foundry.common.model.AuroraSmall">AuroraSmall (class in aurora.foundry.common.model)</a>
+      <li><a href="api.html#aurora.AuroraHighRes">AuroraHighRes (class in aurora)</a>
 
       <ul>
-        <li><a href="api.html#aurora.AuroraSmall">(in module aurora)</a>
+        <li><a href="foundry/api.html#aurora.foundry.common.model.AuroraHighRes">(class in aurora.foundry.common.model)</a>
+</li>
+      </ul></li>
+      <li><a href="foundry/api.html#aurora.foundry.server.mlflow_wrapper.AuroraModelWrapper">AuroraModelWrapper() (in module aurora.foundry.server.mlflow_wrapper)</a>
+</li>
+      <li><a href="api.html#aurora.AuroraPretrained">AuroraPretrained (class in aurora)</a>
+
+      <ul>
+        <li><a href="foundry/api.html#aurora.foundry.common.model.AuroraPretrained">(class in aurora.foundry.common.model)</a>
+</li>
+      </ul></li>
+      <li><a href="api.html#aurora.AuroraSmallPretrained">AuroraSmallPretrained (class in aurora)</a>
+
+      <ul>
+        <li><a href="foundry/api.html#aurora.foundry.common.model.AuroraSmallPretrained">(class in aurora.foundry.common.model)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -428,6 +452,30 @@ document.write(`
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#aurora.Batch.crop">crop() (aurora.Batch method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#aurora.Aurora.default_checkpoint_name">default_checkpoint_name (aurora.Aurora attribute)</a>
+
+      <ul>
+        <li><a href="api.html#aurora.Aurora12hPretrained.default_checkpoint_name">(aurora.Aurora12hPretrained attribute)</a>
+</li>
+        <li><a href="api.html#aurora.AuroraAirPollution.default_checkpoint_name">(aurora.AuroraAirPollution attribute)</a>
+</li>
+        <li><a href="api.html#aurora.AuroraHighRes.default_checkpoint_name">(aurora.AuroraHighRes attribute)</a>
+</li>
+        <li><a href="api.html#aurora.AuroraPretrained.default_checkpoint_name">(aurora.AuroraPretrained attribute)</a>
+</li>
+        <li><a href="api.html#aurora.AuroraSmallPretrained.default_checkpoint_name">(aurora.AuroraSmallPretrained attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#aurora.Aurora.default_checkpoint_repo">default_checkpoint_repo (aurora.Aurora attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -469,10 +517,18 @@ document.write(`
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="foundry/api.html#aurora.foundry.common.model.AuroraFineTuned.name">name (aurora.foundry.common.model.AuroraFineTuned attribute)</a>
+      <li><a href="foundry/api.html#aurora.foundry.common.model.Aurora12hPretrained.name">name (aurora.foundry.common.model.Aurora12hPretrained attribute)</a>
 
       <ul>
-        <li><a href="foundry/api.html#aurora.foundry.common.model.AuroraSmall.name">(aurora.foundry.common.model.AuroraSmall attribute)</a>
+        <li><a href="foundry/api.html#aurora.foundry.common.model.AuroraAirPollution.name">(aurora.foundry.common.model.AuroraAirPollution attribute)</a>
+</li>
+        <li><a href="foundry/api.html#aurora.foundry.common.model.AuroraFineTuned.name">(aurora.foundry.common.model.AuroraFineTuned attribute)</a>
+</li>
+        <li><a href="foundry/api.html#aurora.foundry.common.model.AuroraHighRes.name">(aurora.foundry.common.model.AuroraHighRes attribute)</a>
+</li>
+        <li><a href="foundry/api.html#aurora.foundry.common.model.AuroraPretrained.name">(aurora.foundry.common.model.AuroraPretrained attribute)</a>
+</li>
+        <li><a href="foundry/api.html#aurora.foundry.common.model.AuroraSmallPretrained.name">(aurora.foundry.common.model.AuroraSmallPretrained attribute)</a>
 </li>
       </ul></li>
   </ul></td>

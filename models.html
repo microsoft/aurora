@@ -195,6 +195,7 @@
 <li class="toctree-l1"><a class="reference internal" href="example_era5.html">Predictions for ERA5</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_hres_t0.html">Predictions for HRES T0</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_hres_0.1.html">Predictions for HRES at 0.1 Degrees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_cams.html">Predictions for Air Pollution</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
@@ -405,7 +406,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#static-variables">Static Variables</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora-0-25-pretrained-small">Aurora 0.25° Pretrained Small</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora-0-25-small-pretrained">Aurora 0.25° Small Pretrained</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Usage</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Recommended Use</a></li>
 </ul>
@@ -430,6 +431,12 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">Notes</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora-0-4-air-pollution">Aurora 0.4° Air Pollution</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">Recommended Use</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">Static Variables</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -450,10 +457,10 @@ We now describe the available models in turn.</p>
 <p>Aurora 0.25° Pretrained is a version of Aurora trained on a wide variety of data.</p>
 <section id="usage">
 <h3>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraPretrained</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Model is not fine-tuned.</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraPretrained</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -496,15 +503,15 @@ For convenience, these are also available in
 <a class="reference external" href="https://huggingface.co/microsoft/aurora/blob/main/aurora-0.25-static.pickle">the HuggingFace repository</a>.</p>
 </section>
 </section>
-<section id="aurora-0-25-pretrained-small">
-<h2>Aurora 0.25° Pretrained Small<a class="headerlink" href="#aurora-0-25-pretrained-small" title="Link to this heading">#</a></h2>
-<p>Aurora 0.25° Pretrained Small is, as the name suggests, a smaller version of Aurora 0.25° Pretrained.</p>
+<section id="aurora-0-25-small-pretrained">
+<h2>Aurora 0.25° Small Pretrained<a class="headerlink" href="#aurora-0-25-small-pretrained" title="Link to this heading">#</a></h2>
+<p>Aurora 0.25° Small Pretrained is, as the name suggests, a smaller version of Aurora 0.25° Pretrained.</p>
 <section id="id1">
 <h3>Usage<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraSmall</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraSmallPretrained</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraSmall</span><span class="p">()</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-small-pretrained.ckpt&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraSmallPretrained</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -522,7 +529,7 @@ We do not recommend any other use.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">()</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-finetuned.ckpt&quot;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -589,7 +596,7 @@ For convenience, these are also available in
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Disable LoRA for more realistic samples.</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-finetuned.ckpt&quot;</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -599,10 +606,10 @@ For convenience, these are also available in
 <p>Aurora 0.25° 12-Hour Pretrained is Aurora 0.25° Pretrained with a 12-hour lead time.</p>
 <section id="id6">
 <h3>Usage<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora12h</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora12hPretrained</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora12h</span><span class="p">()</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-12h-pretrained.ckpt&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora12hPretrained</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -649,7 +656,7 @@ For convenience, these are also available in
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraHighRes</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">AuroraHighRes</span><span class="p">()</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.1-finetuned.ckpt&quot;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -705,7 +712,7 @@ You can do that in the following way:</p>
     <span class="n">surf_stats</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">3.270407e03</span><span class="p">,</span> <span class="mf">6.540335e04</span><span class="p">)},</span>
 <span class="p">)</span>
 
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.1-finetuned.ckpt&quot;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>The specific values above should work reasonably.</p>
@@ -721,9 +728,60 @@ you can turn off LoRA to obtain more realistic predictions at the expensive of s
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraHighRes</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">AuroraHighRes</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Disable LoRA for more realistic samples.</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.1-finetuned.ckpt&quot;</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
+</section>
+</section>
+<section id="aurora-0-4-air-pollution">
+<span id="aurora-air-pollution"></span><h2>Aurora 0.4° Air Pollution<a class="headerlink" href="#aurora-0-4-air-pollution" title="Link to this heading">#</a></h2>
+<p>Aurora 0.4° Air Pollution is Aurora 0.25° Pretrained fine-tuned on
+<a class="reference external" href="https://ads.atmosphere.copernicus.eu/datasets/cams-global-atmospheric-composition-forecasts">CAMS analysis data</a>.
+This version of Aurora is capable of making air pollution forecasts.</p>
+<section id="id13">
+<h3>Usage<a class="headerlink" href="#id13" title="Link to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraAirPollution</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraAirPollution</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="id14">
+<h3>Recommended Use<a class="headerlink" href="#id14" title="Link to this heading">#</a></h3>
+<p>Use Aurora 0.4° Air Pollution if you aim to make predictions for CAMS analysis.</p>
+<p><strong>Important:</strong>
+For optimal performance, it is crucial that you only run Aurora 0.4° Air Pollution on CAMS analysis data.
+Producing predictions for any other data set might give sensible predictions,
+but performance may not be optimal anymore.</p>
+<p>For optimal performance, the model requires the following variables and pressure levels:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Required</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Surface-level variables</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">2t</span></code>, <code class="docutils literal notranslate"><span class="pre">10u</span></code>, <code class="docutils literal notranslate"><span class="pre">10v</span></code>, <code class="docutils literal notranslate"><span class="pre">msl</span></code>, <code class="docutils literal notranslate"><span class="pre">pm1</span></code>, <code class="docutils literal notranslate"><span class="pre">pm2p5</span></code>, <code class="docutils literal notranslate"><span class="pre">pm10</span></code>, <code class="docutils literal notranslate"><span class="pre">tcco</span></code>, <code class="docutils literal notranslate"><span class="pre">tc_no</span></code>, <code class="docutils literal notranslate"><span class="pre">tcno2</span></code>, <code class="docutils literal notranslate"><span class="pre">tcso2</span></code>, <code class="docutils literal notranslate"><span class="pre">gtco3</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Static variables</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">lsm</span></code>, <code class="docutils literal notranslate"><span class="pre">slt</span></code>, <code class="docutils literal notranslate"><span class="pre">z</span></code>, <code class="docutils literal notranslate"><span class="pre">static_ammonia</span></code>, <code class="docutils literal notranslate"><span class="pre">static_ammonia_log</span></code>, <code class="docutils literal notranslate"><span class="pre">static_co</span></code>, <code class="docutils literal notranslate"><span class="pre">static_co_log</span></code>, <code class="docutils literal notranslate"><span class="pre">static_nox</span></code>, <code class="docutils literal notranslate"><span class="pre">static_nox_log</span></code>, <code class="docutils literal notranslate"><span class="pre">static_so2</span></code>, <code class="docutils literal notranslate"><span class="pre">static_so2_log</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Atmospheric variables</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">t</span></code>, <code class="docutils literal notranslate"><span class="pre">u</span></code>, <code class="docutils literal notranslate"><span class="pre">v</span></code>, <code class="docutils literal notranslate"><span class="pre">q</span></code>, <code class="docutils literal notranslate"><span class="pre">z</span></code>, <code class="docutils literal notranslate"><span class="pre">co</span></code>, <code class="docutils literal notranslate"><span class="pre">no</span></code>, <code class="docutils literal notranslate"><span class="pre">no2</span></code>, <code class="docutils literal notranslate"><span class="pre">so2</span></code>, <code class="docutils literal notranslate"><span class="pre">go3</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Pressure levels (hPa)</p></td>
+<td><p>50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="id15">
+<h3>Static Variables<a class="headerlink" href="#id15" title="Link to this heading">#</a></h3>
+<p>Aurora 0.4° Air Pollution requires
+<a class="reference external" href="https://huggingface.co/microsoft/aurora/resolve/main/aurora-0.4-air-pollution-static.pickle">static variables from the HuggingFace repository</a>.</p>
 </section>
 </section>
 </section>
@@ -798,7 +856,7 @@ you can turn off LoRA to obtain more realistic predictions at the expensive of s
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#static-variables">Static Variables</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora-0-25-pretrained-small">Aurora 0.25° Pretrained Small</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora-0-25-small-pretrained">Aurora 0.25° Small Pretrained</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Usage</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Recommended Use</a></li>
 </ul>
@@ -821,6 +879,12 @@ you can turn off LoRA to obtain more realistic predictions at the expensive of s
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">Recommended Use</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">Static Variables</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">Notes</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora-0-4-air-pollution">Aurora 0.4° Air Pollution</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">Recommended Use</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">Static Variables</a></li>
 </ul>
 </li>
 </ul>
