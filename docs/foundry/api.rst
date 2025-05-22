@@ -19,7 +19,19 @@ These models need to be referred to by the value of their attribute `name`.
 .. autoclass:: aurora.foundry.common.model.AuroraFineTuned
     :members: name
 
-.. autoclass:: aurora.foundry.common.model.AuroraSmall
+.. autoclass:: aurora.foundry.common.model.AuroraPretrained
+    :members: name
+
+.. autoclass:: aurora.foundry.common.model.AuroraSmallPretrained
+    :members: name
+
+.. autoclass:: aurora.foundry.common.model.Aurora12hPretrained
+    :members: name
+
+.. autoclass:: aurora.foundry.common.model.AuroraHighRes
+    :members: name
+
+.. autoclass:: aurora.foundry.common.model.AuroraAirPollution
     :members: name
 
 Server
