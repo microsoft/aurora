@@ -28,10 +28,10 @@ Models
 .. autoclass:: aurora.AuroraPretrained
     :members:
 
-.. autoclass:: aurora.AuroraPretrainedSmall
+.. autoclass:: aurora.AuroraSmallPretrained
     :members:
 
-.. autoclass:: aurora.AuroraPretrained12h
+.. autoclass:: aurora.Aurora12hPretrained
     :members:
 
 .. autoclass:: aurora.AuroraHighRes
