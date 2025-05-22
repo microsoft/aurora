@@ -29,6 +29,7 @@ __all__ = [
     "Aurora12hPretrained",
     "AuroraHighRes",
     "AuroraAirPollution",
+    "AuroraWave",
 ]
 
 
@@ -706,3 +707,43 @@ class AuroraAirPollution(Aurora):
         d = Aurora._adapt_checkpoint(self, d)
         d = _adapt_checkpoint_air_pollution(self.patch_size, d)
         return d
+
+
+class AuroraWave(Aurora):
+    """Version of Aurora fined-tuned to HRES-WAM ocean wave data."""
+
+    default_checkpoint_name = "aurora-0.25-wave.ckpt"
+
+    def __init__(
+        self,
+        *,
+        surf_vars: tuple[str, ...] = (
+            ("2t", "10u", "10v", "msl")
+            + ("swh", "mwd", "mwp", "pp1d", "shww", "mdww", "mpww")
+            + ("swh1", "mwd1", "mwp1", "swh2", "mwd2", "mwp2", "wind", "10u_wave", "10v_wave")
+        ),
+        static_vars: tuple[str, ...] = ("lsm", "z", "slt", "wmb", "lat_mask"),
+        density_channel_surf_vars: tuple[str, ...] = (
+            ("swh", "mwd", "mwp", "pp1d", "shww", "mdww", "mpww")
+            + ("swh1", "mwd1", "mwp1", "swh2", "mwd2", "mwp2", "wind", "10u_wave", "10v_wave")
+        ),
+        angle_surf_vars: tuple[str, ...] = ("mwd", "mdww", "mwd1", "mwd2"),
+        **kw_args,
+    ) -> None:
+        # Model the density, sine, and cosine versions of the variables.
+        supplemented_surf_vars: tuple[str, ...] = ()
+        for name in surf_vars:
+            if name in angle_surf_vars:
+                supplemented_surf_vars += (f"{name}_sin", f"{name}_cos")
+            if name in density_channel_surf_vars:
+                supplemented_surf_vars += (f"{name}_density",)
+
+        Aurora.__init__(
+            self,
+            surf_vars=supplemented_surf_vars,
+            static_vars=static_vars,
+            **kw_args,
+        )
+
+        self.density_channel_surf_vars = density_channel_surf_vars
+        self.angle_surf_vars = angle_surf_vars

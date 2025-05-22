@@ -9,6 +9,7 @@ from aurora.model.aurora import (
     AuroraPretrained,
     AuroraSmall,
     AuroraSmallPretrained,
+    AuroraWave,
 )
 from aurora.rollout import rollout
 from aurora.tracker import Tracker
@@ -21,6 +22,7 @@ __all__ = [
     "Aurora12hPretrained",
     "AuroraHighRes",
     "AuroraAirPollution",
+    "AuroraWave",
     "Batch",
     "Metadata",
     "rollout",

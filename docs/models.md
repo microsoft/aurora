@@ -272,3 +272,45 @@ For optimal performance, the model requires the following variables and pressure
 
 Aurora 0.4° Air Pollution requires
 [static variables from the HuggingFace repository](https://huggingface.co/microsoft/aurora/resolve/main/aurora-0.4-air-pollution-static.pickle).
+
+(aurora-wave)=
+## Aurora 0.25° Wave
+
+Aurora 0.25° Wave is Aurora 0.25° Pretrained fine-tuned on
+[HRES-WAM ocean wave data](https://www.ecmwf.int/en/forecasts/datasets/set-ii).
+This version of Aurora is capable of making ocean wave forecasts.
+
+### Usage
+
+```python
+from aurora import AuroraWave
+
+model = AuroraWave()
+model.load_checkpoint()
+```
+
+### Recommended Use
+
+Use Aurora 0.25° Wave if you aim to make predictions for HRES-WAM analysis data combined with HRES T0.
+
+**Important:**
+For optimal performance, it is crucial that you only run Aurora 0.25° Wave on batches with all
+meteorological variables taken from HRES T0 and all ocean wave variables taken from HRES-WAM
+analysis.
+Producing predictions for any other combination might give sensible predictions,
+but performance may not be optimal anymore.
+
+For optimal performance, the model requires the following variables and pressure levels:
+
+| Name | Required |
+| - | - |
+| Surface-level variables | `2t`, `10u`, `10v`, `swh`, `mwd`, `mwp`, `pp1d`, `shww`, `mdww`, `mpww`, `swh1`, `mwd1`, `mwp1`, `swh2`, `mwd2`, `mwp2`, `10u_wave`, `10v_wave`, `wind` |
+| Static variables | `lsm`, `slt`, `z`, `wmb`, `lat_mask` |
+| Atmospheric variables | `t`, `u`, `v`, `q`, `z` |
+| Pressure levels (hPa) | 50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000 |
+
+
+### Static Variables
+
+Aurora 0.25° Wave requires
+[static variables from the HuggingFace repository](https://huggingface.co/microsoft/aurora/resolve/main/aurora-0.25-wave-static.pickle).

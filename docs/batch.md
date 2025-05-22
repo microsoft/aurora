@@ -72,6 +72,27 @@ also allowed:
 | `tcso2` | Total column sulphur dioxide in `kg/m^2` |
 | `gtco3` | Total column ozone in `kg/m^2` |
 
+For [Aurora 0.25° Wave](aurora-wave), the following surface-level variables are also allowed:
+
+| Name | Description |
+| - | - |
+| `swh` | Significant wave height of the total wave in `m` |
+| `mwd` | Mean wave direction of the total wave in `degrees` |
+| `mwp` | Mean wave period of the total wave in `s` |
+| `pp1d` | Peak wave period of the total wave in `s` |
+| `shww` | Significant wave height of the wind wave component in `m` |
+| `mdww` | Mean wave direction of the wind wave component in `degrees` |
+| `mpww` | Mean wave period of the wind wave component in `s` |
+| `swh1` | Significant wave height of the first swell component in `m` |
+| `mwd1` | Mean wave direction of the first swell component in `degrees` |
+| `mwp1` | Mean wave period of the first swell component in `s` |
+| `swh2` | Significant wave height of the second swell component in `m` |
+| `mwd2` | Mean wave direction of the second swell component in `degrees` |
+| `mwp2` | Mean wave period of the second swell component in `s` |
+| `wind` | Ten-meter neutral wind speed in `m/s` |
+| `10u_wind` | Ten-meter eastward neutral wind speed in `m/s` |
+| `10v_wind` | Ten-meter southward neutral wind speed in `m/s` |
+
 ## `Batch.static_vars`
 
 `Batch.static_vars` is a dictionary mapping names of static variables to the
@@ -86,6 +107,12 @@ The following static variables are allowed:
 | `lsm` | [Land-sea mask](https://codes.ecmwf.int/grib/param-db/172) |
 | `slt` | [Soil type](https://codes.ecmwf.int/grib/param-db/43) |
 | `z` | Surface-level geopotential in `m^2/s^2` |
+
+[Aurora 0.4° Air Pollution](aurora-air-pollution)
+and [Aurora 0.25° Wave](aurora-wave) require additional static variables, but these are not
+easy to obtain yourself.
+You need to obtain these from the HuggingFace repository.
+See the description of the models.
 
 ## `Batch.atmos_vars`
 
