@@ -9,7 +9,7 @@
 
 Implementation of the Aurora model for Earth system forecasting.
 
-[Link to the paper on arXiv.](https://arxiv.org/abs/2405.13063)
+[Link to the paper.](https://www.nature.com/articles/s41586-025-09005-y)
 
 [Please see the documentation for detailed instructions and more examples.](https://microsoft.github.io/aurora)
 You can also directly go to [a full-fledged example that runs the model on ERA5](https://microsoft.github.io/aurora/example_era5.html).
