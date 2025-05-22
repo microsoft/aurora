@@ -58,7 +58,7 @@ The following surface-level variables are allowed:
 | `10v` | Ten-meter southward wind speed in `m/s` |
 | `msl` | Mean sea-level pressure in `Pa` |
 
-For [Aurora 0.4° Air Pollution](aurora-0.4-air-pollution), the following surface-level variables are
+For [Aurora 0.4° Air Pollution](aurora-air-pollution), the following surface-level variables are
 also allowed:
 
 | Name | Description |
@@ -106,7 +106,7 @@ The following atmospheric variables are allowed:
 | `q` | Specific humidity in `kg/kg` |
 | `z` | Geopotential in `m^2/s^2` |
 
-For [Aurora 0.4° Air Pollution](aurora-0.4-air-pollution), the following atmospheric variables are
+For [Aurora 0.4° Air Pollution](aurora-air-pollution), the following atmospheric variables are
 also allowed:
 
 | Name | Description |

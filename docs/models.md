@@ -198,6 +198,7 @@ model = AuroraHighRes(use_lora=False)  # Disable LoRA for more realistic samples
 model.load_checkpoint("microsoft/aurora", "aurora-0.1-finetuned.ckpt", strict=False)
 ```
 
+(aurora-air-pollution)=
 ## Aurora 0.4° Air Pollution
 
 Aurora 0.4° Air Pollution is Aurora 0.25° Pretrained fine-tuned on
@@ -218,7 +219,7 @@ model.load_checkpoint("microsoft/aurora", "aurora-0.4-finetuned.ckpt")
 Use Aurora 0.4° Air Pollution if you aim to make predictions for CAMS analysis.
 
 **Important:**
-For optimal performance, it is crucial that you only use Aurora 0.4° Air Pollution for CAMS analysis.
+For optimal performance, it is crucial that you only run Aurora 0.4° Air Pollution on CAMS analysis data.
 Producing predictions for any other data set might give sensible predictions,
 but performance may not be optimal anymore.
 
