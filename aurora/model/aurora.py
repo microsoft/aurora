@@ -39,7 +39,10 @@ class Aurora(torch.nn.Module):
     """
 
     default_checkpoint_repo = "microsoft/aurora"
+    """str: Name of the HuggingFace repository to load the default checkpoint from."""
+
     default_checkpoint_name = "aurora-0.25-finetuned.ckpt"
+    """str: Name of the default checkpoint."""
 
     def __init__(
         self,
@@ -365,7 +368,7 @@ class Aurora(torch.nn.Module):
                 parameters in the checkpoint. Defaults to `True`.
         """
         repo = repo or self.default_checkpoint_repo
-        repo = repo or self.default_checkpoint_name
+        name = name or self.default_checkpoint_name
         path = hf_hub_download(repo_id=repo, filename=name)
         self.load_checkpoint_local(path, strict=strict)
 

@@ -16,11 +16,7 @@ from aurora import Aurora, AuroraSmall, Batch
 @pytest.fixture(scope="session")
 def aurora_small() -> Aurora:
     model = AuroraSmall(use_lora=True)
-    model.load_checkpoint(
-        "microsoft/aurora",
-        "aurora-0.25-small-pretrained.ckpt",
-        strict=False,  # LoRA parameters not available.
-    )
+    model.load_checkpoint(strict=False)  # LoRA parameters not available.
     model = model.double()
     model.eval()
     return model
