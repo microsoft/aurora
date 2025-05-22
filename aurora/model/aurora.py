@@ -21,14 +21,25 @@ from aurora.model.encoder import Perceiver3DEncoder
 from aurora.model.lora import LoRAMode
 from aurora.model.swin3d import BasicLayer3D, Swin3DTransformerBackbone
 
-__all__ = ["Aurora", "AuroraSmall", "AuroraHighRes", "AuroraAirPollution"]
+__all__ = [
+    "Aurora",
+    "AuroraPretrained",
+    "AuroraSmallPretrained",
+    "AuroraSmall",
+    "Aurora12hPretrained",
+    "AuroraHighRes",
+    "AuroraAirPollution",
+]
 
 
 class Aurora(torch.nn.Module):
     """The Aurora model.
 
-    Defaults to to the 1.3 B parameter configuration.
+    Defaults to the 1.3 B parameter configuration.
     """
+
+    default_checkpoint_repo = "microsoft/aurora"
+    default_checkpoint_name = "aurora-0.25-finetuned.ckpt"
 
     def __init__(
         self,
@@ -338,16 +349,23 @@ class Aurora(torch.nn.Module):
         """Transform the prediction right after the decoder."""
         return pred
 
-    def load_checkpoint(self, repo: str, name: str, strict: bool = True) -> None:
+    def load_checkpoint(
+        self,
+        repo: Optional[str] = None,
+        name: Optional[str] = None,
+        strict: bool = True,
+    ) -> None:
         """Load a checkpoint from HuggingFace.
 
         Args:
-            repo (str): Name of the repository of the form `user/repo`.
-            name (str): Path to the checkpoint relative to the root of the repository, e.g.
-                `checkpoint.cpkt`.
+            repo (str, optional): Name of the repository of the form `user/repo`.
+            name (str, optional): Path to the checkpoint relative to the root of the repository,
+                e.g. `checkpoint.cpkt`.
             strict (bool, optional): Error if the model parameters are not exactly equal to the
                 parameters in the checkpoint. Defaults to `True`.
         """
+        repo = repo or self.default_checkpoint_repo
+        repo = repo or self.default_checkpoint_name
         path = hf_hub_download(repo_id=repo, filename=name)
         self.load_checkpoint_local(path, strict=strict)
 
@@ -433,11 +451,31 @@ class Aurora(torch.nn.Module):
         apply_activation_checkpointing(self, check_fn=lambda x: isinstance(x, BasicLayer3D))
 
 
-class AuroraSmall(Aurora):
-    """Small version of Aurora.
+class AuroraPretrained(Aurora):
+    """Pretrained version of Aurora."""
+
+    default_checkpoint_name = "aurora-0.25-pretrained.ckpt"
+
+    def __init__(
+        self,
+        *,
+        use_lora: bool = False,
+        **kw_args,
+    ) -> None:
+        Aurora.__init__(
+            self,
+            use_lora=use_lora,
+            **kw_args,
+        )
+
+
+class AuroraSmallPretrained(Aurora):
+    """Small pretrained version of Aurora.
 
     Should only be used for debugging.
     """
+
+    default_checkpoint_name = "aurora-0.25-small-pretrained.ckpt"
 
     def __init__(
         self,
@@ -463,8 +501,33 @@ class AuroraSmall(Aurora):
         )
 
 
+AuroraSmall = AuroraSmallPretrained  #: Alias for backwards compatibility
+
+
+class Aurora12hPretrained(Aurora):
+    """Pretrained version of Aurora with time step 12 hours."""
+
+    default_checkpoint_name = "aurora-0.25-12h-pretrained.ckpt"
+
+    def __init__(
+        self,
+        *,
+        timestep: timedelta = timedelta(hours=12),
+        use_lora: bool = False,
+        **kw_args,
+    ) -> None:
+        Aurora.__init__(
+            self,
+            timestep=timestep,
+            use_lora=use_lora,
+            **kw_args,
+        )
+
+
 class AuroraHighRes(Aurora):
     """High-resolution version of Aurora."""
+
+    default_checkpoint_name = "aurora-0.1-finetuned.ckpt"
 
     def __init(
         self,
@@ -484,6 +547,8 @@ class AuroraHighRes(Aurora):
 
 class AuroraAirPollution(Aurora):
     """Fine-tuned version of Aurora for air pollution."""
+
+    default_checkpoint_name = "aurora-0.4-air-pollution.ckpt"
 
     _predict_difference_history_dim_lookup = {
         "pm1": 0,

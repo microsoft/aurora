@@ -6,6 +6,7 @@ parts:
     - file: usage
     - file: batch
     - file: models
+    - file: tracking
     - file: beware
     - file: finetuning
     - file: ai_models_plugin
@@ -16,6 +17,7 @@ parts:
     - file: example_hres_t0
     - file: example_hres_0.1
     - file: example_cams
+    - file: example_tc_tracking
 - caption: Foundry
   chapters:
    - file: foundry/intro

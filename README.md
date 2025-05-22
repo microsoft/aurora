@@ -1,6 +1,4 @@
-<p align="center">
-    <img src="docs/aurora.jpg" alt="Aurora logo" width="200"/>
-</p>
+<img src="docs/gifs/high_res_2t.gif" alt="high resolution (0.1 degree) temperature at 2m predictions gif" width="150px">&nbsp;&nbsp;&nbsp;<img src="docs/gifs/no2.gif" alt="nitrogen dioxide predictions gif" width="150px">&nbsp;&nbsp;&nbsp;<img src="docs/gifs/wave_direction.gif" alt="ocean wave direction predictions gif" width="150px">&nbsp;&nbsp;&nbsp;<img src="docs/gifs/tc_tracks.gif" alt="tropical cyclone track predictions gif" width="220px">
 
 # Aurora: A Foundation Model for the Earth System
 
@@ -11,10 +9,7 @@
 
 Implementation of the Aurora model for Earth system forecasting.
 
-_The package currently includes the pretrained model and the fine-tuned version for high-resolution weather forecasting._
-_We are working on the fine-tuned versions for air pollution and ocean wave forecasting, which will be included in due time._
-
-[Link to the paper on arXiv.](https://arxiv.org/abs/2405.13063)
+[Link to the paper.](https://www.nature.com/articles/s41586-025-09005-y)
 
 [Please see the documentation for detailed instructions and more examples.](https://microsoft.github.io/aurora)
 You can also directly go to [a full-fledged example that runs the model on ERA5](https://microsoft.github.io/aurora/example_era5.html).
@@ -22,14 +17,16 @@ You can also directly go to [a full-fledged example that runs the model on ERA5]
 Cite us as follows:
 
 ```
-@misc{bodnar2024aurora,
-    title = {Aurora: A Foundation Model for the Earth System},
+@article{bodnar2025aurora,
+    title = {A Foundation Model for the Earth System},
     author = {Cristian Bodnar and Wessel P. Bruinsma and Ana Lucic and Megan Stanley and Anna Allen and Johannes Brandstetter and Patrick Garvan and Maik Riechert and Jonathan A. Weyn and Haiyu Dong and Jayesh K. Gupta and Kit Thambiratnam and Alexander T. Archibald and Chun-Chieh Wu and Elizabeth Heider and Max Welling and Richard E. Turner and Paris Perdikaris},
-    year = {2024},
-    url = {https://arxiv.org/abs/2405.13063},
-    eprint = {2405.13063},
-    archivePrefix = {arXiv},
-    primaryClass = {physics.ao-ph},
+    journal = {Nature},
+    year = {2025},
+    month = {May},
+    day = {21},
+    issn = {1476-4687},
+    doi = {10.1038/s41586-025-09005-y},
+    url = {https://doi.org/10.1038/s41586-025-09005-y},
 }
 ```
 
@@ -43,6 +40,12 @@ Contents:
 - [Responsible AI Transparency Documentation](#responsible-ai-transparency-documentation)
 - [Trademarks](#trademarks)
 - [FAQ](#faq)
+
+Please email [AIWeatherClimate@microsoft.com](mailto:AIWeatherClimate@microsoft.com)
+if you are interested in using Aurora for commercial applications.
+For research-related questions or technical support with the code here,
+please [open an issue](https://github.com/microsoft/aurora/issues/new/choose)
+or reach out to the authors of the paper.
 
 ## What is Aurora?
 
@@ -76,11 +79,10 @@ from datetime import datetime
 
 import torch
 
-from aurora import AuroraSmall, Batch, Metadata
+from aurora import AuroraSmallPretrained, Batch, Metadata
 
-model = AuroraSmall()
-
-model.load_checkpoint("microsoft/aurora", "aurora-0.25-small-pretrained.ckpt")
+model = AuroraSmallPretrained()
+model.load_checkpoint()
 
 batch = Batch(
     surf_vars={k: torch.randn(1, 2, 17, 32) for k in ("2t", "10u", "10v", "msl")},
@@ -133,7 +135,7 @@ To find out more, see [Responsible AI principles from Microsoft](https://www.m
 Our goal in publishing this code is
 (1) to facilitate reproducibility of our paper and
 (2) to support and accelerate further research into foundation model for atmospheric forecasting.
-This code has not been developed nor tested for non-academic purposes and hence should not be used as such.
+This code has not been developed nor tested for non-academic purposes and hence should only be used as such at completely your own risk.
 
 ### Limitations
 Although Aurora was trained to accurately predict future weather, air pollution, and ocean waves,
@@ -145,6 +147,12 @@ it is possible that Aurora inherits biases present in any one of those data sets
 A forecasting system like Aurora is only one piece of the puzzle in a weather prediction pipeline,
 and its outputs are not meant to be directly used by people or businesses to plan their operations.
 A series of additional verification tests are needed before it can become operationally useful.
+
+In addition to the above, the models published here are streamlined versions of the models
+originally developed internally.
+Whereas we tried to be as thorough as possible, it is possible that the models published here
+deviate from the original model in subtle, unintended ways.
+This may affect predictive performance.
 
 ### Data
 The models included in the code have been trained on a variety of publicly available data.
@@ -191,8 +199,3 @@ make docs
 ```
 
 To locally view the documentation, open `docs/_build/index.html` in your browser.
-
-### Why are the fine-tuned versions of Aurora for air quality and ocean wave forecasting missing?
-
-The package currently includes the pretrained model and the fine-tuned version for high-resolution weather forecasting.
-We are working on the fine-tuned versions for air pollution and ocean wave forecasting, which will be included in due time.
