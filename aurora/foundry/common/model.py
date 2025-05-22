@@ -83,7 +83,7 @@ class AuroraPretrained(Model):
     """str: Name of the model."""
 
     def create_model(self) -> aurora.Aurora:
-        model = aurora.Aurora()
+        model = aurora.AuroraPretrained()
         model.load_checkpoint_local(MLFLOW_ARTIFACTS[self.name])
         return model
 
