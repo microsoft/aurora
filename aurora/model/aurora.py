@@ -561,6 +561,9 @@ class AuroraAirPollution(Aurora):
             nn.init.zeros_(p.bias)
 
     def _pre_encoder_hook(self, batch: Batch) -> Batch:
+        # Transform the spikey variables with a specific log-transform before feeding them
+        # to the encoder. See the paper for a motivation for the precise form of the transform.
+
         eps = 1e-4
         divisor = -np.log(eps)
 
@@ -592,6 +595,10 @@ class AuroraAirPollution(Aurora):
         )
 
     def _post_decoder_hook(self, batch: Batch, pred: Batch) -> Batch:
+        # For this version of the model, we predict the difference. Specifically w.r.t. which
+        # previous timestep (12 hours ago or 24 hours ago) is given by
+        # `Aurora._predict_difference_history_dim_lookup`.
+
         dim_lookup = AuroraAirPollution._predict_difference_history_dim_lookup
 
         def _transform(
