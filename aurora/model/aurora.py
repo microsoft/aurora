@@ -490,6 +490,7 @@ class AuroraSmallPretrained(Aurora):
         **kw_args,
     ) -> None:
         Aurora.__init__(
+            self,
             encoder_depths=encoder_depths,
             encoder_num_heads=encoder_num_heads,
             decoder_depths=decoder_depths,
@@ -536,8 +537,9 @@ class AuroraHighRes(Aurora):
         encoder_depths: tuple[int, ...] = (6, 8, 8),
         decoder_depths: tuple[int, ...] = (8, 8, 6),
         **kw_args,
-    ):
+    ) -> None:
         Aurora.__init__(
+            self,
             patch_size=patch_size,
             encoder_depths=encoder_depths,
             decoder_depths=decoder_depths,
