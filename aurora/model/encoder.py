@@ -99,7 +99,7 @@ class Perceiver3DEncoder(nn.Module):
         self.simulate_indexing_bug = simulate_indexing_bug
 
         # Add in the dynamic variables first.
-        if dynamic_vars:
+        if self.dynamic_vars:
             if static_vars is None:
                 static_vars = ()
             static_vars += ("tod_cos", "tod_sin", "dow_cos", "dow_sin", "doy_cos", "doy_sin")
@@ -108,7 +108,7 @@ class Perceiver3DEncoder(nn.Module):
         # atmospheric variables!).
         if static_vars:
             surf_vars += static_vars
-            if atmos_static_vars:
+            if self.atmos_static_vars:
                 # In this case, we prefix the static variables to avoid name clashes. E.g., `z` is
                 # both a static variable and an atmospheric variable.
                 atmos_vars += tuple(f"static_{v}" for v in static_vars)
@@ -134,14 +134,14 @@ class Perceiver3DEncoder(nn.Module):
         # Patch embeddings:
         assert max_history_size > 0, "At least one history step is required."
         self.surf_token_embeds = LevelPatchEmbed(surf_vars, patch_size, embed_dim, max_history_size)
-        if not level_condition:
+        if not self.level_condition:
             self.atmos_token_embeds = LevelPatchEmbed(
                 atmos_vars, patch_size, embed_dim, max_history_size
             )
         else:
             self.atmos_token_embeds = LevelConditioned(
                 lambda: LevelPatchEmbed(atmos_vars, patch_size, embed_dim, max_history_size),
-                levels=level_condition,
+                levels=self.level_condition,
                 levels_dim=-5,
             )
 

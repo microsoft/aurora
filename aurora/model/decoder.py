@@ -112,7 +112,7 @@ class Perceiver3DDecoder(nn.Module):
         self.surf_heads = nn.ParameterDict(
             {name: nn.Linear(embed_dim, patch_size**2) for name in surf_vars}
         )
-        if not level_condition:
+        if not self.level_condition:
             self.atmos_heads = nn.ParameterDict(
                 {name: nn.Linear(embed_dim, patch_size**2) for name in atmos_vars}
             )
@@ -121,7 +121,7 @@ class Perceiver3DDecoder(nn.Module):
                 {
                     name: LevelConditioned(
                         lambda: nn.Linear(embed_dim, patch_size**2),
-                        levels=level_condition,
+                        levels=self.level_condition,
                         levels_dim=-2,
                     )
                     for name in atmos_vars
