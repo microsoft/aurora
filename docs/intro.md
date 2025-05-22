@@ -14,19 +14,24 @@ one for high-resolution weather prediction,
 one for air pollution prediction,
 and one for ocean wave prediction.
 
-The package currently includes the pretrained model and the fine-tuned version for high-resolution weather forecasting.
-We are working on the fine-tuned versions for air pollution and ocean wave forecasting, which will be included in due time.
-
 Cite us as follows:
 
 ```
-@misc{bodnar2024aurora,
+@article{bodnar2025aurora,
     title = {A Foundation Model for the Earth System},
     author = {Cristian Bodnar and Wessel P. Bruinsma and Ana Lucic and Megan Stanley and Anna Allen and Johannes Brandstetter and Patrick Garvan and Maik Riechert and Jonathan A. Weyn and Haiyu Dong and Jayesh K. Gupta and Kit Thambiratnam and Alexander T. Archibald and Chun-Chieh Wu and Elizabeth Heider and Max Welling and Richard E. Turner and Paris Perdikaris},
-    year = {2024},
-    url = {https://arxiv.org/abs/2405.13063},
-    eprint = {2405.13063},
-    archivePrefix = {arXiv},
-    primaryClass = {physics.ao-ph},
+    journal = {Nature},
+    year = {2025},
+    month = {May},
+    day = {21},
+    issn = {1476-4687},
+    doi = {10.1038/s41586-025-09005-y},
+    url = {https://doi.org/10.1038/s41586-025-09005-y},
 }
 ```
+
+Please email [AIWeatherClimate@microsoft.com](mailto:AIWeatherClimate@microsoft.com)
+if you are interested in using Aurora for commercial applications.
+For research-related questions or technical support with the code here,
+please [open an issue](https://github.com/microsoft/aurora/issues/new/choose)
+or reach out to the authors of the paper.
