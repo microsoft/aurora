@@ -39,3 +39,6 @@ Models
 
 .. autoclass:: aurora.AuroraAirPollution
     :members:
+
+.. autoclass:: aurora.AuroraWave
+    :members:

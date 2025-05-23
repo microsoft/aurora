@@ -48,7 +48,7 @@ def submit(
         batch (:class:`aurora.Batch`): Initial condition.
         model_name (str): Name of the model. This name must be available in
             :mod:`aurora.foundry.common.model`. See the Aurora Foundry Python API documentation for
-             which models are available.
+            which models are available.
         num_steps (int): Number of prediction steps.
         channel (:class:`aurora.foundry.common.channel.CommunicationChannel`): Channel to use for
             sending and receiving data.
