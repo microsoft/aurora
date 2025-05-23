@@ -113,13 +113,6 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 See [`LICENSE.txt`](LICENSE.txt).
 
-We would like to point out that the code here has a different licence than the
-[weights on HuggingFace](https://huggingface.co/microsoft/aurora).
-Specifically,
-whereas the code here is under the MIT licence (see [`LICENSE.txt`](LICENSE.txt)),
-the [weights on HuggingFace](https://huggingface.co/microsoft/aurora) are under a non-commerical
-licence.
-
 ## Security
 
 See [`SECURITY.md`](SECURITY.md).
