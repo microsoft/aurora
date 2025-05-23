@@ -18,7 +18,7 @@ sphinx:
   - "sphinx.ext.autodoc"
   - "sphinx.ext.napoleon"
   - "sphinx.ext.viewcode"
-  # Disable dark mode. The logo isn't compatible with dark moe.
+  # Set the default theme to light mode. The logo doesn't work nicely with dark mode.
   recursive_update: true
   config:
     html_context:
