@@ -135,8 +135,8 @@ class Aurora(torch.nn.Module):
             lora_steps (int, optional): Use different LoRA adaptation for the first so-many roll-out
                 steps.
             lora_mode (str, optional): LoRA mode. `"single"` uses the same LoRA for all roll-out
-                steps, and `"all"` uses a different LoRA for every roll-out step. Defaults to
-                `"single"`.
+                steps, `"from_second"` uses the same LoRA from the second roll-out step on, and
+                `"all"` uses a different LoRA for every roll-out step. Defaults to `"single"`.
             surf_stats (dict[str, tuple[float, float]], optional): For these surface-level
                 variables, adjust the normalisation to the given tuple consisting of a new location
                 and scale.
@@ -727,6 +727,7 @@ class AuroraWave(Aurora):
             + ("swh1", "mwd1", "mwp1", "swh2", "mwd2", "mwp2", "wind", "10u_wave", "10v_wave")
         ),
         static_vars: tuple[str, ...] = ("lsm", "z", "slt", "wmb", "lat_mask"),
+        lora_mode: LoRAMode = "from_second",
         stabilise_level_agg: bool = True,
         density_channel_surf_vars: tuple[str, ...] = (
             ("swh", "mwd", "mwp", "pp1d", "shww", "mdww", "mpww", "shts", "mdts", "mpts")
@@ -749,6 +750,7 @@ class AuroraWave(Aurora):
             self,
             surf_vars=supplemented_surf_vars,
             static_vars=static_vars,
+            lora_mode=lora_mode,
             stabilise_level_agg=stabilise_level_agg,
             **kw_args,
         )

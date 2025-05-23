@@ -104,7 +104,8 @@ class WindowAttention(nn.Module):
             lora_alpha (int, optional): LoRA alpha. Defaults to `8`.
             lora_dropout (float, optional): LoRA drop-out rate. Defaults to `0.0`.
             lora_steps (int, optional): Maximum number of LoRA roll-out steps. Defaults to `40`.
-            lora_mode (str, optional): Mode. `"single"` uses the same LoRA for all roll-out steps,
+            lora_mode (str, optional): LoRA mode. `"single"` uses the same LoRA for all roll-out
+                steps, `"from_second"` uses the same LoRA from the second roll-out step on,
                 and `"all"` uses a different LoRA for every roll-out step. Defaults to `"single"`.
             use_lora (bool, optional): Enable LoRA. By default, LoRA is disabled.
         """
@@ -400,7 +401,8 @@ class Swin3DTransformerBlock(nn.Module):
             scale_bias (float, optional): Scale bias for
                 :class:`aurora.model.film.AdaptiveLayerNorm`. Defaults to `0`.
             lora_steps (int, optional): Maximum number of LoRA roll-out steps. Defaults to `40`.
-            lora_mode (str, optional): Mode. `"single"` uses the same LoRA for all roll-out steps,
+            lora_mode (str, optional): LoRA mode. `"single"` uses the same LoRA for all roll-out
+                steps, `"from_second"` uses the same LoRA from the second roll-out step on,
                 and `"all"` uses a different LoRA for every roll-out step. Defaults to `"single"`.
             use_lora (bool): Enable LoRA. By default, LoRA is disabled.
         """
@@ -652,7 +654,8 @@ class BasicLayer3D(nn.Module):
             scale_bias (float, optional): Scale bias for
                 :class:`aurora.model.film.AdaptiveLayerNorm`. Default: 0
             lora_steps (int, optional): Maximum number of LoRA roll-out steps. Defaults to `40`.
-            lora_mode (str, optional): Mode. `"single"` uses the same LoRA for all roll-out steps,
+            lora_mode (str, optional): LoRA mode. `"single"` uses the same LoRA for all roll-out
+                steps, `"from_second"` uses the same LoRA from the second roll-out step on,
                 and `"all"` uses a different LoRA for every roll-out step. Defaults to `"single"`.
             use_lora (bool): Enable LoRA. By default, LoRA is disabled.
         """
@@ -784,7 +787,8 @@ class Swin3DTransformerBackbone(nn.Module):
             attn_drop_rate (float): Attention drop-out rate. Defaults to `0.1`.
             drop_path_rate (float): Stochastic depth rate. Defaults to `0.1`.
             lora_steps (int, optional): Maximum number of LoRA roll-out steps. Defaults to `40`.
-            lora_mode (str, optional): Mode. `"single"` uses the same LoRA for all roll-out steps,
+            lora_mode (str, optional): LoRA mode. `"single"` uses the same LoRA for all roll-out
+                steps, `"from_second"` uses the same LoRA from the second roll-out step on,
                 and `"all"` uses a different LoRA for every roll-out step. Defaults to `"single"`.
             use_lora (bool): Enable LoRA. By default, LoRA is disabled.
         """
