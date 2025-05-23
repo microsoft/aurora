@@ -790,7 +790,7 @@ class Swin3DTransformerBackbone(nn.Module):
             lora_mode (str, optional): LoRA mode. `"single"` uses the same LoRA for all roll-out
                 steps, `"from_second"` uses the same LoRA from the second roll-out step on,
                 and `"all"` uses a different LoRA for every roll-out step. Defaults to `"single"`.
-            use_lora (bool): Enable LoRA. By default, LoRA is disabled.
+            use_lora (bool, optional): Enable LoRA. By default, LoRA is disabled.
         """
         super().__init__()
 
