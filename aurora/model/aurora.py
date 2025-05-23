@@ -15,7 +15,11 @@ from torch.distributed.algorithms._checkpoint.checkpoint_wrapper import (
 )
 
 from aurora.batch import Batch
-from aurora.model.compat import _adapt_checkpoint_air_pollution, _adapt_checkpoint_pretrained
+from aurora.model.compat import (
+    _adapt_checkpoint_air_pollution,
+    _adapt_checkpoint_pretrained,
+    _adapt_checkpoint_wave,
+)
 from aurora.model.decoder import Perceiver3DDecoder
 from aurora.model.encoder import Perceiver3DEncoder
 from aurora.model.lora import LoRAMode
@@ -719,16 +723,16 @@ class AuroraWave(Aurora):
         *,
         surf_vars: tuple[str, ...] = (
             ("2t", "10u", "10v", "msl")
-            + ("swh", "mwd", "mwp", "pp1d", "shww", "mdww", "mpww")
+            + ("swh", "mwd", "mwp", "pp1d", "shww", "mdww", "mpww", "shts", "mdts", "mpts")
             + ("swh1", "mwd1", "mwp1", "swh2", "mwd2", "mwp2", "wind", "10u_wave", "10v_wave")
         ),
         static_vars: tuple[str, ...] = ("lsm", "z", "slt", "wmb", "lat_mask"),
         stabilise_level_agg: bool = True,
         density_channel_surf_vars: tuple[str, ...] = (
-            ("swh", "mwd", "mwp", "pp1d", "shww", "mdww", "mpww")
+            ("swh", "mwd", "mwp", "pp1d", "shww", "mdww", "mpww", "shts", "mdts", "mpts")
             + ("swh1", "mwd1", "mwp1", "swh2", "mwd2", "mwp2", "wind", "10u_wave", "10v_wave")
         ),
-        angle_surf_vars: tuple[str, ...] = ("mwd", "mdww", "mwd1", "mwd2"),
+        angle_surf_vars: tuple[str, ...] = ("mwd", "mdww", "mdts", "mwd1", "mwd2"),
         **kw_args,
     ) -> None:
         # Model the density, sine, and cosine versions of the variables.
@@ -736,6 +740,8 @@ class AuroraWave(Aurora):
         for name in surf_vars:
             if name in angle_surf_vars:
                 supplemented_surf_vars += (f"{name}_sin", f"{name}_cos")
+            else:
+                supplemented_surf_vars += (name,)
             if name in density_channel_surf_vars:
                 supplemented_surf_vars += (f"{name}_density",)
 
@@ -749,3 +755,8 @@ class AuroraWave(Aurora):
 
         self.density_channel_surf_vars = density_channel_surf_vars
         self.angle_surf_vars = angle_surf_vars
+
+    def _adapt_checkpoint(self, d: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
+        d = Aurora._adapt_checkpoint(self, d)
+        d = _adapt_checkpoint_wave(self.patch_size, d)
+        return d
