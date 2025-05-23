@@ -170,7 +170,7 @@ model.load_checkpoint()
 
 ### Recommended Use
 
-Use Aurora 0.1° Fine-Tuned if you aim to make predictions for IFS HRES T0 at 0.1° resolution.
+Use Aurora 0.1° Fine-Tuned if you aim to make predictions for IFS HRES analysis at 0.1° resolution.
 Note that 0.1° resolution means that the data should have dimensions `(1801, 3600)`.
 Aurora 0.1° Fine-Tuned is the best performing version of Aurora at 0.1° resolution.
 
@@ -252,6 +252,7 @@ model.load_checkpoint()
 ### Recommended Use
 
 Use Aurora 0.4° Air Pollution if you aim to make predictions for CAMS analysis.
+Note that 0.4° resolution means that the data should have dimensions `(451, 900)`.
 
 **Important:**
 For optimal performance, it is crucial that you only run Aurora 0.4° Air Pollution on CAMS analysis data.
@@ -304,7 +305,7 @@ For optimal performance, the model requires the following variables and pressure
 
 | Name | Required |
 | - | - |
-| Surface-level variables | `2t`, `10u`, `10v`, `swh`, `mwd`, `mwp`, `pp1d`, `shww`, `mdww`, `mpww`, `swh1`, `mwd1`, `mwp1`, `swh2`, `mwd2`, `mwp2`, `10u_wave`, `10v_wave`, `wind` |
+| Surface-level variables | `2t`, `10u`, `10v`, `swh`, `mwd`, `mwp`, `pp1d`, `shww`, `mdww`, `mpww`, `shts`, `mdts`, `mpts`, `swh1`, `mwd1`, `mwp1`, `swh2`, `mwd2`, `mwp2`, `10u_wave`, `10v_wave`, `wind` |
 | Static variables | `lsm`, `slt`, `z`, `wmb`, `lat_mask` |
 | Atmospheric variables | `t`, `u`, `v`, `q`, `z` |
 | Pressure levels (hPa) | 50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000 |

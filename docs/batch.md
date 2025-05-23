@@ -83,6 +83,9 @@ For [Aurora 0.25° Wave](aurora-wave), the following surface-level variables are
 | `shww` | Significant wave height of the wind wave component in `m` |
 | `mdww` | Mean wave direction of the wind wave component in `degrees` |
 | `mpww` | Mean wave period of the wind wave component in `s` |
+| `shts` | Significant wave height of the total swell component in `m` |
+| `mdts` | Mean wave direction of the total swell component in `degrees` |
+| `mpts` | Mean wave period of the total swell component in `s` |
 | `swh1` | Significant wave height of the first swell component in `m` |
 | `mwd1` | Mean wave direction of the first swell component in `degrees` |
 | `mwp1` | Mean wave period of the first swell component in `s` |
