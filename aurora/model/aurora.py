@@ -255,7 +255,10 @@ class Aurora(torch.nn.Module):
         # Get the first parameter. We'll derive the data type and device from this parameter.
         p = next(self.parameters())
         batch = batch.type(p.dtype)
+
+        # This should should happen _before_ normalisation.
         batch = self._batch_transform_hook(batch)
+
         batch = batch.normalise(surf_stats=self.surf_stats)
         batch = batch.crop(patch_size=self.patch_size)
         batch = batch.to(p.device)
@@ -476,8 +479,7 @@ class AuroraPretrained(Aurora):
         use_lora: bool = False,
         **kw_args,
     ) -> None:
-        Aurora.__init__(
-            self,
+        super().__init__(
             use_lora=use_lora,
             **kw_args,
         )
@@ -503,8 +505,7 @@ class AuroraSmallPretrained(Aurora):
         use_lora: bool = False,
         **kw_args,
     ) -> None:
-        Aurora.__init__(
-            self,
+        super().__init__(
             encoder_depths=encoder_depths,
             encoder_num_heads=encoder_num_heads,
             decoder_depths=decoder_depths,
@@ -531,8 +532,7 @@ class Aurora12hPretrained(Aurora):
         use_lora: bool = False,
         **kw_args,
     ) -> None:
-        Aurora.__init__(
-            self,
+        super().__init__(
             timestep=timestep,
             use_lora=use_lora,
             **kw_args,
@@ -552,8 +552,7 @@ class AuroraHighRes(Aurora):
         decoder_depths: tuple[int, ...] = (8, 8, 6),
         **kw_args,
     ) -> None:
-        Aurora.__init__(
-            self,
+        super().__init__(
             patch_size=patch_size,
             encoder_depths=encoder_depths,
             decoder_depths=decoder_depths,
@@ -613,8 +612,7 @@ class AuroraAirPollution(Aurora):
         simulate_indexing_bug: bool = True,
         **kw_args,
     ) -> None:
-        Aurora.__init__(
-            self,
+        super().__init__(
             surf_vars=surf_vars,
             static_vars=static_vars,
             atmos_vars=atmos_vars,
@@ -752,8 +750,7 @@ class AuroraWave(Aurora):
             if name in density_channel_surf_vars:
                 supplemented_surf_vars += (f"{name}_density",)
 
-        Aurora.__init__(
-            self,
+        super().__init__(
             surf_vars=supplemented_surf_vars,
             static_vars=static_vars,
             lora_mode=lora_mode,
@@ -770,26 +767,20 @@ class AuroraWave(Aurora):
         return d
 
     def _batch_transform_hook(self, batch: Batch) -> Batch:
+        # NOTE: Here we _mutate_ the batch! It's better not to, but this is more memory efficient.
+        #       Since the mutations should be idempotent, we hope that this is OK to do.
+
         # It is important that these components are split off _before_ normalisation, as they
         # have specific normalisation statistics.
         if "dwi" in batch.surf_vars and "wind" in batch.surf_vars:
-            surf_vars = dict(batch.surf_vars)
-
             # Split into u-component and v-component.
-            u_wave = -surf_vars["wind"] * torch.sin(torch.deg2rad(surf_vars["dwi"]))
-            v_wave = -surf_vars["wind"] * torch.cos(torch.deg2rad(surf_vars["dwi"]))
+            u_wave = -batch.surf_vars["wind"] * torch.sin(torch.deg2rad(batch.surf_vars["dwi"]))
+            v_wave = -batch.surf_vars["wind"] * torch.cos(torch.deg2rad(batch.surf_vars["dwi"]))
 
             # Update batch and remove `dwi`.
-            surf_vars["10u_wave"] = u_wave
-            surf_vars["10v_wave"] = v_wave
-            del surf_vars["dwi"]
-            batch = dataclasses.replace(batch, surf_vars=surf_vars)
-
-        return batch
-
-    def _pre_encoder_hook(self, batch: Batch) -> Batch:
-        # NOTE: Here we _mutate_ the batch! It's better not to, but this is more memory efficient.
-        #       Since the mutations should be idempotent, we hope that this is OK to do.
+            batch.surf_vars["10u_wave"] = u_wave
+            batch.surf_vars["10v_wave"] = v_wave
+            del batch.surf_vars["dwi"]
 
         # If the magnitude of a wave is zero (or practically zero), it is absent, so indicate that
         # with NaNs.
@@ -808,6 +799,9 @@ class AuroraWave(Aurora):
                     if name not in {"mwd", "mdww", "mdts", "mwd1", "mwd2"}:
                         assert (batch.surf_vars[name] < 1e-4).sum() == 0
 
+        return batch
+
+    def _pre_encoder_hook(self, batch: Batch) -> Batch:
         for name in list(batch.surf_vars):
             x = batch.surf_vars[name]
 
@@ -826,15 +820,7 @@ class AuroraWave(Aurora):
         return batch
 
     def _post_decoder_hook(self, batch: Batch, pred: Batch) -> Batch:
-        wmb_mask = (pred.static_vars["wmb"] > 0).float()
-
-        # Undo the density channels. First transform by a sigmoid to get the actual value of the
-        # density channel.
-        for name in self.density_channel_surf_vars:
-            if name in pred.surf_vars:
-                mask = wmb_mask * (torch.sigmoid(pred.surf_vars[f"{name}_density"]) > 0.5).float()
-                pred.surf_vars[name][mask] = np.nan
-                del pred.surf_vars[f"{name}_density"]
+        wmb_mask = pred.static_vars["wmb"] > 0
 
         # Undo the sine and cosine components.
         for name in self.angle_surf_vars:
@@ -844,5 +830,21 @@ class AuroraWave(Aurora):
                 pred.surf_vars[name] = torch.rad2deg(torch.atan2(sin, cos))
                 del pred.surf_vars[f"{name}_sin"]
                 del pred.surf_vars[f"{name}_cos"]
+
+        # Undo the density channels. First transform by a sigmoid to get the actual value of the
+        # density channel.
+        for name in self.density_channel_surf_vars:
+            if name in pred.surf_vars:
+                mask = wmb_mask & (torch.sigmoid(pred.surf_vars[f"{name}_density"]) > 0.5)
+                pred.surf_vars[name][mask] = np.nan
+                del pred.surf_vars[f"{name}_density"]
+
+        # Finally, reproduce the direction of wind speed.
+        if "10u_wave" in pred.surf_vars and "10v_wave" in pred.surf_vars:
+            sin = -pred.surf_vars["10u_wave"] / pred.surf_vars["wind"]
+            cos = -pred.surf_vars["10v_wave"] / pred.surf_vars["wind"]
+            pred.surf_vars["dwi"] = torch.rad2deg(torch.atan2(sin, cos))
+            del pred.surf_vars["10u_wave"]
+            del pred.surf_vars["10v_wave"]
 
         return pred
