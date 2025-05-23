@@ -254,6 +254,7 @@ class Aurora(torch.nn.Module):
         # Get the first parameter. We'll derive the data type and device from this parameter.
         p = next(self.parameters())
         batch = batch.type(p.dtype)
+        batch = self._batch_transform_hook(batch)
         batch = batch.normalise(surf_stats=self.surf_stats)
         batch = batch.crop(patch_size=self.patch_size)
         batch = batch.to(p.device)
@@ -348,6 +349,10 @@ class Aurora(torch.nn.Module):
         pred = pred.unnormalise(surf_stats=self.surf_stats)
 
         return pred
+
+    def _batch_transform_hook(self, batch: Batch) -> Batch:
+        """Transform the batch right after receiving it and before normalisation."""
+        return batch
 
     def _pre_encoder_hook(self, batch: Batch) -> Batch:
         """Transform the batch before it goes through the encoder."""
@@ -762,3 +767,22 @@ class AuroraWave(Aurora):
         d = Aurora._adapt_checkpoint(self, d)
         d = _adapt_checkpoint_wave(self.patch_size, d)
         return d
+
+    def _batch_transform_hook(self, batch: Batch) -> Batch:
+        if "dwi" in batch.surf_vars and "wind" in batch.surf_vars:
+            surf_vars = dict(batch.surf_vars)
+
+            # Split into u-component and v-component.
+            u_wave = -surf_vars["wind"] * torch.sin(torch.deg2rad(surf_vars["dwi"]))
+            v_wave = -surf_vars["wind"] * torch.cos(torch.deg2rad(surf_vars["dwi"]))
+
+            # Update batch and remove `dwi`.
+            surf_vars["10u_wave"] = u_wave
+            surf_vars["10v_wave"] = v_wave
+            del surf_vars["dwi"]
+            batch = dataclasses.replace(batch, surf_vars=surf_vars)
+
+        return batch
+
+    def _pre_encoder_hook(self, batch: Batch) -> Batch:
+        return batch
