@@ -24,6 +24,7 @@ from aurora.model.decoder import Perceiver3DDecoder
 from aurora.model.encoder import Perceiver3DEncoder
 from aurora.model.lora import LoRAMode
 from aurora.model.swin3d import BasicLayer3D, Swin3DTransformerBackbone
+from aurora.normalisation import locations
 
 __all__ = [
     "Aurora",
@@ -769,6 +770,8 @@ class AuroraWave(Aurora):
         return d
 
     def _batch_transform_hook(self, batch: Batch) -> Batch:
+        # It is important that these components are split off _before_ normalisation, as they
+        # have specific normalisation statistics.
         if "dwi" in batch.surf_vars and "wind" in batch.surf_vars:
             surf_vars = dict(batch.surf_vars)
 
@@ -785,4 +788,61 @@ class AuroraWave(Aurora):
         return batch
 
     def _pre_encoder_hook(self, batch: Batch) -> Batch:
+        # NOTE: Here we _mutate_ the batch! It's better not to, but this is more memory efficient.
+        #       Since the mutations should be idempotent, we hope that this is OK to do.
+
+        # If the magnitude of a wave is zero (or practically zero), it is absent, so indicate that
+        # with NaNs.
+        for name_sh, other_wave_components in [
+            ("swh", ("mwd", "mwp", "pp1d")),
+            ("shww", ("mdww", "mpww")),
+            ("shts", ("mdts", "mdts")),
+            ("swh1", ("mwd1", "mwp1")),
+            ("swh2", ("mwd2", "mwp2")),
+        ]:
+            mask = batch.surf_vars[name_sh] < 1e-4
+            if mask.sum() > 0:
+                for name in (name_sh,) + other_wave_components:
+                    batch.surf_vars[name][mask] = np.nan
+                    # There should be no small values left, except for in wave directions.
+                    if name not in {"mwd", "mdww", "mdts", "mwd1", "mwd2"}:
+                        assert (batch.surf_vars[name] < 1e-4).sum() == 0
+
+        for name in list(batch.surf_vars):
+            x = batch.surf_vars[name]
+
+            # Create a density channel.
+            if name in self.density_channel_surf_vars and f"{name}_density" not in batch.surf_vars:
+                batch.surf_vars[f"{name}_density"] = (~torch.isnan(x)).float()
+                batch.surf_vars[name] = x.nan_to_num(locations[name])
+
+            # Add sine and cosine values of the angle and remove the original angle variable
+            sin_cos_present = f"{name}_sin" in batch.surf_vars and f"{name}_cos" in batch.surf_vars
+            if name in self.angle_surf_vars and not sin_cos_present:
+                batch.surf_vars[f"{name}_sin"] = torch.sin(torch.deg2rad(x))
+                batch.surf_vars[f"{name}_cos"] = torch.cos(torch.deg2rad(x))
+                del batch.surf_vars[name]
+
         return batch
+
+    def _post_decoder_hook(self, batch: Batch, pred: Batch) -> Batch:
+        wmb_mask = (pred.static_vars["wmb"] > 0).float()
+
+        # Undo the density channels. First transform by a sigmoid to get the actual value of the
+        # density channel.
+        for name in self.density_channel_surf_vars:
+            if name in pred.surf_vars:
+                mask = wmb_mask * (torch.sigmoid(pred.surf_vars[f"{name}_density"]) > 0.5).float()
+                pred.surf_vars[name][mask] = np.nan
+                del pred.surf_vars[f"{name}_density"]
+
+        # Undo the sine and cosine components.
+        for name in self.angle_surf_vars:
+            if f"{name}_sin" in pred.surf_vars and f"{name}_cos" in pred.surf_vars:
+                sin = pred.surf_vars[f"{name}_sin"]
+                cos = pred.surf_vars[f"{name}_cos"]
+                pred.surf_vars[name] = torch.rad2deg(torch.atan2(sin, cos))
+                del pred.surf_vars[f"{name}_sin"]
+                del pred.surf_vars[f"{name}_cos"]
+
+        return pred
