@@ -133,7 +133,7 @@ class AuroraWave(Model):
     """str: Name of the model."""
 
     def create_model(self) -> aurora.Aurora:
-        model = aurora.AuroraAirPollution()
+        model = aurora.AuroraWave()
         model.load_checkpoint_local(MLFLOW_ARTIFACTS[self.name])
         return model
 

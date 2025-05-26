@@ -24,7 +24,6 @@ from aurora.model.decoder import Perceiver3DDecoder
 from aurora.model.encoder import Perceiver3DEncoder
 from aurora.model.lora import LoRAMode
 from aurora.model.swin3d import BasicLayer3D, Swin3DTransformerBackbone
-from aurora.normalisation import locations
 
 __all__ = [
     "Aurora",
@@ -252,13 +251,11 @@ class Aurora(torch.nn.Module):
         Returns:
             :class:`Batch`: Prediction for the batch.
         """
+        batch = self.batch_transform_hook(batch)
+
         # Get the first parameter. We'll derive the data type and device from this parameter.
         p = next(self.parameters())
         batch = batch.type(p.dtype)
-
-        # This should should happen _before_ normalisation.
-        batch = self._batch_transform_hook(batch)
-
         batch = batch.normalise(surf_stats=self.surf_stats)
         batch = batch.crop(patch_size=self.patch_size)
         batch = batch.to(p.device)
@@ -277,6 +274,8 @@ class Aurora(torch.nn.Module):
             static_vars={k: v[None, None].repeat(B, T, 1, 1) for k, v in batch.static_vars.items()},
         )
 
+        # Apply some transformations before feeding `batch` to the encoder. We'll later want to
+        # refer to the original batch too, so rename the variable.
         transformed_batch = batch
 
         # Clamp positive variables.
@@ -354,8 +353,11 @@ class Aurora(torch.nn.Module):
 
         return pred
 
-    def _batch_transform_hook(self, batch: Batch) -> Batch:
-        """Transform the batch right after receiving it and before normalisation."""
+    def batch_transform_hook(self, batch: Batch) -> Batch:
+        """Transform the batch right after receiving it and before normalisation.
+
+        This function should be idempotent.
+        """
         return batch
 
     def _pre_encoder_hook(self, batch: Batch) -> Batch:
@@ -766,9 +768,9 @@ class AuroraWave(Aurora):
         d = _adapt_checkpoint_wave(self.patch_size, d)
         return d
 
-    def _batch_transform_hook(self, batch: Batch) -> Batch:
-        # NOTE: Here we _mutate_ the batch! It's better not to, but this is more memory efficient.
-        #       Since the mutations should be idempotent, we hope that this is OK to do.
+    def batch_transform_hook(self, batch: Batch) -> Batch:
+        #  Below we mutate `batch`, so make a copy here.
+        batch = dataclasses.replace(batch, surf_vars=dict(batch.surf_vars))
 
         # It is important that these components are split off _before_ normalisation, as they
         # have specific normalisation statistics.
@@ -783,21 +785,24 @@ class AuroraWave(Aurora):
             del batch.surf_vars["dwi"]
 
         # If the magnitude of a wave is zero (or practically zero), it is absent, so indicate that
-        # with NaNs.
-        for name_sh, other_wave_components in [
-            ("swh", ("mwd", "mwp", "pp1d")),
-            ("shww", ("mdww", "mpww")),
-            ("shts", ("mdts", "mdts")),
-            ("swh1", ("mwd1", "mwp1")),
-            ("swh2", ("mwd2", "mwp2")),
-        ]:
-            mask = batch.surf_vars[name_sh] < 1e-4
-            if mask.sum() > 0:
-                for name in (name_sh,) + other_wave_components:
-                    batch.surf_vars[name][mask] = np.nan
-                    # There should be no small values left, except for in wave directions.
-                    if name not in {"mwd", "mdww", "mdts", "mwd1", "mwd2"}:
-                        assert (batch.surf_vars[name] < 1e-4).sum() == 0
+        # with NaNs. Only do this when data is given to the model and not when it is rolled out.
+        if batch.metadata.rollout_step == 0:
+            for name_sh, other_wave_components in [
+                ("swh", ("mwd", "mwp", "pp1d")),
+                ("shww", ("mdww", "mpww")),
+                ("shts", ("mdts", "mdts")),
+                ("swh1", ("mwd1", "mwp1")),
+                ("swh2", ("mwd2", "mwp2")),
+            ]:
+                mask = batch.surf_vars[name_sh] < 1e-4
+                if mask.sum() > 0:
+                    for name in (name_sh,) + other_wave_components:
+                        x = batch.surf_vars[name].clone()  # Clone to safely mutate.
+                        x[mask] = np.nan
+                        batch.surf_vars[name] = x
+                        # There should be no small values left, except for in wave directions.
+                        if name not in {"mwd", "mdww", "mdts", "mwd1", "mwd2"}:
+                            assert (batch.surf_vars[name] < 1e-4).sum() == 0
 
         return batch
 
@@ -808,13 +813,13 @@ class AuroraWave(Aurora):
             # Create a density channel.
             if name in self.density_channel_surf_vars and f"{name}_density" not in batch.surf_vars:
                 batch.surf_vars[f"{name}_density"] = (~torch.isnan(x)).float()
-                batch.surf_vars[name] = x.nan_to_num(locations[name])
+                batch.surf_vars[name] = x.nan_to_num(0)
 
             # Add sine and cosine values of the angle and remove the original angle variable
             sin_cos_present = f"{name}_sin" in batch.surf_vars and f"{name}_cos" in batch.surf_vars
             if name in self.angle_surf_vars and not sin_cos_present:
-                batch.surf_vars[f"{name}_sin"] = torch.sin(torch.deg2rad(x))
-                batch.surf_vars[f"{name}_cos"] = torch.cos(torch.deg2rad(x))
+                batch.surf_vars[f"{name}_sin"] = torch.sin(torch.deg2rad(x)).nan_to_num(0)
+                batch.surf_vars[f"{name}_cos"] = torch.cos(torch.deg2rad(x)).nan_to_num(0)
                 del batch.surf_vars[name]
 
         return batch
@@ -827,7 +832,7 @@ class AuroraWave(Aurora):
             if f"{name}_sin" in pred.surf_vars and f"{name}_cos" in pred.surf_vars:
                 sin = pred.surf_vars[f"{name}_sin"]
                 cos = pred.surf_vars[f"{name}_cos"]
-                pred.surf_vars[name] = torch.rad2deg(torch.atan2(sin, cos))
+                pred.surf_vars[name] = torch.rad2deg(torch.atan2(sin, cos)) % 360
                 del pred.surf_vars[f"{name}_sin"]
                 del pred.surf_vars[f"{name}_cos"]
 
@@ -835,16 +840,12 @@ class AuroraWave(Aurora):
         # density channel.
         for name in self.density_channel_surf_vars:
             if name in pred.surf_vars:
-                mask = wmb_mask & (torch.sigmoid(pred.surf_vars[f"{name}_density"]) > 0.5)
-                pred.surf_vars[name][mask] = np.nan
+                density = torch.sigmoid(pred.surf_vars[f"{name}_density"])
+                mask = wmb_mask & (density > 0.5)
+                x = pred.surf_vars[name].clone()  # Clone for mutation.
+                x *= density  # This is part of the architecture.
+                x[~mask] = np.nan
+                pred.surf_vars[name] = x
                 del pred.surf_vars[f"{name}_density"]
-
-        # Finally, reproduce the direction of wind speed.
-        if "10u_wave" in pred.surf_vars and "10v_wave" in pred.surf_vars:
-            sin = -pred.surf_vars["10u_wave"] / pred.surf_vars["wind"]
-            cos = -pred.surf_vars["10v_wave"] / pred.surf_vars["wind"]
-            pred.surf_vars["dwi"] = torch.rad2deg(torch.atan2(sin, cos))
-            del pred.surf_vars["10u_wave"]
-            del pred.surf_vars["10v_wave"]
 
         return pred

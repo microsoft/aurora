@@ -23,6 +23,7 @@ def rollout(model: Aurora, batch: Batch, steps: int) -> Generator[Batch, None, N
         :class:`aurora.batch.Batch`: The prediction after every step.
     """
     # We will need to concatenate data, so ensure that everything is already of the right form.
+    batch = model.batch_transform_hook(batch)  # This might modify the available variables.
     # Use an arbitary parameter of the model to derive the data type and device.
     p = next(model.parameters())
     batch = batch.type(p.dtype)
