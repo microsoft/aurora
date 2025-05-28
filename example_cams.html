@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="./" >
+<html lang="en" data-content_root="./" data-theme="light">
 
   <head>
     <meta charset="utf-8" />
@@ -13,8 +13,8 @@
   
   
   <script data-cfasync="false">
-    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
-    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
   </script>
   
   <!-- Loaded before other Sphinx assets -->
@@ -60,14 +60,14 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'example_cams';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Track Predictions for Typhoon Nanmadol" href="example_tc_tracking.html" />
+    <link rel="next" title="Predictions for Ocean Waves" href="example_wave.html" />
     <link rel="prev" title="Predictions for HRES at 0.1 Degrees" href="example_hres_0.1.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
   
   
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="light">
 
   
   
@@ -150,8 +150,6 @@
   
     
     
-      
-    
     
     <img src="_static/aurora.jpg" class="logo__image only-light" alt="Aurora: A Foundation Model of the Atmosphere - Home"/>
     <script>document.write(`<img src="_static/aurora.jpg" class="logo__image only-dark" alt="Aurora: A Foundation Model of the Atmosphere - Home"/>`);</script>
@@ -196,6 +194,7 @@
 <li class="toctree-l1"><a class="reference internal" href="example_hres_t0.html">Predictions for HRES T0</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_hres_0.1.html">Predictions for HRES at 0.1 Degrees</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Predictions for Air Pollution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_wave.html">Predictions for Ocean Waves</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
@@ -485,7 +484,7 @@ document.write(`
                 <span class="s2">&quot;temperature&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;geopotential&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;specific_humidity&quot;</span><span class="p">,</span>
-                <span class="c1"># Pollution surface-level variables:</span>
+                <span class="c1"># Pollution atmospheric variables:</span>
                 <span class="s2">&quot;carbon_monoxide&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;nitrogen_dioxide&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;nitrogen_monoxide&quot;</span><span class="p">,</span>
@@ -727,11 +726,11 @@ document.write(`
       </div>
     </a>
     <a class="right-next"
-       href="example_tc_tracking.html"
+       href="example_wave.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Track Predictions for Typhoon Nanmadol</p>
+        <p class="prev-next-title">Predictions for Ocean Waves</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="./" >
+<html lang="en" data-content_root="./" data-theme="light">
 
   <head>
     <meta charset="utf-8" />
@@ -13,8 +13,8 @@
   
   
   <script data-cfasync="false">
-    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
-    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
   </script>
   
   <!-- Loaded before other Sphinx assets -->
@@ -67,7 +67,7 @@
   </head>
   
   
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="light">
 
   
   
@@ -150,8 +150,6 @@
   
     
     
-      
-    
     
     <img src="_static/aurora.jpg" class="logo__image only-light" alt="Aurora: A Foundation Model of the Atmosphere - Home"/>
     <script>document.write(`<img src="_static/aurora.jpg" class="logo__image only-dark" alt="Aurora: A Foundation Model of the Atmosphere - Home"/>`);</script>
@@ -196,6 +194,7 @@
 <li class="toctree-l1"><a class="reference internal" href="example_hres_t0.html">Predictions for HRES T0</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_hres_0.1.html">Predictions for HRES at 0.1 Degrees</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_cams.html">Predictions for Air Pollution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_wave.html">Predictions for Ocean Waves</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
@@ -522,6 +521,74 @@ also allowed:</p>
 </tbody>
 </table>
 </div>
+<p>For <a class="reference internal" href="models.html#aurora-wave"><span class="std std-ref">Aurora 0.25° Wave</span></a>, the following surface-level variables are also allowed:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">swh</span></code></p></td>
+<td><p>Significant wave height of the total wave in <code class="docutils literal notranslate"><span class="pre">m</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">mwd</span></code></p></td>
+<td><p>Mean wave direction of the total wave in <code class="docutils literal notranslate"><span class="pre">degrees</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">mwp</span></code></p></td>
+<td><p>Mean wave period of the total wave in <code class="docutils literal notranslate"><span class="pre">s</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">pp1d</span></code></p></td>
+<td><p>Peak wave period of the total wave in <code class="docutils literal notranslate"><span class="pre">s</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">shww</span></code></p></td>
+<td><p>Significant wave height of the wind wave component in <code class="docutils literal notranslate"><span class="pre">m</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">mdww</span></code></p></td>
+<td><p>Mean wave direction of the wind wave component in <code class="docutils literal notranslate"><span class="pre">degrees</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">mpww</span></code></p></td>
+<td><p>Mean wave period of the wind wave component in <code class="docutils literal notranslate"><span class="pre">s</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">shts</span></code></p></td>
+<td><p>Significant wave height of the total swell component in <code class="docutils literal notranslate"><span class="pre">m</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">mdts</span></code></p></td>
+<td><p>Mean wave direction of the total swell component in <code class="docutils literal notranslate"><span class="pre">degrees</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">mpts</span></code></p></td>
+<td><p>Mean wave period of the total swell component in <code class="docutils literal notranslate"><span class="pre">s</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">swh1</span></code></p></td>
+<td><p>Significant wave height of the first swell component in <code class="docutils literal notranslate"><span class="pre">m</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">mwd1</span></code></p></td>
+<td><p>Mean wave direction of the first swell component in <code class="docutils literal notranslate"><span class="pre">degrees</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">mwp1</span></code></p></td>
+<td><p>Mean wave period of the first swell component in <code class="docutils literal notranslate"><span class="pre">s</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">swh2</span></code></p></td>
+<td><p>Significant wave height of the second swell component in <code class="docutils literal notranslate"><span class="pre">m</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">mwd2</span></code></p></td>
+<td><p>Mean wave direction of the second swell component in <code class="docutils literal notranslate"><span class="pre">degrees</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">mwp2</span></code></p></td>
+<td><p>Mean wave period of the second swell component in <code class="docutils literal notranslate"><span class="pre">s</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">wind</span></code></p></td>
+<td><p>Ten-meter neutral wind speed in <code class="docutils literal notranslate"><span class="pre">m/s</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">10u_wind</span></code></p></td>
+<td><p>Ten-meter eastward neutral wind speed in <code class="docutils literal notranslate"><span class="pre">m/s</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">10v_wind</span></code></p></td>
+<td><p>Ten-meter southward neutral wind speed in <code class="docutils literal notranslate"><span class="pre">m/s</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </section>
 <section id="batch-static-vars">
 <h2><code class="docutils literal notranslate"><span class="pre">Batch.static_vars</span></code><a class="headerlink" href="#batch-static-vars" title="Link to this heading">#</a></h2>
@@ -549,6 +616,11 @@ and <code class="docutils literal notranslate"><span class="pre">w</span></code>
 </tbody>
 </table>
 </div>
+<p><a class="reference internal" href="models.html#aurora-air-pollution"><span class="std std-ref">Aurora 0.4° Air Pollution</span></a>
+and <a class="reference internal" href="models.html#aurora-wave"><span class="std std-ref">Aurora 0.25° Wave</span></a> require additional static variables, but these are not
+easy to obtain yourself.
+You need to obtain these from the HuggingFace repository.
+See the description of the models.</p>
 </section>
 <section id="batch-atmos-vars">
 <h2><code class="docutils literal notranslate"><span class="pre">Batch.atmos_vars</span></code><a class="headerlink" href="#batch-atmos-vars" title="Link to this heading">#</a></h2>

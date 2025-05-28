@@ -34,6 +34,9 @@ These models need to be referred to by the value of their attribute `name`.
 .. autoclass:: aurora.foundry.common.model.AuroraAirPollution
     :members: name
 
+.. autoclass:: aurora.foundry.common.model.AuroraWave
+    :members: name
+
 Server
 ------
 .. autofunction:: aurora.foundry.server.mlflow_wrapper.AuroraModelWrapper

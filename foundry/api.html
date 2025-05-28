@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="../" >
+<html lang="en" data-content_root="../" data-theme="light">
 
   <head>
     <meta charset="utf-8" />
@@ -13,8 +13,8 @@
   
   
   <script data-cfasync="false">
-    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
-    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
   </script>
   
   <!-- Loaded before other Sphinx assets -->
@@ -66,7 +66,7 @@
   </head>
   
   
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="light">
 
   
   
@@ -149,8 +149,6 @@
   
     
     
-      
-    
     
     <img src="../_static/aurora.jpg" class="logo__image only-light" alt="Aurora: A Foundation Model of the Atmosphere - Home"/>
     <script>document.write(`<img src="../_static/aurora.jpg" class="logo__image only-dark" alt="Aurora: A Foundation Model of the Atmosphere - Home"/>`);</script>
@@ -195,6 +193,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../example_hres_t0.html">Predictions for HRES T0</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../example_hres_0.1.html">Predictions for HRES at 0.1 Degrees</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../example_cams.html">Predictions for Air Pollution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example_wave.html">Predictions for Ocean Waves</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
@@ -436,6 +435,10 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.foundry.common.model.AuroraAirPollution.name"><code class="docutils literal notranslate"><span class="pre">AuroraAirPollution.name</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.foundry.common.model.AuroraWave"><code class="docutils literal notranslate"><span class="pre">AuroraWave</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.foundry.common.model.AuroraWave.name"><code class="docutils literal notranslate"><span class="pre">AuroraWave.name</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#server">Server</a><ul class="nav section-nav flex-column">
@@ -465,12 +468,9 @@ document.write(`
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>batch</strong> (<a class="reference internal" href="../api.html#aurora.Batch" title="aurora.Batch"><code class="xref py py-class docutils literal notranslate"><span class="pre">aurora.Batch</span></code></a>) – Initial condition.</p></li>
-<li><p><strong>model_name</strong> (<em>str</em>) – <p>Name of the model. This name must be available in
-<code class="xref py py-mod docutils literal notranslate"><span class="pre">aurora.foundry.common.model</span></code>. See the Aurora Foundry Python API documentation for</p>
-<blockquote>
-<div><p>which models are available.</p>
-</div></blockquote>
-</p></li>
+<li><p><strong>model_name</strong> (<em>str</em>) – Name of the model. This name must be available in
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">aurora.foundry.common.model</span></code>. See the Aurora Foundry Python API documentation for
+which models are available.</p></li>
 <li><p><strong>num_steps</strong> (<em>int</em>) – Number of prediction steps.</p></li>
 <li><p><strong>channel</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">aurora.foundry.common.channel.CommunicationChannel</span></code>) – Channel to use for
 sending and receiving data.</p></li>
@@ -621,6 +621,22 @@ with read and write permissions.</p>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="aurora.foundry.common.model.AuroraWave">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">aurora.foundry.common.model.</span></span><span class="sig-name descname"><span class="pre">AuroraWave</span></span><a class="reference internal" href="../_modules/aurora/foundry/common/model.html#AuroraWave"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora.foundry.common.model.AuroraWave" title="Link to this definition">#</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="aurora.foundry.common.model.AuroraWave.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'aurora-0.25-wave'</span></em><a class="headerlink" href="#aurora.foundry.common.model.AuroraWave.name" title="Link to this definition">#</a></dt>
+<dd><p>Name of the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="server">
 <h2>Server<a class="headerlink" href="#server" title="Link to this heading">#</a></h2>
@@ -723,6 +739,10 @@ with read and write permissions.</p>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.foundry.common.model.AuroraAirPollution"><code class="docutils literal notranslate"><span class="pre">AuroraAirPollution</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.foundry.common.model.AuroraAirPollution.name"><code class="docutils literal notranslate"><span class="pre">AuroraAirPollution.name</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.foundry.common.model.AuroraWave"><code class="docutils literal notranslate"><span class="pre">AuroraWave</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.foundry.common.model.AuroraWave.name"><code class="docutils literal notranslate"><span class="pre">AuroraWave.name</span></code></a></li>
 </ul>
 </li>
 </ul>

@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="../../../" >
+<html lang="en" data-content_root="../../../" data-theme="light">
 
   <head>
     <meta charset="utf-8" />
@@ -12,8 +12,8 @@
   
   
   <script data-cfasync="false">
-    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
-    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
   </script>
   
   <!-- Loaded before other Sphinx assets -->
@@ -64,7 +64,7 @@
   </head>
   
   
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="light">
 
   
   
@@ -149,8 +149,6 @@
   
     
     
-      
-    
     
     <img src="../../../_static/aurora.jpg" class="logo__image only-light" alt="Aurora: A Foundation Model of the Atmosphere - Home"/>
     <script>document.write(`<img src="../../../_static/aurora.jpg" class="logo__image only-dark" alt="Aurora: A Foundation Model of the Atmosphere - Home"/>`);</script>
@@ -195,6 +193,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../example_hres_t0.html">Predictions for HRES T0</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../example_hres_0.1.html">Predictions for HRES at 0.1 Degrees</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../example_cams.html">Predictions for Air Pollution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../example_wave.html">Predictions for Ocean Waves</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
@@ -371,7 +370,11 @@ document.write(`
 <span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.batch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Batch</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.compat</span><span class="w"> </span><span class="kn">import</span> <span class="n">_adapt_checkpoint_air_pollution</span><span class="p">,</span> <span class="n">_adapt_checkpoint_pretrained</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.compat</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_adapt_checkpoint_air_pollution</span><span class="p">,</span>
+    <span class="n">_adapt_checkpoint_pretrained</span><span class="p">,</span>
+    <span class="n">_adapt_checkpoint_wave</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.decoder</span><span class="w"> </span><span class="kn">import</span> <span class="n">Perceiver3DDecoder</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.encoder</span><span class="w"> </span><span class="kn">import</span> <span class="n">Perceiver3DEncoder</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.lora</span><span class="w"> </span><span class="kn">import</span> <span class="n">LoRAMode</span>
@@ -385,6 +388,7 @@ document.write(`
     <span class="s2">&quot;Aurora12hPretrained&quot;</span><span class="p">,</span>
     <span class="s2">&quot;AuroraHighRes&quot;</span><span class="p">,</span>
     <span class="s2">&quot;AuroraAirPollution&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AuroraWave&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 
 
@@ -490,8 +494,8 @@ document.write(`
 <span class="sd">            lora_steps (int, optional): Use different LoRA adaptation for the first so-many roll-out</span>
 <span class="sd">                steps.</span>
 <span class="sd">            lora_mode (str, optional): LoRA mode. `&quot;single&quot;` uses the same LoRA for all roll-out</span>
-<span class="sd">                steps, and `&quot;all&quot;` uses a different LoRA for every roll-out step. Defaults to</span>
-<span class="sd">                `&quot;single&quot;`.</span>
+<span class="sd">                steps, `&quot;from_second&quot;` uses the same LoRA from the second roll-out step on, and</span>
+<span class="sd">                `&quot;all&quot;` uses a different LoRA for every roll-out step. Defaults to `&quot;single&quot;`.</span>
 <span class="sd">            surf_stats (dict[str, tuple[float, float]], optional): For these surface-level</span>
 <span class="sd">                variables, adjust the normalisation to the given tuple consisting of a new location</span>
 <span class="sd">                and scale.</span>
@@ -609,6 +613,8 @@ document.write(`
 <span class="sd">        Returns:</span>
 <span class="sd">            :class:`Batch`: Prediction for the batch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_transform_hook</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+
         <span class="c1"># Get the first parameter. We&#39;ll derive the data type and device from this parameter.</span>
         <span class="n">p</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
         <span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
@@ -630,6 +636,8 @@ document.write(`
             <span class="n">static_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">static_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
         <span class="p">)</span>
 
+        <span class="c1"># Apply some transformations before feeding `batch` to the encoder. We&#39;ll later want to</span>
+        <span class="c1"># refer to the original batch too, so rename the variable.</span>
         <span class="n">transformed_batch</span> <span class="o">=</span> <span class="n">batch</span>
 
         <span class="c1"># Clamp positive variables.</span>
@@ -706,6 +714,16 @@ document.write(`
         <span class="n">pred</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">unnormalise</span><span class="p">(</span><span class="n">surf_stats</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">surf_stats</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">pred</span></div>
+
+
+<div class="viewcode-block" id="Aurora.batch_transform_hook">
+<a class="viewcode-back" href="../../../api.html#aurora.Aurora.batch_transform_hook">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">batch_transform_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform the batch right after receiving it and before normalisation.</span>
+
+<span class="sd">        This function should be idempotent.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">batch</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_pre_encoder_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
@@ -844,8 +862,7 @@ document.write(`
         <span class="n">use_lora</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">Aurora</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">use_lora</span><span class="o">=</span><span class="n">use_lora</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
         <span class="p">)</span></div>
@@ -874,8 +891,7 @@ document.write(`
         <span class="n">use_lora</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">Aurora</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">encoder_depths</span><span class="o">=</span><span class="n">encoder_depths</span><span class="p">,</span>
             <span class="n">encoder_num_heads</span><span class="o">=</span><span class="n">encoder_num_heads</span><span class="p">,</span>
             <span class="n">decoder_depths</span><span class="o">=</span><span class="n">decoder_depths</span><span class="p">,</span>
@@ -905,8 +921,7 @@ document.write(`
         <span class="n">use_lora</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">Aurora</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">timestep</span><span class="o">=</span><span class="n">timestep</span><span class="p">,</span>
             <span class="n">use_lora</span><span class="o">=</span><span class="n">use_lora</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
@@ -929,8 +944,7 @@ document.write(`
         <span class="n">decoder_depths</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
         <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">Aurora</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">patch_size</span><span class="o">=</span><span class="n">patch_size</span><span class="p">,</span>
             <span class="n">encoder_depths</span><span class="o">=</span><span class="n">encoder_depths</span><span class="p">,</span>
             <span class="n">decoder_depths</span><span class="o">=</span><span class="n">decoder_depths</span><span class="p">,</span>
@@ -993,8 +1007,7 @@ document.write(`
         <span class="n">simulate_indexing_bug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">Aurora</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">surf_vars</span><span class="o">=</span><span class="n">surf_vars</span><span class="p">,</span>
             <span class="n">static_vars</span><span class="o">=</span><span class="n">static_vars</span><span class="p">,</span>
             <span class="n">atmos_vars</span><span class="o">=</span><span class="n">atmos_vars</span><span class="p">,</span>
@@ -1097,6 +1110,142 @@ document.write(`
         <span class="n">d</span> <span class="o">=</span> <span class="n">Aurora</span><span class="o">.</span><span class="n">_adapt_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
         <span class="n">d</span> <span class="o">=</span> <span class="n">_adapt_checkpoint_air_pollution</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">d</span></div>
+
+
+
+<div class="viewcode-block" id="AuroraWave">
+<a class="viewcode-back" href="../../../api.html#aurora.AuroraWave">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AuroraWave</span><span class="p">(</span><span class="n">Aurora</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Version of Aurora fined-tuned to HRES-WAM ocean wave data.&quot;&quot;&quot;</span>
+
+    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-wave.ckpt&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;2t&quot;</span><span class="p">,</span> <span class="s2">&quot;10u&quot;</span><span class="p">,</span> <span class="s2">&quot;10v&quot;</span><span class="p">,</span> <span class="s2">&quot;msl&quot;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;swh&quot;</span><span class="p">,</span> <span class="s2">&quot;mwd&quot;</span><span class="p">,</span> <span class="s2">&quot;mwp&quot;</span><span class="p">,</span> <span class="s2">&quot;pp1d&quot;</span><span class="p">,</span> <span class="s2">&quot;shww&quot;</span><span class="p">,</span> <span class="s2">&quot;mdww&quot;</span><span class="p">,</span> <span class="s2">&quot;mpww&quot;</span><span class="p">,</span> <span class="s2">&quot;shts&quot;</span><span class="p">,</span> <span class="s2">&quot;mdts&quot;</span><span class="p">,</span> <span class="s2">&quot;mpts&quot;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;swh1&quot;</span><span class="p">,</span> <span class="s2">&quot;mwd1&quot;</span><span class="p">,</span> <span class="s2">&quot;mwp1&quot;</span><span class="p">,</span> <span class="s2">&quot;swh2&quot;</span><span class="p">,</span> <span class="s2">&quot;mwd2&quot;</span><span class="p">,</span> <span class="s2">&quot;mwp2&quot;</span><span class="p">,</span> <span class="s2">&quot;wind&quot;</span><span class="p">,</span> <span class="s2">&quot;10u_wave&quot;</span><span class="p">,</span> <span class="s2">&quot;10v_wave&quot;</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">static_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;lsm&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;slt&quot;</span><span class="p">,</span> <span class="s2">&quot;wmb&quot;</span><span class="p">,</span> <span class="s2">&quot;lat_mask&quot;</span><span class="p">),</span>
+        <span class="n">lora_mode</span><span class="p">:</span> <span class="n">LoRAMode</span> <span class="o">=</span> <span class="s2">&quot;from_second&quot;</span><span class="p">,</span>
+        <span class="n">stabilise_level_agg</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">density_channel_surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;swh&quot;</span><span class="p">,</span> <span class="s2">&quot;mwd&quot;</span><span class="p">,</span> <span class="s2">&quot;mwp&quot;</span><span class="p">,</span> <span class="s2">&quot;pp1d&quot;</span><span class="p">,</span> <span class="s2">&quot;shww&quot;</span><span class="p">,</span> <span class="s2">&quot;mdww&quot;</span><span class="p">,</span> <span class="s2">&quot;mpww&quot;</span><span class="p">,</span> <span class="s2">&quot;shts&quot;</span><span class="p">,</span> <span class="s2">&quot;mdts&quot;</span><span class="p">,</span> <span class="s2">&quot;mpts&quot;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;swh1&quot;</span><span class="p">,</span> <span class="s2">&quot;mwd1&quot;</span><span class="p">,</span> <span class="s2">&quot;mwp1&quot;</span><span class="p">,</span> <span class="s2">&quot;swh2&quot;</span><span class="p">,</span> <span class="s2">&quot;mwd2&quot;</span><span class="p">,</span> <span class="s2">&quot;mwp2&quot;</span><span class="p">,</span> <span class="s2">&quot;wind&quot;</span><span class="p">,</span> <span class="s2">&quot;10u_wave&quot;</span><span class="p">,</span> <span class="s2">&quot;10v_wave&quot;</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">angle_surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;mwd&quot;</span><span class="p">,</span> <span class="s2">&quot;mdww&quot;</span><span class="p">,</span> <span class="s2">&quot;mdts&quot;</span><span class="p">,</span> <span class="s2">&quot;mwd1&quot;</span><span class="p">,</span> <span class="s2">&quot;mwd2&quot;</span><span class="p">),</span>
+        <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Model the density, sine, and cosine versions of the variables.</span>
+        <span class="n">supplemented_surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">surf_vars</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">angle_surf_vars</span><span class="p">:</span>
+                <span class="n">supplemented_surf_vars</span> <span class="o">+=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_sin&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_cos&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">supplemented_surf_vars</span> <span class="o">+=</span> <span class="p">(</span><span class="n">name</span><span class="p">,)</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">density_channel_surf_vars</span><span class="p">:</span>
+                <span class="n">supplemented_surf_vars</span> <span class="o">+=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_density&quot;</span><span class="p">,)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">surf_vars</span><span class="o">=</span><span class="n">supplemented_surf_vars</span><span class="p">,</span>
+            <span class="n">static_vars</span><span class="o">=</span><span class="n">static_vars</span><span class="p">,</span>
+            <span class="n">lora_mode</span><span class="o">=</span><span class="n">lora_mode</span><span class="p">,</span>
+            <span class="n">stabilise_level_agg</span><span class="o">=</span><span class="n">stabilise_level_agg</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">density_channel_surf_vars</span> <span class="o">=</span> <span class="n">density_channel_surf_vars</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">angle_surf_vars</span> <span class="o">=</span> <span class="n">angle_surf_vars</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_adapt_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">Aurora</span><span class="o">.</span><span class="n">_adapt_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">_adapt_checkpoint_wave</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">d</span>
+
+<div class="viewcode-block" id="AuroraWave.batch_transform_hook">
+<a class="viewcode-back" href="../../../api.html#aurora.AuroraWave.batch_transform_hook">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">batch_transform_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
+        <span class="c1">#  Below we mutate `batch`, so make a copy here.</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">surf_vars</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">))</span>
+
+        <span class="c1"># It is important that these components are split off _before_ normalisation, as they</span>
+        <span class="c1"># have specific normalisation statistics.</span>
+        <span class="k">if</span> <span class="s2">&quot;dwi&quot;</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span> <span class="ow">and</span> <span class="s2">&quot;wind&quot;</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">:</span>
+            <span class="c1"># Split into u-component and v-component.</span>
+            <span class="n">u_wave</span> <span class="o">=</span> <span class="o">-</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;wind&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;dwi&quot;</span><span class="p">]))</span>
+            <span class="n">v_wave</span> <span class="o">=</span> <span class="o">-</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;wind&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;dwi&quot;</span><span class="p">]))</span>
+
+            <span class="c1"># Update batch and remove `dwi`.</span>
+            <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;10u_wave&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">u_wave</span>
+            <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;10v_wave&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_wave</span>
+            <span class="k">del</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;dwi&quot;</span><span class="p">]</span>
+
+        <span class="c1"># If the magnitude of a wave is zero (or practically zero), it is absent, so indicate that</span>
+        <span class="c1"># with NaNs. Only do this when data is given to the model and not when it is rolled out.</span>
+        <span class="k">if</span> <span class="n">batch</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">rollout_step</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">name_sh</span><span class="p">,</span> <span class="n">other_wave_components</span> <span class="ow">in</span> <span class="p">[</span>
+                <span class="p">(</span><span class="s2">&quot;swh&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;mwd&quot;</span><span class="p">,</span> <span class="s2">&quot;mwp&quot;</span><span class="p">,</span> <span class="s2">&quot;pp1d&quot;</span><span class="p">)),</span>
+                <span class="p">(</span><span class="s2">&quot;shww&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;mdww&quot;</span><span class="p">,</span> <span class="s2">&quot;mpww&quot;</span><span class="p">)),</span>
+                <span class="p">(</span><span class="s2">&quot;shts&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;mdts&quot;</span><span class="p">,</span> <span class="s2">&quot;mdts&quot;</span><span class="p">)),</span>
+                <span class="p">(</span><span class="s2">&quot;swh1&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;mwd1&quot;</span><span class="p">,</span> <span class="s2">&quot;mwp1&quot;</span><span class="p">)),</span>
+                <span class="p">(</span><span class="s2">&quot;swh2&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;mwd2&quot;</span><span class="p">,</span> <span class="s2">&quot;mwp2&quot;</span><span class="p">)),</span>
+            <span class="p">]:</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">name_sh</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">1e-4</span>
+                <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="n">name_sh</span><span class="p">,)</span> <span class="o">+</span> <span class="n">other_wave_components</span><span class="p">:</span>
+                        <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>  <span class="c1"># Clone to safely mutate.</span>
+                        <span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                        <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+                        <span class="c1"># There should be no small values left, except for in wave directions.</span>
+                        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;mwd&quot;</span><span class="p">,</span> <span class="s2">&quot;mdww&quot;</span><span class="p">,</span> <span class="s2">&quot;mdts&quot;</span><span class="p">,</span> <span class="s2">&quot;mwd1&quot;</span><span class="p">,</span> <span class="s2">&quot;mwd2&quot;</span><span class="p">}:</span>
+                            <span class="k">assert</span> <span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">1e-4</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span>
+
+        <span class="k">return</span> <span class="n">batch</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_pre_encoder_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+            <span class="c1"># Create a density channel.</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">density_channel_surf_vars</span> <span class="ow">and</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_density&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">:</span>
+                <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_density&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">~</span><span class="n">torch</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+                <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="c1"># Add sine and cosine values of the angle and remove the original angle variable</span>
+            <span class="n">sin_cos_present</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_sin&quot;</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span> <span class="ow">and</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_cos&quot;</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle_surf_vars</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">sin_cos_present</span><span class="p">:</span>
+                <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_sin&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_cos&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="k">del</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">batch</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_post_decoder_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
+        <span class="n">wmb_mask</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">static_vars</span><span class="p">[</span><span class="s2">&quot;wmb&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+        <span class="c1"># Undo the sine and cosine components.</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle_surf_vars</span><span class="p">:</span>
+            <span class="k">if</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_sin&quot;</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span> <span class="ow">and</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_cos&quot;</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">:</span>
+                <span class="n">sin</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_sin&quot;</span><span class="p">]</span>
+                <span class="n">cos</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_cos&quot;</span><span class="p">]</span>
+                <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">sin</span><span class="p">,</span> <span class="n">cos</span><span class="p">))</span> <span class="o">%</span> <span class="mi">360</span>
+                <span class="k">del</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_sin&quot;</span><span class="p">]</span>
+                <span class="k">del</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_cos&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Undo the density channels. First transform by a sigmoid to get the actual value of the</span>
+        <span class="c1"># density channel.</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">density_channel_surf_vars</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">:</span>
+                <span class="n">density</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_density&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="n">wmb_mask</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">*</span> <span class="n">wmb_mask</span>
+                <span class="n">data</span><span class="p">[</span><span class="n">density</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+                <span class="k">del</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_density&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">pred</span></div>
 
 </pre></div>
 

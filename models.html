@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="./" >
+<html lang="en" data-content_root="./" data-theme="light">
 
   <head>
     <meta charset="utf-8" />
@@ -13,8 +13,8 @@
   
   
   <script data-cfasync="false">
-    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
-    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
   </script>
   
   <!-- Loaded before other Sphinx assets -->
@@ -67,7 +67,7 @@
   </head>
   
   
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="light">
 
   
   
@@ -150,8 +150,6 @@
   
     
     
-      
-    
     
     <img src="_static/aurora.jpg" class="logo__image only-light" alt="Aurora: A Foundation Model of the Atmosphere - Home"/>
     <script>document.write(`<img src="_static/aurora.jpg" class="logo__image only-dark" alt="Aurora: A Foundation Model of the Atmosphere - Home"/>`);</script>
@@ -196,6 +194,7 @@
 <li class="toctree-l1"><a class="reference internal" href="example_hres_t0.html">Predictions for HRES T0</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_hres_0.1.html">Predictions for HRES at 0.1 Degrees</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_cams.html">Predictions for Air Pollution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_wave.html">Predictions for Ocean Waves</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
@@ -437,6 +436,12 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">Static Variables</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora-0-25-wave">Aurora 0.25° Wave</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id16">Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id17">Recommended Use</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id18">Static Variables</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -662,7 +667,7 @@ For convenience, these are also available in
 </section>
 <section id="id10">
 <h3>Recommended Use<a class="headerlink" href="#id10" title="Link to this heading">#</a></h3>
-<p>Use Aurora 0.1° Fine-Tuned if you aim to make predictions for IFS HRES T0 at 0.1° resolution.
+<p>Use Aurora 0.1° Fine-Tuned if you aim to make predictions for IFS HRES analysis at 0.1° resolution.
 Note that 0.1° resolution means that the data should have dimensions <code class="docutils literal notranslate"><span class="pre">(1801,</span> <span class="pre">3600)</span></code>.
 Aurora 0.1° Fine-Tuned is the best performing version of Aurora at 0.1° resolution.</p>
 <p><strong>Important:</strong>
@@ -749,7 +754,8 @@ This version of Aurora is capable of making air pollution forecasts.</p>
 </section>
 <section id="id14">
 <h3>Recommended Use<a class="headerlink" href="#id14" title="Link to this heading">#</a></h3>
-<p>Use Aurora 0.4° Air Pollution if you aim to make predictions for CAMS analysis.</p>
+<p>Use Aurora 0.4° Air Pollution if you aim to make predictions for CAMS analysis.
+Note that 0.4° resolution means that the data should have dimensions <code class="docutils literal notranslate"><span class="pre">(451,</span> <span class="pre">900)</span></code>.</p>
 <p><strong>Important:</strong>
 For optimal performance, it is crucial that you only run Aurora 0.4° Air Pollution on CAMS analysis data.
 Producing predictions for any other data set might give sensible predictions,
@@ -782,6 +788,62 @@ but performance may not be optimal anymore.</p>
 <h3>Static Variables<a class="headerlink" href="#id15" title="Link to this heading">#</a></h3>
 <p>Aurora 0.4° Air Pollution requires
 <a class="reference external" href="https://huggingface.co/microsoft/aurora/resolve/main/aurora-0.4-air-pollution-static.pickle">static variables from the HuggingFace repository</a>.</p>
+</section>
+</section>
+<section id="aurora-0-25-wave">
+<span id="aurora-wave"></span><h2>Aurora 0.25° Wave<a class="headerlink" href="#aurora-0-25-wave" title="Link to this heading">#</a></h2>
+<p>Aurora 0.25° Wave is Aurora 0.25° Pretrained fine-tuned on
+<a class="reference external" href="https://www.ecmwf.int/en/forecasts/datasets/set-ii">HRES-WAM ocean wave data</a>.
+This version of Aurora is capable of making ocean wave forecasts.</p>
+<section id="id16">
+<h3>Usage<a class="headerlink" href="#id16" title="Link to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraWave</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraWave</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="id17">
+<h3>Recommended Use<a class="headerlink" href="#id17" title="Link to this heading">#</a></h3>
+<p>Use Aurora 0.25° Wave if you aim to make predictions for HRES-WAM analysis data combined with HRES T0.</p>
+<p><strong>Important:</strong>
+Some specific postprocessing applies to the HRES-WAM data.
+See Section C.5 of the <a class="reference external" href="https://static-content.springer.com/esm/art%3A10.1038%2Fs41586-025-09005-y/MediaObjects/41586_2025_9005_MOESM1_ESM.pdf">Supplementary Information</a>.</p>
+<p><strong>Important:</strong>
+For optimal performance, it is crucial that you only run Aurora 0.25° Wave on batches with all
+meteorological variables taken from HRES T0 and all ocean wave variables taken from HRES-WAM
+analysis.
+Producing predictions for any other combination might give sensible predictions,
+but performance may not be optimal anymore.</p>
+<p>For optimal performance, the model requires the following variables and pressure levels:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Required</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Surface-level variables</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">2t</span></code>, <code class="docutils literal notranslate"><span class="pre">10u</span></code>, <code class="docutils literal notranslate"><span class="pre">10v</span></code>, <code class="docutils literal notranslate"><span class="pre">swh</span></code>, <code class="docutils literal notranslate"><span class="pre">mwd</span></code>, <code class="docutils literal notranslate"><span class="pre">mwp</span></code>, <code class="docutils literal notranslate"><span class="pre">pp1d</span></code>, <code class="docutils literal notranslate"><span class="pre">shww</span></code>, <code class="docutils literal notranslate"><span class="pre">mdww</span></code>, <code class="docutils literal notranslate"><span class="pre">mpww</span></code>, <code class="docutils literal notranslate"><span class="pre">shts</span></code>, <code class="docutils literal notranslate"><span class="pre">mdts</span></code>, <code class="docutils literal notranslate"><span class="pre">mpts</span></code>, <code class="docutils literal notranslate"><span class="pre">swh1</span></code>, <code class="docutils literal notranslate"><span class="pre">mwd1</span></code>, <code class="docutils literal notranslate"><span class="pre">mwp1</span></code>, <code class="docutils literal notranslate"><span class="pre">swh2</span></code>, <code class="docutils literal notranslate"><span class="pre">mwd2</span></code>, <code class="docutils literal notranslate"><span class="pre">mwp2</span></code>, <code class="docutils literal notranslate"><span class="pre">10u_wave</span></code>, <code class="docutils literal notranslate"><span class="pre">10v_wave</span></code>, <code class="docutils literal notranslate"><span class="pre">wind</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Static variables</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">lsm</span></code>, <code class="docutils literal notranslate"><span class="pre">slt</span></code>, <code class="docutils literal notranslate"><span class="pre">z</span></code>, <code class="docutils literal notranslate"><span class="pre">wmb</span></code>, <code class="docutils literal notranslate"><span class="pre">lat_mask</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Atmospheric variables</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">t</span></code>, <code class="docutils literal notranslate"><span class="pre">u</span></code>, <code class="docutils literal notranslate"><span class="pre">v</span></code>, <code class="docutils literal notranslate"><span class="pre">q</span></code>, <code class="docutils literal notranslate"><span class="pre">z</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Pressure levels (hPa)</p></td>
+<td><p>50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="id18">
+<h3>Static Variables<a class="headerlink" href="#id18" title="Link to this heading">#</a></h3>
+<p>Aurora 0.25° Wave requires
+<a class="reference external" href="https://huggingface.co/microsoft/aurora/resolve/main/aurora-0.25-wave-static.pickle">static variables from the HuggingFace repository</a>.</p>
 </section>
 </section>
 </section>
@@ -885,6 +947,12 @@ but performance may not be optimal anymore.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">Usage</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">Recommended Use</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">Static Variables</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora-0-25-wave">Aurora 0.25° Wave</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id16">Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id17">Recommended Use</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id18">Static Variables</a></li>
 </ul>
 </li>
 </ul>
