@@ -840,11 +840,9 @@ class AuroraWave(Aurora):
         # density channel.
         for name in self.density_channel_surf_vars:
             if name in pred.surf_vars:
-                density = torch.sigmoid(pred.surf_vars[f"{name}_density"])
-                mask = wmb_mask & (density > 0.5)
-                x = pred.surf_vars[name].clone()  # Clone for mutation.
-                x *= density  # This is part of the architecture.
-                x[~mask] = np.nan
+                density = torch.sigmoid(pred.surf_vars[f"{name}_density"]) * wmb_mask
+                x = pred.surf_vars[name] * wmb_mask
+                x[density < 0.5] = np.nan
                 pred.surf_vars[name] = x
                 del pred.surf_vars[f"{name}_density"]
 
