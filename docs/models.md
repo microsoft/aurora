@@ -295,6 +295,10 @@ model.load_checkpoint()
 Use Aurora 0.25° Wave if you aim to make predictions for HRES-WAM analysis data combined with HRES T0.
 
 **Important:**
+Some specific postprocessing applies to the HRES-WAM data.
+See Section C.5 of the [Supplementary Information](https://static-content.springer.com/esm/art%3A10.1038%2Fs41586-025-09005-y/MediaObjects/41586_2025_9005_MOESM1_ESM.pdf).
+
+**Important:**
 For optimal performance, it is crucial that you only run Aurora 0.25° Wave on batches with all
 meteorological variables taken from HRES T0 and all ocean wave variables taken from HRES-WAM
 analysis.
