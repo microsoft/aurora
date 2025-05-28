@@ -841,9 +841,9 @@ class AuroraWave(Aurora):
         for name in self.density_channel_surf_vars:
             if name in pred.surf_vars:
                 density = torch.sigmoid(pred.surf_vars[f"{name}_density"]) * wmb_mask
-                x = pred.surf_vars[name] * wmb_mask
-                x[density < 0.5] = np.nan
-                pred.surf_vars[name] = x
+                data = pred.surf_vars[name] * wmb_mask
+                data[density < 0.5] = np.nan
+                pred.surf_vars[name] = data
                 del pred.surf_vars[f"{name}_density"]
 
         return pred
