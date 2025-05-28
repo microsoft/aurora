@@ -8,7 +8,7 @@ from torch import nn
 
 __all__ = ["LoRA", "LoRARollout", "LoRAMode"]
 
-LoRAMode = Literal["single", "all"]
+LoRAMode = Literal["single", "from_second", "all"]
 
 
 class LoRA(nn.Module):
@@ -86,7 +86,8 @@ class LoRARollout(nn.Module):
             dropout (float, optional): Drop-out rate. Defaults to `0.0`.
             max_steps (int, optional): Maximum number of roll-out steps. Defaults to `40`.
             mode (str, optional): Mode. `"single"` uses the same LoRA for all roll-out steps,
-                and `"all"` uses a different LoRA for every roll-out step. Defaults to `"single"`.
+                `"from_second"` uses the same LoRA from the second roll-out step on, and `"all"`
+                uses a different LoRA for every roll-out step. Defaults to `"single"`.
         """
         super().__init__()
 
@@ -117,6 +118,11 @@ class LoRARollout(nn.Module):
 
         if self.mode == "single":
             return self.loras[0](x)
+        elif self.mode == "from_second":
+            if step == 0:
+                return 0
+            else:
+                return self.loras[0](x)
         elif self.mode == "all":
             return self.loras[step](x)
         else:

@@ -11,6 +11,7 @@ from aurora.normalisation import level_to_str
 __all__ = [
     "_adapt_checkpoint_pretrained",
     "_adapt_checkpoint_air_pollution",
+    "_adapt_checkpoint_wave",
 ]
 
 
@@ -261,5 +262,19 @@ def _adapt_checkpoint_air_pollution(
                 for i, v in enumerate(("co", "no", "no2", "go3", "so2")):
                     d[f"decoder.atmos_heads.{v}{suffix}.layers.{level}.weight"] = weight[:, i]
                     d[f"decoder.atmos_heads.{v}{suffix}.layers.{level}.bias"] = bias[:, i]
+
+    return d
+
+
+def _adapt_checkpoint_wave(
+    patch_size: int,
+    d: dict[str, torch.Tensor],
+) -> dict[str, torch.Tensor]:
+    # The layer norm layers in the level aggregation are named differently.
+    for n1, n2 in [(".k_ln.", ".ln_k."), (".q_ln.", ".ln_q.")]:
+        for k in list(d):
+            if n1 in k:
+                d[k.replace(n1, n2)] = d[k]
+                del d[k]
 
     return d

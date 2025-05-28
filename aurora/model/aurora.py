@@ -15,7 +15,11 @@ from torch.distributed.algorithms._checkpoint.checkpoint_wrapper import (
 )
 
 from aurora.batch import Batch
-from aurora.model.compat import _adapt_checkpoint_air_pollution, _adapt_checkpoint_pretrained
+from aurora.model.compat import (
+    _adapt_checkpoint_air_pollution,
+    _adapt_checkpoint_pretrained,
+    _adapt_checkpoint_wave,
+)
 from aurora.model.decoder import Perceiver3DDecoder
 from aurora.model.encoder import Perceiver3DEncoder
 from aurora.model.lora import LoRAMode
@@ -29,6 +33,7 @@ __all__ = [
     "Aurora12hPretrained",
     "AuroraHighRes",
     "AuroraAirPollution",
+    "AuroraWave",
 ]
 
 
@@ -130,8 +135,8 @@ class Aurora(torch.nn.Module):
             lora_steps (int, optional): Use different LoRA adaptation for the first so-many roll-out
                 steps.
             lora_mode (str, optional): LoRA mode. `"single"` uses the same LoRA for all roll-out
-                steps, and `"all"` uses a different LoRA for every roll-out step. Defaults to
-                `"single"`.
+                steps, `"from_second"` uses the same LoRA from the second roll-out step on, and
+                `"all"` uses a different LoRA for every roll-out step. Defaults to `"single"`.
             surf_stats (dict[str, tuple[float, float]], optional): For these surface-level
                 variables, adjust the normalisation to the given tuple consisting of a new location
                 and scale.
@@ -246,6 +251,8 @@ class Aurora(torch.nn.Module):
         Returns:
             :class:`Batch`: Prediction for the batch.
         """
+        batch = self.batch_transform_hook(batch)
+
         # Get the first parameter. We'll derive the data type and device from this parameter.
         p = next(self.parameters())
         batch = batch.type(p.dtype)
@@ -267,6 +274,8 @@ class Aurora(torch.nn.Module):
             static_vars={k: v[None, None].repeat(B, T, 1, 1) for k, v in batch.static_vars.items()},
         )
 
+        # Apply some transformations before feeding `batch` to the encoder. We'll later want to
+        # refer to the original batch too, so rename the variable.
         transformed_batch = batch
 
         # Clamp positive variables.
@@ -343,6 +352,13 @@ class Aurora(torch.nn.Module):
         pred = pred.unnormalise(surf_stats=self.surf_stats)
 
         return pred
+
+    def batch_transform_hook(self, batch: Batch) -> Batch:
+        """Transform the batch right after receiving it and before normalisation.
+
+        This function should be idempotent.
+        """
+        return batch
 
     def _pre_encoder_hook(self, batch: Batch) -> Batch:
         """Transform the batch before it goes through the encoder."""
@@ -465,8 +481,7 @@ class AuroraPretrained(Aurora):
         use_lora: bool = False,
         **kw_args,
     ) -> None:
-        Aurora.__init__(
-            self,
+        super().__init__(
             use_lora=use_lora,
             **kw_args,
         )
@@ -492,8 +507,7 @@ class AuroraSmallPretrained(Aurora):
         use_lora: bool = False,
         **kw_args,
     ) -> None:
-        Aurora.__init__(
-            self,
+        super().__init__(
             encoder_depths=encoder_depths,
             encoder_num_heads=encoder_num_heads,
             decoder_depths=decoder_depths,
@@ -520,8 +534,7 @@ class Aurora12hPretrained(Aurora):
         use_lora: bool = False,
         **kw_args,
     ) -> None:
-        Aurora.__init__(
-            self,
+        super().__init__(
             timestep=timestep,
             use_lora=use_lora,
             **kw_args,
@@ -541,8 +554,7 @@ class AuroraHighRes(Aurora):
         decoder_depths: tuple[int, ...] = (8, 8, 6),
         **kw_args,
     ) -> None:
-        Aurora.__init__(
-            self,
+        super().__init__(
             patch_size=patch_size,
             encoder_depths=encoder_depths,
             decoder_depths=decoder_depths,
@@ -602,8 +614,7 @@ class AuroraAirPollution(Aurora):
         simulate_indexing_bug: bool = True,
         **kw_args,
     ) -> None:
-        Aurora.__init__(
-            self,
+        super().__init__(
             surf_vars=surf_vars,
             static_vars=static_vars,
             atmos_vars=atmos_vars,
@@ -706,3 +717,133 @@ class AuroraAirPollution(Aurora):
         d = Aurora._adapt_checkpoint(self, d)
         d = _adapt_checkpoint_air_pollution(self.patch_size, d)
         return d
+
+
+class AuroraWave(Aurora):
+    """Version of Aurora fined-tuned to HRES-WAM ocean wave data."""
+
+    default_checkpoint_name = "aurora-0.25-wave.ckpt"
+
+    def __init__(
+        self,
+        *,
+        surf_vars: tuple[str, ...] = (
+            ("2t", "10u", "10v", "msl")
+            + ("swh", "mwd", "mwp", "pp1d", "shww", "mdww", "mpww", "shts", "mdts", "mpts")
+            + ("swh1", "mwd1", "mwp1", "swh2", "mwd2", "mwp2", "wind", "10u_wave", "10v_wave")
+        ),
+        static_vars: tuple[str, ...] = ("lsm", "z", "slt", "wmb", "lat_mask"),
+        lora_mode: LoRAMode = "from_second",
+        stabilise_level_agg: bool = True,
+        density_channel_surf_vars: tuple[str, ...] = (
+            ("swh", "mwd", "mwp", "pp1d", "shww", "mdww", "mpww", "shts", "mdts", "mpts")
+            + ("swh1", "mwd1", "mwp1", "swh2", "mwd2", "mwp2", "wind", "10u_wave", "10v_wave")
+        ),
+        angle_surf_vars: tuple[str, ...] = ("mwd", "mdww", "mdts", "mwd1", "mwd2"),
+        **kw_args,
+    ) -> None:
+        # Model the density, sine, and cosine versions of the variables.
+        supplemented_surf_vars: tuple[str, ...] = ()
+        for name in surf_vars:
+            if name in angle_surf_vars:
+                supplemented_surf_vars += (f"{name}_sin", f"{name}_cos")
+            else:
+                supplemented_surf_vars += (name,)
+            if name in density_channel_surf_vars:
+                supplemented_surf_vars += (f"{name}_density",)
+
+        super().__init__(
+            surf_vars=supplemented_surf_vars,
+            static_vars=static_vars,
+            lora_mode=lora_mode,
+            stabilise_level_agg=stabilise_level_agg,
+            **kw_args,
+        )
+
+        self.density_channel_surf_vars = density_channel_surf_vars
+        self.angle_surf_vars = angle_surf_vars
+
+    def _adapt_checkpoint(self, d: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
+        d = Aurora._adapt_checkpoint(self, d)
+        d = _adapt_checkpoint_wave(self.patch_size, d)
+        return d
+
+    def batch_transform_hook(self, batch: Batch) -> Batch:
+        #  Below we mutate `batch`, so make a copy here.
+        batch = dataclasses.replace(batch, surf_vars=dict(batch.surf_vars))
+
+        # It is important that these components are split off _before_ normalisation, as they
+        # have specific normalisation statistics.
+        if "dwi" in batch.surf_vars and "wind" in batch.surf_vars:
+            # Split into u-component and v-component.
+            u_wave = -batch.surf_vars["wind"] * torch.sin(torch.deg2rad(batch.surf_vars["dwi"]))
+            v_wave = -batch.surf_vars["wind"] * torch.cos(torch.deg2rad(batch.surf_vars["dwi"]))
+
+            # Update batch and remove `dwi`.
+            batch.surf_vars["10u_wave"] = u_wave
+            batch.surf_vars["10v_wave"] = v_wave
+            del batch.surf_vars["dwi"]
+
+        # If the magnitude of a wave is zero (or practically zero), it is absent, so indicate that
+        # with NaNs. Only do this when data is given to the model and not when it is rolled out.
+        if batch.metadata.rollout_step == 0:
+            for name_sh, other_wave_components in [
+                ("swh", ("mwd", "mwp", "pp1d")),
+                ("shww", ("mdww", "mpww")),
+                ("shts", ("mdts", "mdts")),
+                ("swh1", ("mwd1", "mwp1")),
+                ("swh2", ("mwd2", "mwp2")),
+            ]:
+                mask = batch.surf_vars[name_sh] < 1e-4
+                if mask.sum() > 0:
+                    for name in (name_sh,) + other_wave_components:
+                        x = batch.surf_vars[name].clone()  # Clone to safely mutate.
+                        x[mask] = np.nan
+                        batch.surf_vars[name] = x
+                        # There should be no small values left, except for in wave directions.
+                        if name not in {"mwd", "mdww", "mdts", "mwd1", "mwd2"}:
+                            assert (batch.surf_vars[name] < 1e-4).sum() == 0
+
+        return batch
+
+    def _pre_encoder_hook(self, batch: Batch) -> Batch:
+        for name in list(batch.surf_vars):
+            x = batch.surf_vars[name]
+
+            # Create a density channel.
+            if name in self.density_channel_surf_vars and f"{name}_density" not in batch.surf_vars:
+                batch.surf_vars[f"{name}_density"] = (~torch.isnan(x)).float()
+                batch.surf_vars[name] = x.nan_to_num(0)
+
+            # Add sine and cosine values of the angle and remove the original angle variable
+            sin_cos_present = f"{name}_sin" in batch.surf_vars and f"{name}_cos" in batch.surf_vars
+            if name in self.angle_surf_vars and not sin_cos_present:
+                batch.surf_vars[f"{name}_sin"] = torch.sin(torch.deg2rad(x)).nan_to_num(0)
+                batch.surf_vars[f"{name}_cos"] = torch.cos(torch.deg2rad(x)).nan_to_num(0)
+                del batch.surf_vars[name]
+
+        return batch
+
+    def _post_decoder_hook(self, batch: Batch, pred: Batch) -> Batch:
+        wmb_mask = pred.static_vars["wmb"] > 0
+
+        # Undo the sine and cosine components.
+        for name in self.angle_surf_vars:
+            if f"{name}_sin" in pred.surf_vars and f"{name}_cos" in pred.surf_vars:
+                sin = pred.surf_vars[f"{name}_sin"]
+                cos = pred.surf_vars[f"{name}_cos"]
+                pred.surf_vars[name] = torch.rad2deg(torch.atan2(sin, cos)) % 360
+                del pred.surf_vars[f"{name}_sin"]
+                del pred.surf_vars[f"{name}_cos"]
+
+        # Undo the density channels. First transform by a sigmoid to get the actual value of the
+        # density channel.
+        for name in self.density_channel_surf_vars:
+            if name in pred.surf_vars:
+                density = torch.sigmoid(pred.surf_vars[f"{name}_density"]) * wmb_mask
+                data = pred.surf_vars[name] * wmb_mask
+                data[density < 0.5] = np.nan
+                pred.surf_vars[name] = data
+                del pred.surf_vars[f"{name}_density"]
+
+        return pred

@@ -18,6 +18,11 @@ sphinx:
   - "sphinx.ext.autodoc"
   - "sphinx.ext.napoleon"
   - "sphinx.ext.viewcode"
+  # Set the default theme to light mode. The logo doesn't work nicely with dark mode.
+  recursive_update: true
+  config:
+    html_context:
+      default_mode: light
 
 # Add a BiBTeX file so that we can create citations.
 bibtex_bibfiles:

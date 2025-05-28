@@ -17,6 +17,7 @@ parts:
     - file: example_hres_t0
     - file: example_hres_0.1
     - file: example_cams
+    - file: example_wave
     - file: example_tc_tracking
 - caption: Foundry
   chapters:
