@@ -38,7 +38,7 @@ dependencies = [
     "scipy",
     "torch",
     "einops",
-    "timm==0.6.13",
+    "timm",
     "huggingface-hub",
     "pydantic",
     "xarray",
