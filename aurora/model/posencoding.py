@@ -7,7 +7,7 @@ Parts of this code are inspired by
 
 import torch
 import torch.nn.functional as F
-from timm.models.layers.helpers import to_2tuple
+from timm.layers import to_2tuple
 
 from aurora.model.fourier import FourierExpansion
 
