@@ -86,6 +86,7 @@ class Aurora(torch.nn.Module):
         modulation_head: bool = False,
         positive_surf_vars: tuple[str, ...] = (),
         positive_atmos_vars: tuple[str, ...] = (),
+        clamp_at_first_step: bool = False,
         simulate_indexing_bug: bool = False,
     ) -> None:
         """Construct an instance of the model.
@@ -164,6 +165,8 @@ class Aurora(torch.nn.Module):
                 positive. Clamp them before running them through the encoder, and also clamp them
                 when autoregressively rolling out the model. The variables are not clamped for the
                 first roll-out step.
+            clamp_at_first_step (bool, optional): Clamp the positive variables for the first
+                roll-out step. Should only be used for inference. Defaults to `False`.
             simulate_indexing_bug (bool, optional): Simulate an indexing bug that's present for the
                 air pollution version of Aurora. This is necessary to obtain numerical equivalence
                 to the original implementation. Defaults to `False`.
@@ -179,6 +182,7 @@ class Aurora(torch.nn.Module):
         self.use_lora = use_lora
         self.positive_surf_vars = positive_surf_vars
         self.positive_atmos_vars = positive_atmos_vars
+        self.clamp_at_first_step = clamp_at_first_step
 
         if self.surf_stats:
             warnings.warn(
@@ -332,7 +336,12 @@ class Aurora(torch.nn.Module):
         pred = self._post_decoder_hook(batch, pred)
 
         # Clamp positive variables.
-        if self.positive_surf_vars and pred.metadata.rollout_step > 1:
+        clamp_at_rollout_step = (
+            pred.metadata.rollout_step >= 1
+            if self.clamp_at_first_step
+            else pred.metadata.rollout_step > 1
+        )
+        if self.positive_surf_vars and clamp_at_rollout_step:
             pred = dataclasses.replace(
                 pred,
                 surf_vars={
@@ -340,7 +349,7 @@ class Aurora(torch.nn.Module):
                     for k, v in pred.surf_vars.items()
                 },
             )
-        if self.positive_atmos_vars and pred.metadata.rollout_step > 1:
+        if self.positive_atmos_vars and clamp_at_rollout_step:
             pred = dataclasses.replace(
                 pred,
                 atmos_vars={
