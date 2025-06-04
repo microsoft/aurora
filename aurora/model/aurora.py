@@ -332,7 +332,7 @@ class Aurora(torch.nn.Module):
         pred = self._post_decoder_hook(batch, pred)
 
         # Clamp positive variables.
-        if self.positive_surf_vars and pred.metadata.rollout_step > 1:
+        if self.positive_surf_vars and pred.metadata.rollout_step >= 1:
             pred = dataclasses.replace(
                 pred,
                 surf_vars={
@@ -340,7 +340,7 @@ class Aurora(torch.nn.Module):
                     for k, v in pred.surf_vars.items()
                 },
             )
-        if self.positive_atmos_vars and pred.metadata.rollout_step > 1:
+        if self.positive_atmos_vars and pred.metadata.rollout_step >= 1:
             pred = dataclasses.replace(
                 pred,
                 atmos_vars={
