@@ -22,7 +22,7 @@ for name in models:
         filename=f"{name}.ckpt",
         local_dir=ckpt_dir,
     )
-    artifacts = {name: str(ckpt_dir / f"{name}.ckpt")}
+    artifacts[name] = str(ckpt_dir / f"{name}.ckpt")
 
 
 mlflow_pyfunc_model_path = "./aurora_mlflow_pyfunc"
