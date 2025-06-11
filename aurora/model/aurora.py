@@ -546,7 +546,7 @@ class AuroraHighRes(Aurora):
 
     default_checkpoint_name = "aurora-0.1-finetuned.ckpt"
 
-    def __init(
+    def __init__(
         self,
         *,
         patch_size: int = 10,
