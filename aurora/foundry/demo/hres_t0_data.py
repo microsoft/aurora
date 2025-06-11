@@ -62,7 +62,7 @@ def _load_batch(day: str, cache_path: Path) -> Batch:
         ds_surf.to_netcdf(str(cache_path / f"{day}-surface-level.nc"))
 
     # Download the static variables.
-    if not (cache_path / "static.nc").exists():
+    if not (cache_path / "hrest0_static.nc").exists():
         path = hf_hub_download(repo_id="microsoft/aurora", filename="aurora-0.25-static.pickle")
         with open(path, "rb") as f:
             static_vars = pickle.load(f)
