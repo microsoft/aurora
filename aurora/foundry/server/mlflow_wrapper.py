@@ -130,7 +130,7 @@ class AuroraModelWrapper(mlflow.pyfunc.PythonModel):
             logger.info("Creating a new task.")
             task = Task(Submission(**data["msg"]))
             self.TASKS[task.task_info.task_id] = task
-            return CreationResponse(task_id=task.task_info.task_id).dict()
+            return CreationResponse(task_id=task.task_info.task_id).model_dump()
 
         elif data["type"] == "task_info":
             logger.info("Processing an existing task.")
@@ -174,7 +174,7 @@ class AuroraModelWrapper(mlflow.pyfunc.PythonModel):
                         break
                     time.sleep(1)
 
-            return task.task_info.dict()
+            return task.task_info.model_dump()
 
         else:
             raise ValueError(f"Unknown data type: `{data['type']}`.")
