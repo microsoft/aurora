@@ -150,7 +150,12 @@ This may affect predictive performance.
 ### Data
 The models included in the code have been trained on a variety of publicly available data.
 A description of all data, including download links, can be found in [Supplementary C of the paper](https://arxiv.org/pdf/2405.13063).
-The checkpoints include data from ERA5, CMCC, IFS-HR, HRES T0, GFS T0 analysis, and GFS forecasts.
+The checkpoints include data from
+ERA5, CMIP6 (CMCC-CM2-VHR4 and ECMWF-IFS-HR), HRES forecasts, GFS T0, GFS forecasts,
+HRES T0,
+HRES analysis,
+HRES-WAM analysis,
+CAMS reanalysis, and CAMS analysis.
 
 ### Evaluations
 All versions of Aurora were extensively evaluated by evaluating predictions on data not seen during training.
