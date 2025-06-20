@@ -15,7 +15,10 @@ from huggingface_hub import hf_hub_download
 from aurora import Batch, Metadata
 
 
-def load_batch(day: datetime = datetime(2022, 5, 11), cache_path: str = "~/downloads") -> Batch:
+def load_batch(
+    day: datetime = datetime(2022, 5, 11),
+    cache_path: str = "~/downloads/hres_t0_demo",
+) -> Batch:
     """Download and load an HRES T0 batch for UTC 12 on `day`.
 
     Automatically installs any required dependencies.

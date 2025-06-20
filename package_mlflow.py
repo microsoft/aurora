@@ -22,7 +22,7 @@ for name in models:
         filename=f"{name}.ckpt",
         local_dir=ckpt_dir,
     )
-    artifacts = {name: str(ckpt_dir / f"{name}.ckpt")}
+    artifacts[name] = str(ckpt_dir / f"{name}.ckpt")
 
 
 mlflow_pyfunc_model_path = "./aurora_mlflow_pyfunc"
@@ -40,20 +40,20 @@ mlflow.pyfunc.save_model(
             {
                 "pip": [
                     "mlflow==2.19.0",
-                    "cloudpickle==3.1.0",
+                    "cloudpickle==3.1.1",
                     "defusedxml==0.7.1",
-                    "einops==0.8.0",
+                    "einops==0.8.1",
                     "jaraco-collections==5.1.0",
-                    "numpy==2.2.1",
-                    "scipy==1.15.1",
-                    "timm==0.6.13",
+                    "numpy==2.3.0",
+                    "scipy==1.15.3",
+                    "timm==1.0.15",
                     "torch==2.5.1",
                     "torchvision==0.20.1",
-                    "huggingface-hub==0.27.1",
-                    "pydantic==2.10.5",
-                    "xarray==2025.1.1",
+                    "huggingface-hub==0.33.0",
+                    "pydantic==2.11.7",
+                    "xarray==2025.6.1",
                     "netCDF4==1.7.2",
-                    "azure-storage-blob==12.24.0",
+                    "azure-storage-blob==12.25.1",
                 ],
             },
         ],
