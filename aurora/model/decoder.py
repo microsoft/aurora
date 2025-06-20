@@ -20,6 +20,10 @@ from aurora.model.util import (
 __all__ = ["Perceiver3DDecoder"]
 
 
+class LinearPatchReconstruction(nn.Linear):
+    """Linear layer for patch reconstruction."""
+
+
 class Perceiver3DDecoder(nn.Module):
     """Multi-scale multi-source multi-variable decoder based on the Perceiver architecture."""
 
@@ -110,17 +114,17 @@ class Perceiver3DDecoder(nn.Module):
             )
 
         self.surf_heads = nn.ParameterDict(
-            {name: nn.Linear(embed_dim, patch_size**2) for name in surf_vars}
+            {name: LinearPatchReconstruction(embed_dim, patch_size**2) for name in surf_vars}
         )
         if not self.level_condition:
             self.atmos_heads = nn.ParameterDict(
-                {name: nn.Linear(embed_dim, patch_size**2) for name in atmos_vars}
+                {name: LinearPatchReconstruction(embed_dim, patch_size**2) for name in atmos_vars}
             )
         else:
             self.atmos_heads = nn.ParameterDict(
                 {
                     name: LevelConditioned(
-                        lambda: nn.Linear(embed_dim, patch_size**2),
+                        lambda: LinearPatchReconstruction(embed_dim, patch_size**2),
                         levels=self.level_condition,
                         levels_dim=-2,
                     )

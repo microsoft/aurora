@@ -143,7 +143,7 @@ class Aurora(torch.nn.Module):
                 variables, adjust the normalisation to the given tuple consisting of a new location
                 and scale.
             bf16_mode (bool, optional): To reduce memory usage, convert the tokens to BF16, run
-                the backbone in pure BF16, and run the decoder in BF16 AMP. This should enable a
+                the backbone in pure BF16, and run the decoder in FP16 AMP. This should enable a
                 gradient computation. USE AT YOUR OWN RISK. THIS WAS NOT USED DURING THE DEVELOPMENT
                 OF AURORA AND IS PURELY PROVIDED AS A STARTING POINT FOR FINE-TUNING.
             level_condition (tuple[int | float, ...], optional): Make the patch embeddings dependent
@@ -333,9 +333,11 @@ class Aurora(torch.nn.Module):
             rollout_step=batch.metadata.rollout_step,
         )
 
-        # In BF16 mode, the decoder is run in AMP BF16, and the output is converted back to FP32.
+        # In BF16 mode, the decoder is run in AMP PF16, and the output is converted back to FP32.
+        # We run in PF16 as opposed to BF16 for improved relative precision.
         if self.bf16_mode:
-            context = torch.autocast(device_type="cuda", dtype=torch.bfloat16)
+            context = torch.autocast(device_type="cuda", dtype=torch.float16)
+            x = x.to(torch.float16)
         else:
             context = contextlib.nullcontext()
         with context:
