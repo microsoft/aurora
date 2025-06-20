@@ -15,7 +15,10 @@ from huggingface_hub import hf_hub_download
 from aurora import Batch, Metadata
 
 
-def load_batch(day: datetime = datetime(2022, 5, 11), cache_path: str = "~/downloads") -> Batch:
+def load_batch(
+    day: datetime = datetime(2022, 5, 11),
+    cache_path: str = "~/downloads/hres_t0_demo",
+) -> Batch:
     """Download and load an HRES T0 batch for UTC 12 on `day`.
 
     Automatically installs any required dependencies.
@@ -62,7 +65,7 @@ def _load_batch(day: str, cache_path: Path) -> Batch:
         ds_surf.to_netcdf(str(cache_path / f"{day}-surface-level.nc"))
 
     # Download the static variables.
-    if not (cache_path / "hrest0_static.nc").exists():
+    if not (cache_path / "static.nc").exists():
         path = hf_hub_download(repo_id="microsoft/aurora", filename="aurora-0.25-static.pickle")
         with open(path, "rb") as f:
             static_vars = pickle.load(f)
