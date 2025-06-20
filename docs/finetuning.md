@@ -13,14 +13,19 @@ model.load_checkpoint()
 ## Computing Gradients
 
 To compute gradients, you will need an A100 with 80 GB of memory.
-In addition, you will need to use [PyTorch AMP](https://pytorch.org/docs/stable/amp.html)
-and gradient checkpointing.
+In addition, you will need to use reduced precision and gradient checkpointing.
 You can do this as follows:
 
 ```python
 from aurora import AuroraPretrained
 
-model = AuroraPretrained(autocast=True)  # Use AMP.
+model = AuroraPretrained(
+    # BF16 mode is an EXPERIMENTAL mode that saves memory by running the backbone in pure BF16
+    # and the decoder in FP16 AMP. This should enable gradient computation. USE AT YOUR OWN RISK.
+    # THIS WAS NOT USED IN THE DEVELOPMENT OF AURORA AND IS PURELY PROVIDED AS A STARTING POINT
+    # FOR FINE-TUNING.
+    bf16_mode=True,
+)
 model.load_checkpoint()
 
 batch = ...  # Load some data.
