@@ -523,11 +523,7 @@ class Aurora(torch.nn.Module):
 
         def check(x: torch.nn.Module) -> bool:
             name = x.__class__.__name__
-            if name in module_names:
-                print(name)
-                return True
-            else:
-                return False
+            return name in module_names
 
         apply_activation_checkpointing(self, check_fn=check)
 
