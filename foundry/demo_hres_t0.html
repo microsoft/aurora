@@ -460,6 +460,7 @@ document.write(`
 <section id="produce-prediction-on-azure-ai-foundry">
 <h2>Produce Prediction on Azure AI Foundry<a class="headerlink" href="#produce-prediction-on-azure-ai-foundry" title="Link to this heading">#</a></h2>
 <p>Now that we have an initial condition, we connect to the Foundry endpoint and run the model for 4 6-hour steps, producing predictions up to and including UTC 12 the next day.</p>
+<p>To run on Foundry, the environment variables <code class="docutils literal notranslate"><span class="pre">FOUNDRY_ENDPOINT</span></code>, <code class="docutils literal notranslate"><span class="pre">FOUNDRY_TOKEN</span></code>, and <code class="docutils literal notranslate"><span class="pre">BLOB_URL_WITH_SAS</span></code> need to be set. If you’re unsure on how to set environment variables, see <a class="reference internal" href="intro.html"><span class="std std-doc">here</span></a>, or simply copy paste your keys below (but be sure not to commit any keys)!</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
@@ -481,21 +482,6 @@ document.write(`
         <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">,</span>
     <span class="p">)</span>
 <span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2025-01-20 11:34:01,041 [INFO] Created task `b1468f8d-3008-42b3-9d0d-4ec1a4d1e07c` at endpoint.
-2025-01-20 11:34:01,043 [INFO] Uploading initial condition.
-2025-01-20 11:38:22,758 [INFO] Task status update: Running
-2025-01-20 11:39:31,696 [INFO] Task progress update: 25%.
-2025-01-20 11:39:59,248 [INFO] Task progress update: 50%.
-2025-01-20 11:40:23,349 [INFO] Task progress update: 75%.
-2025-01-20 11:40:46,411 [INFO] Task status update: Successfully completed
-2025-01-20 11:40:46,413 [INFO] Task progress update: 100%.
-2025-01-20 11:40:46,414 [INFO] Task has been successfully completed!
-2025-01-20 11:40:46,416 [INFO] Retrieving predictions.
-2025-01-20 11:43:23,732 [INFO] All predictions have been retrieved.
 </pre></div>
 </div>
 </div>
@@ -530,9 +516,6 @@ document.write(`
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<img alt="../_images/6912a2c85d6b069832c10c035ca3e4798a50da7bd4f8ef084ab72036fdd6231e.png" src="../_images/6912a2c85d6b069832c10c035ca3e4798a50da7bd4f8ef084ab72036fdd6231e.png" />
-</div>
 </div>
 <p>Aurora, however, predicts much more than just temperature: the model predicts the entire state of the atmosphere! Here is an interactive plot of the predictions for wind speed, temperature, and the mean pressure at sea level in the first step of the prediction:</p>
 <div class="cell docutils container">
@@ -543,11 +526,6 @@ document.write(`
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Prediction for 2022-05-11 18:00
-</pre></div>
-</div>
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "2128fcaeba25454ab80849a7f6b483db", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 </section>
 </section>

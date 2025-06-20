@@ -437,7 +437,7 @@ document.write(`
 <span class="kn">import</span><span class="w"> </span><span class="nn">cdsapi</span>
 
 <span class="c1"># Data will be downloaded here.</span>
-<span class="n">download_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;~/downloads&quot;</span><span class="p">)</span>
+<span class="n">download_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;~/downloads/era5&quot;</span><span class="p">)</span>
 
 <span class="n">c</span> <span class="o">=</span> <span class="n">cdsapi</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
 
@@ -601,20 +601,65 @@ Atmospheric variables downloaded!
 <section id="loading-and-running-the-model">
 <h2>Loading and Running the Model<a class="headerlink" href="#loading-and-running-the-model" title="Link to this heading">#</a></h2>
 <p>Finally, we are ready to load and run the model and visualise the predictions. We perform a roll-out for two steps, which produces predictions for hours 12:00 and 18:00.</p>
+<p>The model can be run locally, or <a class="reference internal" href="foundry/intro.html"><span class="std std-doc">run on Azure AI Foundry</span></a>. To run on Foundry, the environment variables <code class="docutils literal notranslate"><span class="pre">FOUNDRY_ENDPOINT</span></code>, <code class="docutils literal notranslate"><span class="pre">FOUNDRY_TOKEN</span></code>, and <code class="docutils literal notranslate"><span class="pre">BLOB_URL_WITH_SAS</span></code> need to be set. If you’re unsure on how to set environment variables, see <a class="reference internal" href="foundry/intro.html#accessing-environment-variables-in-a-jupyter-notebook"><span class="std std-ref">here</span></a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span><span class="p">,</span> <span class="n">rollout</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set to `False` to run locally and to `True` to run on Foundry.</span>
+<span class="n">run_on_foundry</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">run_on_foundry</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span><span class="p">,</span> <span class="n">rollout</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># The pretrained version does not use LoRA.</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Aurora</span><span class="p">(</span><span class="n">use_lora</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># The pretrained version does not use LoRA.</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span><span class="p">)</span>
 
-<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
 
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
-    <span class="n">preds</span> <span class="o">=</span> <span class="p">[</span><span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">2</span><span class="p">)]</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
+        <span class="n">preds</span> <span class="o">=</span> <span class="p">[</span><span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">2</span><span class="p">)]</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">run_on_foundry</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.foundry</span><span class="w"> </span><span class="kn">import</span> <span class="n">BlobStorageChannel</span><span class="p">,</span> <span class="n">FoundryClient</span><span class="p">,</span> <span class="n">submit</span>
+
+    <span class="c1"># In this demo, we silence all warnings.</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+
+    <span class="c1"># But we do want to show what&#39;s happening under the hood!</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> [</span><span class="si">%(levelname)s</span><span class="s2">] </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;aurora&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+    <span class="n">foundry_client</span> <span class="o">=</span> <span class="n">FoundryClient</span><span class="p">(</span>
+        <span class="n">endpoint</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;FOUNDRY_ENDPOINT&quot;</span><span class="p">],</span>
+        <span class="n">token</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;FOUNDRY_TOKEN&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="n">channel</span> <span class="o">=</span> <span class="n">BlobStorageChannel</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;BLOB_URL_WITH_SAS&quot;</span><span class="p">])</span>
+
+    <span class="n">predictions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+        <span class="n">submit</span><span class="p">(</span>
+            <span class="n">batch</span><span class="p">,</span>
+            <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;aurora-0.25-pretrained&quot;</span><span class="p">,</span>
+            <span class="n">num_steps</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">foundry_client</span><span class="o">=</span><span class="n">foundry_client</span><span class="p">,</span>
+            <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
 </pre></div>
 </div>
 </div>

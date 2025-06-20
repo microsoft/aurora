@@ -403,7 +403,10 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-hres-t0-from-weatherbench2">Downloading HRES T0 from WeatherBench2</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-the-static-variables">Downloading the Static Variables</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preparing-a-batch">Preparing a Batch</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-and-running-the-model">Loading and Running the Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-and-running-the-model">Loading and Running the Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting-the-results">Plotting the Results</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -417,7 +420,7 @@ document.write(`
                   
   <section id="predictions-for-ocean-waves">
 <h1>Predictions for Ocean Waves<a class="headerlink" href="#predictions-for-ocean-waves" title="Link to this heading">#</a></h1>
-<p>In this example, we run Aurora on HRES-WAM data for the 16th of September 2022, that is data from ECMWF’s ocean wave model called HRES-WAM. We supplement the wave variables with meteorological variables taken from HRES T0 on WeatherBench2.</p>
+<p>In this example, we run Aurora 0.25° Wave on HRES-WAM data for the 16th of September 2022, that is data from ECMWF’s ocean wave model called HRES-WAM. We supplement the wave variables with meteorological variables taken from HRES T0 on WeatherBench2.</p>
 <p>Running this notebook requires additional Python packages. You can install these as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">ecmwf</span><span class="o">-</span><span class="n">api</span><span class="o">-</span><span class="n">client</span> <span class="n">gcsfs</span> <span class="n">zarr</span> <span class="n">cfgrib</span> <span class="n">matplotlib</span>
 </pre></div>
@@ -441,7 +444,7 @@ document.write(`
 <span class="kn">import</span><span class="w"> </span><span class="nn">ecmwfapi</span>
 
 <span class="c1"># Data will be downloaded here.</span>
-<span class="n">download_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;~/downloads&quot;</span><span class="p">)</span>
+<span class="n">download_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;~/downloads/wave&quot;</span><span class="p">)</span>
 
 <span class="n">download_path</span> <span class="o">=</span> <span class="n">download_path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
 <span class="n">download_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -568,10 +571,6 @@ Atmospheric variables downloaded!
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/wbruinsma/miniforge3/envs/aurora/lib/python3.10/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-  from .autonotebook import tqdm as notebook_tqdm
-</pre></div>
-</div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Static variables downloaded!
 </pre></div>
 </div>
@@ -683,7 +682,7 @@ Atmospheric variables downloaded!
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/wbruinsma/miniforge3/envs/aurora/lib/python3.10/site-packages/cfgrib/xarray_plugin.py:131: FutureWarning: In a future version of xarray decode_timedelta will default to False rather than None. To silence this warning, set decode_timedelta to True, False, or a &#39;CFTimedeltaCoder&#39; instance.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/meganstanley/miniconda3/envs/aurora-dev/lib/python3.10/site-packages/cfgrib/xarray_plugin.py:131: FutureWarning: In a future version, xarray will not decode timedelta values based on the presence of a timedelta-like units attribute by default. Instead it will rely on the presence of a timedelta64 dtype attribute, which is now xarray&#39;s default way of encoding timedelta64 values. To continue decoding timedeltas based on the presence of a timedelta-like units attribute, users will need to explicitly opt-in by passing True or CFTimedeltaCoder(decode_via_units=True) to decode_timedelta. To silence this warning, set decode_timedelta to True, False, or a &#39;CFTimedeltaCoder&#39; instance.
   vars, attrs, coord_names = xr.conventions.decode_cf_variables(
 </pre></div>
 </div>
@@ -694,24 +693,71 @@ Atmospheric variables downloaded!
 <h2>Loading and Running the Model<a class="headerlink" href="#loading-and-running-the-model" title="Link to this heading">#</a></h2>
 <p>Finally, we are ready to load and run the model and visualise the predictions. We perform a roll-out for two steps, which produces predictions for hours 12:00 and 18:00.</p>
 <p>Note that some specific postprocessing is required for the HRES-WAM ocean wave variables. See Section C.5 of the <a class="reference external" href="https://static-content.springer.com/esm/art%3A10.1038%2Fs41586-025-09005-y/MediaObjects/41586_2025_9005_MOESM1_ESM.pdf">Supplementary Information</a>.</p>
+<p>The model can be run locally, or <a class="reference internal" href="foundry/intro.html"><span class="std std-doc">run on Azure AI Foundry</span></a>. To run on Foundry, the environment variables <code class="docutils literal notranslate"><span class="pre">FOUNDRY_ENDPOINT</span></code>, <code class="docutils literal notranslate"><span class="pre">FOUNDRY_TOKEN</span></code>, and <code class="docutils literal notranslate"><span class="pre">BLOB_URL_WITH_SAS</span></code> need to be set. If you’re unsure on how to set environment variables, see <a class="reference internal" href="foundry/intro.html#accessing-environment-variables-in-a-jupyter-notebook"><span class="std std-ref">here</span></a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraWave</span><span class="p">,</span> <span class="n">rollout</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraWave</span><span class="p">()</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">()</span>
-
-<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
-
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
-    <span class="n">preds</span> <span class="o">=</span> <span class="p">[</span><span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">2</span><span class="p">)]</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set to `False` to run locally and to `True` to run on Foundry.</span>
+<span class="n">run_on_foundry</span> <span class="o">=</span> <span class="kc">False</span>
 </pre></div>
 </div>
 </div>
 </div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">run_on_foundry</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraWave</span><span class="p">,</span> <span class="n">rollout</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">AuroraWave</span><span class="p">()</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">()</span>
+
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="p">[</span><span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">2</span><span class="p">)]</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">run_on_foundry</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.foundry</span><span class="w"> </span><span class="kn">import</span> <span class="n">BlobStorageChannel</span><span class="p">,</span> <span class="n">FoundryClient</span><span class="p">,</span> <span class="n">submit</span>
+
+    <span class="c1"># In this demo, we silence all warnings.</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+
+    <span class="c1"># But we do want to show what&#39;s happening under the hood!</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> [</span><span class="si">%(levelname)s</span><span class="s2">] </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;aurora&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+    <span class="n">foundry_client</span> <span class="o">=</span> <span class="n">FoundryClient</span><span class="p">(</span>
+        <span class="n">endpoint</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;FOUNDRY_ENDPOINT&quot;</span><span class="p">],</span>
+        <span class="n">token</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;FOUNDRY_TOKEN&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="n">channel</span> <span class="o">=</span> <span class="n">BlobStorageChannel</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;BLOB_URL_WITH_SAS&quot;</span><span class="p">])</span>
+
+    <span class="n">predictions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+        <span class="n">submit</span><span class="p">(</span>
+            <span class="n">batch</span><span class="p">,</span>
+            <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;aurora-0.25-wave&quot;</span><span class="p">,</span>
+            <span class="n">num_steps</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">foundry_client</span><span class="o">=</span><span class="n">foundry_client</span><span class="p">,</span>
+            <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="plotting-the-results">
+<h3>Plotting the Results<a class="headerlink" href="#plotting-the-results" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
@@ -719,7 +765,7 @@ Atmospheric variables downloaded!
 <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mf">6.5</span><span class="p">))</span>
 
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">axs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-    <span class="n">pred</span> <span class="o">=</span> <span class="n">preds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">predictions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
     <span class="n">ax</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;mwd&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">360</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;twilight&quot;</span><span class="p">)</span>
@@ -745,9 +791,10 @@ Atmospheric variables downloaded!
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="_images/dc7d47326c0e25e52f89d5cfd28e0999f4bf7beda4c7e905d49f0d4f13f82be5.png" src="_images/dc7d47326c0e25e52f89d5cfd28e0999f4bf7beda4c7e905d49f0d4f13f82be5.png" />
+<img alt="_images/cb1635331ca409e0b8711cf70d13a26370c200f0cbebca76280e1e45e8960039.png" src="_images/cb1635331ca409e0b8711cf70d13a26370c200f0cbebca76280e1e45e8960039.png" />
 </div>
 </div>
+</section>
 </section>
 </section>
 
@@ -819,7 +866,10 @@ Atmospheric variables downloaded!
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-hres-t0-from-weatherbench2">Downloading HRES T0 from WeatherBench2</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-the-static-variables">Downloading the Static Variables</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preparing-a-batch">Preparing a Batch</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-and-running-the-model">Loading and Running the Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-and-running-the-model">Loading and Running the Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting-the-results">Plotting the Results</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 

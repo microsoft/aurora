@@ -401,7 +401,10 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-the-data">Downloading the Data</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preparing-a-batch">Preparing a Batch</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-and-running-the-model">Loading and Running the Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-and-running-the-model">Loading and Running the Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting-the-results">Plotting the Results</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -443,7 +446,7 @@ document.write(`
 <span class="kn">from</span><span class="w"> </span><span class="nn">huggingface_hub</span><span class="w"> </span><span class="kn">import</span> <span class="n">hf_hub_download</span>
 
 <span class="c1"># Data will be downloaded here.</span>
-<span class="n">download_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;~/downloads&quot;</span><span class="p">)</span>
+<span class="n">download_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;~/downloads/cams&quot;</span><span class="p">)</span>
 
 <span class="n">download_path</span> <span class="o">=</span> <span class="n">download_path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
 <span class="n">download_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -529,22 +532,8 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/wbruinsma/miniforge3/envs/aurora/lib/python3.10/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-  from .autonotebook import tqdm as notebook_tqdm
-</pre></div>
-</div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Static variables downloaded!
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2025-05-20 13:32:59,366 INFO [2024-09-26T00:00:00] Watch our [Forum]( https://forum.ecmwf.int/) for Announcements, news and other discussed topics.
-2025-05-20 13:33:00,605 INFO Request ID is 617274de-1e12-4abd-9fc1-3508d08fec7c
-2025-05-20 13:33:00,861 INFO status has been updated to accepted
-2025-05-20 13:33:15,475 INFO status has been updated to running
-2025-05-20 13:43:24,359 INFO status has been updated to successful
-                                                                                                   
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Surface-level and atmospheric variables downloaded!
+Surface-level and atmospheric variables downloaded!
 </pre></div>
 </div>
 </div>
@@ -620,7 +609,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/tmp/ipykernel_3404511/704971905.py:8: DeprecationWarning: numpy.core.numeric is deprecated and has been renamed to numpy._core.numeric. The numpy._core namespace contains private NumPy internals and its use is discouraged, as NumPy internals can change without warning in any release. In practice, most real-world usage of numpy.core is to access functionality in the public NumPy API. If that is the case, use the public NumPy API. If not, you are using NumPy internals. If you would still like to access an internal attribute, use numpy._core.numeric._frombuffer.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/tmp/ipykernel_1125725/3507667540.py:9: DeprecationWarning: numpy.core.numeric is deprecated and has been renamed to numpy._core.numeric. The numpy._core namespace contains private NumPy internals and its use is discouraged, as NumPy internals can change without warning in any release. In practice, most real-world usage of numpy.core is to access functionality in the public NumPy API. If that is the case, use the public NumPy API. If not, you are using NumPy internals. If you would still like to access an internal attribute, use numpy._core.numeric._frombuffer.
   static_vars = pickle.load(f)
 </pre></div>
 </div>
@@ -630,24 +619,71 @@ document.write(`
 <section id="loading-and-running-the-model">
 <h2>Loading and Running the Model<a class="headerlink" href="#loading-and-running-the-model" title="Link to this heading">#</a></h2>
 <p>Finally, we are ready to load and run the model and visualise the predictions. We perform a roll-out for four steps, which produces predictions for 12 June 2022 UTC 00 and UTC 12 and 13 June 2022 UTC 00 and UTC 12.</p>
+<p>The model can be run locally, or <a class="reference internal" href="foundry/intro.html"><span class="std std-doc">run on Azure AI Foundry</span></a>. To run on Foundry, the environment variables <code class="docutils literal notranslate"><span class="pre">FOUNDRY_ENDPOINT</span></code>, <code class="docutils literal notranslate"><span class="pre">FOUNDRY_TOKEN</span></code>, and <code class="docutils literal notranslate"><span class="pre">BLOB_URL_WITH_SAS</span></code> need to be set. If you’re unsure on how to set environment variables, see <a class="reference internal" href="foundry/intro.html#accessing-environment-variables-in-a-jupyter-notebook"><span class="std std-ref">here</span></a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraAirPollution</span><span class="p">,</span> <span class="n">rollout</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraAirPollution</span><span class="p">()</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.4-air-pollution.ckpt&quot;</span><span class="p">)</span>
-
-<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
-
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
-    <span class="n">preds</span> <span class="o">=</span> <span class="p">[</span><span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">4</span><span class="p">)]</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set to `False` to run locally and to `True` to run on Foundry.</span>
+<span class="n">run_on_foundry</span> <span class="o">=</span> <span class="kc">False</span>
 </pre></div>
 </div>
 </div>
 </div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">run_on_foundry</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraAirPollution</span><span class="p">,</span> <span class="n">rollout</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">AuroraAirPollution</span><span class="p">()</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.4-air-pollution.ckpt&quot;</span><span class="p">)</span>
+
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="p">[</span><span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">4</span><span class="p">)]</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">run_on_foundry</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.foundry</span><span class="w"> </span><span class="kn">import</span> <span class="n">BlobStorageChannel</span><span class="p">,</span> <span class="n">FoundryClient</span><span class="p">,</span> <span class="n">submit</span>
+
+    <span class="c1"># In this demo, we silence all warnings.</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+
+    <span class="c1"># But we do want to show what&#39;s happening under the hood!</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> [</span><span class="si">%(levelname)s</span><span class="s2">] </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;aurora&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+    <span class="n">foundry_client</span> <span class="o">=</span> <span class="n">FoundryClient</span><span class="p">(</span>
+        <span class="n">endpoint</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;FOUNDRY_ENDPOINT&quot;</span><span class="p">],</span>
+        <span class="n">token</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;FOUNDRY_TOKEN&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="n">channel</span> <span class="o">=</span> <span class="n">BlobStorageChannel</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;BLOB_URL_WITH_SAS&quot;</span><span class="p">])</span>
+
+    <span class="n">predictions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+        <span class="n">submit</span><span class="p">(</span>
+            <span class="n">batch</span><span class="p">,</span>
+            <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;aurora-0.4-air-pollution&quot;</span><span class="p">,</span>
+            <span class="n">num_steps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+            <span class="n">foundry_client</span><span class="o">=</span><span class="n">foundry_client</span><span class="p">,</span>
+            <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="plotting-the-results">
+<h3>Plotting the Results<a class="headerlink" href="#plotting-the-results" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
@@ -656,7 +692,7 @@ document.write(`
 
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
     <span class="n">ax</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="n">i</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span><span class="p">]</span>
-    <span class="n">pred</span> <span class="o">=</span> <span class="n">preds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">predictions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;tcno2&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;Blues&quot;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;TC NO$</span><span class="se">{{}}</span><span class="s2">_2$ </span><span class="si">{</span><span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
@@ -668,7 +704,7 @@ document.write(`
 
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
     <span class="n">ax</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="n">i</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span><span class="p">]</span>
-    <span class="n">pred</span> <span class="o">=</span> <span class="n">preds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">predictions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;pm10&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e-9</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;Blues&quot;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PM$</span><span class="se">{{}}</span><span class="s2">_</span><span class="se">{{</span><span class="s2">10</span><span class="se">}}</span><span class="s2">$ </span><span class="si">{</span><span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
@@ -679,10 +715,11 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="_images/7e61998c42fe3a942dcdf32cc7263d804b2120ad183c10662fcb6a598817c50a.png" src="_images/7e61998c42fe3a942dcdf32cc7263d804b2120ad183c10662fcb6a598817c50a.png" />
-<img alt="_images/043ad2ff0e2b00d61f816a2250668779f5ec7d33465ba1b4e84f270270612a64.png" src="_images/043ad2ff0e2b00d61f816a2250668779f5ec7d33465ba1b4e84f270270612a64.png" />
+<img alt="_images/58b13c14853c60829c1b34a1861c4aede02d06419d3b8c10ce9051f6e0e19c45.png" src="_images/58b13c14853c60829c1b34a1861c4aede02d06419d3b8c10ce9051f6e0e19c45.png" />
+<img alt="_images/44979303be1ed372dae67e35c5c217f5c1698226babb4083a0b4be258b9bcecd.png" src="_images/44979303be1ed372dae67e35c5c217f5c1698226babb4083a0b4be258b9bcecd.png" />
 </div>
 </div>
+</section>
 </section>
 </section>
 
@@ -752,7 +789,10 @@ document.write(`
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-the-data">Downloading the Data</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preparing-a-batch">Preparing a Batch</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-and-running-the-model">Loading and Running the Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-and-running-the-model">Loading and Running the Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting-the-results">Plotting the Results</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 

@@ -376,7 +376,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -392,6 +394,17 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#managing-secrets">Managing Secrets</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#accessing-environment-variables-in-a-jupyter-notebook">Accessing Environment Variables in a Jupyter Notebook</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -405,6 +418,38 @@ document.write(`
 <h1>Aurora on Azure AI Foundry<a class="headerlink" href="#aurora-on-azure-ai-foundry" title="Link to this heading">#</a></h1>
 <p>Aurora <a class="reference external" href="https://ai.azure.com/explore/models">is available as a model on Azure AI Foundry</a>!
 This part of the documentation describes how you can produce predictions with Aurora running on a Foundry endpoint.</p>
+<section id="managing-secrets">
+<h2>Managing Secrets<a class="headerlink" href="#managing-secrets" title="Link to this heading">#</a></h2>
+<p>In order to access the endpoint on Azure AI Foundry,
+you will need the endpoint URL and endpoint access token.
+These can be found in the Azure interface.
+<a class="reference internal" href="submission.html"><span class="std std-doc">As will be explained later</span></a>,
+you will also need to create an URL to a Azure blob storage folder with a SAS token appended that has both read and write rights.
+(In a nutshell, this blob storage folder is necessary to and retrieve data from the endpoint.)
+Instead of storing these values in files, we recommend to store them in the environment variables <code class="docutils literal notranslate"><span class="pre">FOUNDRY_ENDPOINT</span></code>, <code class="docutils literal notranslate"><span class="pre">FOUNDRY_TOKEN</span></code>, and <code class="docutils literal notranslate"><span class="pre">BLOB_URL_WITH_SAS</span></code>.
+This is what this documentation will assume.</p>
+<section id="accessing-environment-variables-in-a-jupyter-notebook">
+<h3>Accessing Environment Variables in a Jupyter Notebook<a class="headerlink" href="#accessing-environment-variables-in-a-jupyter-notebook" title="Link to this heading">#</a></h3>
+<p>If your usual workflow is in a Jupyter notebook and you are having trouble setting and accessing environment variables, one alternative is to set the environment variables
+in a file called <code class="docutils literal notranslate"><span class="pre">.env</span></code> and load them from there.
+The layout of the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file should follow this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FOUNDRY_ENDPOINT</span><span class="o">=&lt;</span><span class="n">foundry_endpoint</span><span class="o">&gt;</span>
+<span class="n">FOUNDRY_TOKEN</span><span class="o">=&lt;</span><span class="n">foundry_token</span><span class="o">&gt;</span>
+<span class="n">BLOB_URL_WITH_SAS</span><span class="o">=&lt;</span><span class="n">blob_url_with_sas</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>Once this <code class="docutils literal notranslate"><span class="pre">.env</span></code> file has been created and populated, you can load it into a notebook environment with</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>!pip install python-dotenv
+%load_ext dotenv
+%dotenv path/to/.env
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Do <em>not</em> accidentally commit <code class="docutils literal notranslate"><span class="pre">.env</span></code> to version control.</p>
+</div>
+</section>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -461,6 +506,24 @@ This part of the documentation describes how you can produce predictions with Au
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#managing-secrets">Managing Secrets</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#accessing-environment-variables-in-a-jupyter-notebook">Accessing Environment Variables in a Jupyter Notebook</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

@@ -400,6 +400,7 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-the-data">Downloading the Data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-the-static-variables">Downloading the Static Variables</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preparing-a-batch">Preparing a Batch</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-and-running-the-model">Loading and Running the Model</a></li>
 </ul>
@@ -457,7 +458,7 @@ document.write(`
 <span class="n">downloads</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;2t&quot;</span><span class="p">,</span> <span class="s2">&quot;10u&quot;</span><span class="p">,</span> <span class="s2">&quot;10v&quot;</span><span class="p">,</span> <span class="s2">&quot;msl&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;slt&quot;</span><span class="p">,</span> <span class="s2">&quot;lsm&quot;</span><span class="p">]:</span>
     <span class="n">downloads</span><span class="p">[</span><span class="n">download_path</span> <span class="o">/</span> <span class="n">date</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;surf_</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">_%Y-%m-%d.grib&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;https://data.rda.ucar.edu/ds113.1/&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;https://data.rda.ucar.edu/d113001/&quot;</span>
         <span class="sa">f</span><span class="s2">&quot;ec.oper.an.sfc/</span><span class="si">{</span><span class="n">date</span><span class="o">.</span><span class="n">year</span><span class="si">}{</span><span class="n">date</span><span class="o">.</span><span class="n">month</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">/ec.oper.an.sfc.128_</span><span class="si">{</span><span class="n">var_nums</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">.&quot;</span>
         <span class="sa">f</span><span class="s2">&quot;regn1280sc.</span><span class="si">{</span><span class="n">date</span><span class="o">.</span><span class="n">year</span><span class="si">}{</span><span class="n">date</span><span class="o">.</span><span class="n">month</span><span class="si">:</span><span class="s2">02d</span><span class="si">}{</span><span class="n">date</span><span class="o">.</span><span class="n">day</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">.grb&quot;</span>
     <span class="p">)</span>
@@ -465,7 +466,7 @@ document.write(`
     <span class="k">for</span> <span class="n">hour</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">18</span><span class="p">]:</span>
         <span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;uv&quot;</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">}</span> <span class="k">else</span> <span class="s2">&quot;sc&quot;</span>
         <span class="n">downloads</span><span class="p">[</span><span class="n">download_path</span> <span class="o">/</span> <span class="n">date</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;atmos_</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">_%Y-%m-%d_</span><span class="si">{</span><span class="n">hour</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">.grib&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;https://data.rda.ucar.edu/ds113.1/&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;https://data.rda.ucar.edu/d113001/&quot;</span>
             <span class="sa">f</span><span class="s2">&quot;ec.oper.an.pl/</span><span class="si">{</span><span class="n">date</span><span class="o">.</span><span class="n">year</span><span class="si">}{</span><span class="n">date</span><span class="o">.</span><span class="n">month</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">/ec.oper.an.pl.128_</span><span class="si">{</span><span class="n">var_nums</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">.&quot;</span>
             <span class="sa">f</span><span class="s2">&quot;regn1280</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">date</span><span class="o">.</span><span class="n">year</span><span class="si">}{</span><span class="n">date</span><span class="o">.</span><span class="n">month</span><span class="si">:</span><span class="s2">02d</span><span class="si">}{</span><span class="n">date</span><span class="o">.</span><span class="n">day</span><span class="si">:</span><span class="s2">02d</span><span class="si">}{</span><span class="n">hour</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">.grb&quot;</span>
         <span class="p">)</span>
@@ -485,6 +486,29 @@ document.write(`
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Downloads finished!
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="downloading-the-static-variables">
+<h2>Downloading the Static Variables<a class="headerlink" href="#downloading-the-static-variables" title="Link to this heading">#</a></h2>
+<p>For this model, we also need to include the correct static variables. We have made these available on <a class="reference external" href="https://huggingface.co/microsoft/aurora">HuggingFace</a>. You can also use the static variables directly from RDA, but this requires adjustment of the normalisation statistics. See below.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">huggingface_hub</span><span class="w"> </span><span class="kn">import</span> <span class="n">hf_hub_download</span>
+
+<span class="c1"># Download the static variables from HuggingFace.</span>
+<span class="n">static_path</span> <span class="o">=</span> <span class="n">hf_hub_download</span><span class="p">(</span>
+    <span class="n">repo_id</span><span class="o">=</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span>
+    <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;aurora-0.1-static.pickle&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Static variables downloaded!&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Static variables downloaded!
 </pre></div>
 </div>
 </div>
@@ -538,12 +562,9 @@ document.write(`
         <span class="s2">&quot;10v&quot;</span><span class="p">:</span> <span class="n">load_surf</span><span class="p">(</span><span class="s2">&quot;10v&quot;</span><span class="p">,</span> <span class="s2">&quot;v10&quot;</span><span class="p">),</span>
         <span class="s2">&quot;msl&quot;</span><span class="p">:</span> <span class="n">load_surf</span><span class="p">(</span><span class="s2">&quot;msl&quot;</span><span class="p">,</span> <span class="s2">&quot;msl&quot;</span><span class="p">),</span>
     <span class="p">},</span>
-    <span class="n">static_vars</span><span class="o">=</span><span class="p">{</span>
-        <span class="c1"># The static variables are constant, so we just get them for the first time.</span>
-        <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">load_surf</span><span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
-        <span class="s2">&quot;slt&quot;</span><span class="p">:</span> <span class="n">load_surf</span><span class="p">(</span><span class="s2">&quot;slt&quot;</span><span class="p">,</span> <span class="s2">&quot;slt&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
-        <span class="s2">&quot;lsm&quot;</span><span class="p">:</span> <span class="n">load_surf</span><span class="p">(</span><span class="s2">&quot;lsm&quot;</span><span class="p">,</span> <span class="s2">&quot;lsm&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
-    <span class="p">},</span>
+    <span class="c1"># Set the static variables _after_ regridding. The static variables</span>
+    <span class="c1"># downloaded from HuggingFace are already at the right resolution.</span>
+    <span class="n">static_vars</span><span class="o">=</span><span class="p">{},</span>
     <span class="n">atmos_vars</span><span class="o">=</span><span class="p">{</span>
         <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">load_atmos</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">),</span>
         <span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="n">load_atmos</span><span class="p">(</span><span class="s2">&quot;u&quot;</span><span class="p">),</span>
@@ -564,9 +585,16 @@ document.write(`
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Regrid the batch to 0.1 degrees resolution. Note that this is a convenience function</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+
+<span class="c1"># Regrid the batch to 0.1 degrees resolution. Note that this is a convenience function</span>
 <span class="c1"># which is not optimised for speed or accuracy. Use at your own risk!</span>
 <span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">regrid</span><span class="p">(</span><span class="n">res</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+
+<span class="c1"># Load the static variables.</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">static_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">static_vars</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<span class="n">batch</span><span class="o">.</span><span class="n">static_vars</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">static_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 </pre></div>
 </div>
 </div>
@@ -575,23 +603,70 @@ document.write(`
 <section id="loading-and-running-the-model">
 <h2>Loading and Running the Model<a class="headerlink" href="#loading-and-running-the-model" title="Link to this heading">#</a></h2>
 <p>Finally, we are ready to load and run the model and visualise the predictions. We perform a roll-out for two steps, which produces predictions for hours 12:00 and 18:00.</p>
+<p>The model can be run locally, or <a class="reference internal" href="foundry/intro.html"><span class="std std-doc">run on Azure AI Foundry</span></a>. To run on Foundry, the environment variables <code class="docutils literal notranslate"><span class="pre">FOUNDRY_ENDPOINT</span></code>, <code class="docutils literal notranslate"><span class="pre">FOUNDRY_TOKEN</span></code>, and <code class="docutils literal notranslate"><span class="pre">BLOB_URL_WITH_SAS</span></code> need to be set. If you’re unsure on how to set environment variables, see <a class="reference internal" href="foundry/intro.html#accessing-environment-variables-in-a-jupyter-notebook"><span class="std std-ref">here</span></a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraHighRes</span><span class="p">,</span> <span class="n">rollout</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set to `False` to run locally and to `True` to run on Foundry.</span>
+<span class="n">run_on_foundry</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">run_on_foundry</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraHighRes</span><span class="p">,</span> <span class="n">rollout</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraHighRes</span><span class="p">(</span>
-    <span class="c1"># Use manually downloaded and regridded static variables.</span>
-    <span class="n">surf_stats</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">3.270407e03</span><span class="p">,</span> <span class="mf">6.540335e04</span><span class="p">)},</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.1-finetuned.ckpt&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">AuroraHighRes</span><span class="p">(</span>
+        <span class="c1"># If did not use the static variables from HuggingFace, but manually downloaded</span>
+        <span class="c1"># and regridded them, you&#39;ll need to use appropriate normalisation statistics.</span>
+        <span class="c1"># See model description of the high-resolution model in the documentation.</span>
+        <span class="c1"># surf_stats={&quot;z&quot;: (-3.270407e03, 6.540335e04)},</span>
+    <span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.1-finetuned.ckpt&quot;</span><span class="p">)</span>
 
-<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
 
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
-    <span class="n">preds</span> <span class="o">=</span> <span class="p">[</span><span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">2</span><span class="p">)]</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
+        <span class="n">preds</span> <span class="o">=</span> <span class="p">[</span><span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">2</span><span class="p">)]</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">run_on_foundry</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.foundry</span><span class="w"> </span><span class="kn">import</span> <span class="n">BlobStorageChannel</span><span class="p">,</span> <span class="n">FoundryClient</span><span class="p">,</span> <span class="n">submit</span>
+
+    <span class="c1"># In this demo, we silence all warnings.</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+
+    <span class="c1"># But we do want to show what&#39;s happening under the hood!</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> [</span><span class="si">%(levelname)s</span><span class="s2">] </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;aurora&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+    <span class="n">foundry_client</span> <span class="o">=</span> <span class="n">FoundryClient</span><span class="p">(</span>
+        <span class="n">endpoint</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;FOUNDRY_ENDPOINT&quot;</span><span class="p">],</span>
+        <span class="n">token</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;FOUNDRY_TOKEN&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="n">channel</span> <span class="o">=</span> <span class="n">BlobStorageChannel</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;BLOB_URL_WITH_SAS&quot;</span><span class="p">])</span>
+
+    <span class="n">predictions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+        <span class="n">submit</span><span class="p">(</span>
+            <span class="n">batch</span><span class="p">,</span>
+            <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;aurora-0.1-finetuned&quot;</span><span class="p">,</span>
+            <span class="n">num_steps</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">foundry_client</span><span class="o">=</span><span class="n">foundry_client</span><span class="p">,</span>
+            <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -697,6 +772,7 @@ document.write(`
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-the-data">Downloading the Data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-the-static-variables">Downloading the Static Variables</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preparing-a-batch">Preparing a Batch</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-and-running-the-model">Loading and Running the Model</a></li>
 </ul>
