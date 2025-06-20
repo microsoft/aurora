@@ -8,7 +8,7 @@ This part of the documentation describes how you can produce predictions with Au
 In order to access the endpoint on Azure AI Foundry,
 you will need the endpoint URL and endpoint access token.
 These can be found in the Azure interface.
-[As will be explained later](/foundry/submission.md),
+[As will be explained later](submission.md),
 you will also need to create an URL to a Azure blob storage folder with a SAS token appended that has both read and write rights.
 (In a nutshell, this blob storage folder is necessary to and retrieve data from the endpoint.)
 Instead of storing these values in files, we recommend to store them in the environment variables `FOUNDRY_ENDPOINT`, `FOUNDRY_TOKEN`, and `BLOB_URL_WITH_SAS`.
