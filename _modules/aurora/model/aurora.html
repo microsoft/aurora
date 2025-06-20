@@ -445,6 +445,7 @@ document.write(`
         <span class="n">modulation_head</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">positive_surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
         <span class="n">positive_atmos_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="n">clamp_at_first_step</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">simulate_indexing_bug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct an instance of the model.</span>
@@ -523,6 +524,8 @@ document.write(`
 <span class="sd">                positive. Clamp them before running them through the encoder, and also clamp them</span>
 <span class="sd">                when autoregressively rolling out the model. The variables are not clamped for the</span>
 <span class="sd">                first roll-out step.</span>
+<span class="sd">            clamp_at_first_step (bool, optional): Clamp the positive variables for the first</span>
+<span class="sd">                roll-out step. Should only be used for inference. Defaults to `False`.</span>
 <span class="sd">            simulate_indexing_bug (bool, optional): Simulate an indexing bug that&#39;s present for the</span>
 <span class="sd">                air pollution version of Aurora. This is necessary to obtain numerical equivalence</span>
 <span class="sd">                to the original implementation. Defaults to `False`.</span>
@@ -538,6 +541,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">use_lora</span> <span class="o">=</span> <span class="n">use_lora</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">positive_surf_vars</span> <span class="o">=</span> <span class="n">positive_surf_vars</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">positive_atmos_vars</span> <span class="o">=</span> <span class="n">positive_atmos_vars</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clamp_at_first_step</span> <span class="o">=</span> <span class="n">clamp_at_first_step</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">surf_stats</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
@@ -694,7 +698,12 @@ document.write(`
         <span class="n">pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_post_decoder_hook</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
 
         <span class="c1"># Clamp positive variables.</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_surf_vars</span> <span class="ow">and</span> <span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">rollout_step</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">clamp_at_rollout_step</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">rollout_step</span> <span class="o">&gt;=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">clamp_at_first_step</span>
+            <span class="k">else</span> <span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">rollout_step</span> <span class="o">&gt;</span> <span class="mi">1</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_surf_vars</span> <span class="ow">and</span> <span class="n">clamp_at_rollout_step</span><span class="p">:</span>
             <span class="n">pred</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
                 <span class="n">pred</span><span class="p">,</span>
                 <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span>
@@ -702,7 +711,7 @@ document.write(`
                     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
                 <span class="p">},</span>
             <span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_atmos_vars</span> <span class="ow">and</span> <span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">rollout_step</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_atmos_vars</span> <span class="ow">and</span> <span class="n">clamp_at_rollout_step</span><span class="p">:</span>
             <span class="n">pred</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
                 <span class="n">pred</span><span class="p">,</span>
                 <span class="n">atmos_vars</span><span class="o">=</span><span class="p">{</span>
