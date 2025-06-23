@@ -378,7 +378,7 @@ document.write(`
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.decoder</span><span class="w"> </span><span class="kn">import</span> <span class="n">Perceiver3DDecoder</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.encoder</span><span class="w"> </span><span class="kn">import</span> <span class="n">Perceiver3DEncoder</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.lora</span><span class="w"> </span><span class="kn">import</span> <span class="n">LoRAMode</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.swin3d</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasicLayer3D</span><span class="p">,</span> <span class="n">Swin3DTransformerBackbone</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.swin3d</span><span class="w"> </span><span class="kn">import</span> <span class="n">Swin3DTransformerBackbone</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;Aurora&quot;</span><span class="p">,</span>
@@ -438,6 +438,7 @@ document.write(`
         <span class="n">lora_mode</span><span class="p">:</span> <span class="n">LoRAMode</span> <span class="o">=</span> <span class="s2">&quot;single&quot;</span><span class="p">,</span>
         <span class="n">surf_stats</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">autocast</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">bf16_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">level_condition</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">dynamic_vars</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">atmos_static_vars</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -500,8 +501,10 @@ document.write(`
 <span class="sd">            surf_stats (dict[str, tuple[float, float]], optional): For these surface-level</span>
 <span class="sd">                variables, adjust the normalisation to the given tuple consisting of a new location</span>
 <span class="sd">                and scale.</span>
-<span class="sd">            autocast (bool, optional): Use `torch.autocast` to reduce memory usage. Defaults to</span>
-<span class="sd">                `False`.</span>
+<span class="sd">            bf16_mode (bool, optional): To reduce memory usage, convert the tokens to BF16, run</span>
+<span class="sd">                the backbone in pure BF16, and run the decoder in FP16 AMP. This should enable a</span>
+<span class="sd">                gradient computation. USE AT YOUR OWN RISK. THIS WAS NOT USED DURING THE DEVELOPMENT</span>
+<span class="sd">                OF AURORA AND IS PURELY PROVIDED AS A STARTING POINT FOR FINE-TUNING.</span>
 <span class="sd">            level_condition (tuple[int | float, ...], optional): Make the patch embeddings dependent</span>
 <span class="sd">                on pressure level. If you want to enable this feature, provide a tuple of all</span>
 <span class="sd">                possible pressure levels.</span>
@@ -535,7 +538,6 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">atmos_vars</span> <span class="o">=</span> <span class="n">atmos_vars</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span> <span class="o">=</span> <span class="n">patch_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">surf_stats</span> <span class="o">=</span> <span class="n">surf_stats</span> <span class="ow">or</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">autocast</span> <span class="o">=</span> <span class="n">autocast</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_history_size</span> <span class="o">=</span> <span class="n">max_history_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">timestep</span> <span class="o">=</span> <span class="n">timestep</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_lora</span> <span class="o">=</span> <span class="n">use_lora</span>
@@ -603,7 +605,20 @@ document.write(`
             <span class="n">level_condition</span><span class="o">=</span><span class="n">level_condition</span><span class="p">,</span>
             <span class="n">separate_perceiver</span><span class="o">=</span><span class="n">separate_perceiver</span><span class="p">,</span>
             <span class="n">modulation_head</span><span class="o">=</span><span class="n">modulation_head</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">autocast</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">bf16_mode</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;The argument `autocast` no longer does anything due to limited utility. &quot;</span>
+                <span class="s2">&quot;Consider instead using `bf16_mode`.&quot;</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">bf16_mode</span> <span class="o">=</span> <span class="n">bf16_mode</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bf16_mode</span><span class="p">:</span>
+            <span class="c1"># We run the backbone in pure BF16.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Aurora.forward">
@@ -664,23 +679,43 @@ document.write(`
 
         <span class="n">transformed_batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pre_encoder_hook</span><span class="p">(</span><span class="n">transformed_batch</span><span class="p">)</span>
 
+        <span class="c1"># The encoder is always just run.</span>
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span>
             <span class="n">transformed_batch</span><span class="p">,</span>
             <span class="n">lead_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timestep</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autocast</span><span class="p">(</span><span class="n">device_type</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">autocast</span> <span class="k">else</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">nullcontext</span><span class="p">():</span>
-            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="p">(</span>
-                <span class="n">x</span><span class="p">,</span>
-                <span class="n">lead_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timestep</span><span class="p">,</span>
-                <span class="n">patch_res</span><span class="o">=</span><span class="n">patch_res</span><span class="p">,</span>
-                <span class="n">rollout_step</span><span class="o">=</span><span class="n">batch</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">rollout_step</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="n">pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span>
+
+        <span class="c1"># In BF16 mode, the backbone is run in pure BF16.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bf16_mode</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="p">(</span>
             <span class="n">x</span><span class="p">,</span>
-            <span class="n">batch</span><span class="p">,</span>
             <span class="n">lead_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timestep</span><span class="p">,</span>
             <span class="n">patch_res</span><span class="o">=</span><span class="n">patch_res</span><span class="p">,</span>
+            <span class="n">rollout_step</span><span class="o">=</span><span class="n">batch</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">rollout_step</span><span class="p">,</span>
         <span class="p">)</span>
+
+        <span class="c1"># In BF16 mode, the decoder is run in AMP PF16, and the output is converted back to FP32.</span>
+        <span class="c1"># We run in PF16 as opposed to BF16 for improved relative precision.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bf16_mode</span><span class="p">:</span>
+            <span class="n">context</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autocast</span><span class="p">(</span><span class="n">device_type</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">context</span> <span class="o">=</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">nullcontext</span><span class="p">()</span>
+        <span class="k">with</span> <span class="n">context</span><span class="p">:</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">,</span>
+                <span class="n">batch</span><span class="p">,</span>
+                <span class="n">lead_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timestep</span><span class="p">,</span>
+                <span class="n">patch_res</span><span class="o">=</span><span class="n">patch_res</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bf16_mode</span><span class="p">:</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                <span class="n">pred</span><span class="p">,</span>
+                <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+                <span class="n">static_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">static_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+                <span class="n">atmos_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">atmos_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+            <span class="p">)</span>
 
         <span class="c1"># Remove batch and history dimension from static variables.</span>
         <span class="n">pred</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
@@ -853,7 +888,21 @@ document.write(`
 
 <span class="sd">        This is required in order to compute gradients without running out of memory.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">apply_activation_checkpointing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">BasicLayer3D</span><span class="p">))</span></div>
+        <span class="c1"># Checkpoint these modules:</span>
+        <span class="n">module_names</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;Perceiver3DEncoder&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Swin3DTransformerBackbone&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Basic3DEncoderLayer&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Basic3DDecoderLayer&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Perceiver3DDecoder&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;LinearPatchReconstruction&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">check</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="k">return</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">module_names</span>
+
+        <span class="n">apply_activation_checkpointing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_fn</span><span class="o">=</span><span class="n">check</span><span class="p">)</span></div>
 </div>
 
 
