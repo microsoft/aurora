@@ -42,6 +42,7 @@ class Perceiver3DDecoder(nn.Module):
         level_condition: Optional[tuple[int | float, ...]] = None,
         separate_perceiver: tuple[str, ...] = (),
         modulation_head: bool = False,
+        predict_difference_history_dim_lookup: Optional[dict[str, int]] = None,
     ) -> None:
         """Initialise.
 
@@ -71,14 +72,23 @@ class Perceiver3DDecoder(nn.Module):
                 separate Perceiver.
             modulation_head (bool, optional): Enable an additional head, the so-called modulation
                 head, that can be used to predict the difference. Defaults to `False`.
+            predict_difference_history_dim_lookup (dict[str, int]): For every variable that we want
+                to predict the difference for, the index into the history dimension that should be
+                used when predicting the difference.
         """
         super().__init__()
 
         # If additional modulation heads are required, simulate them as different variables with
         # the suffix `_mod`.
-        if modulation_head:
-            surf_vars += tuple(f"{name}_mod" for name in surf_vars)
-            atmos_vars += tuple(f"{name}_mod" for name in atmos_vars)
+        if modulation_head and predict_difference_history_dim_lookup:
+            surf_vars += tuple(
+                f"{name}_mod" for name in surf_vars if name in predict_difference_history_dim_lookup
+            )
+            atmos_vars += tuple(
+                f"{name}_mod"
+                for name in atmos_vars
+                if name in predict_difference_history_dim_lookup
+            )
             separate_perceiver += tuple(f"{name}_mod" for name in separate_perceiver)
 
         self.patch_size = patch_size
@@ -88,6 +98,7 @@ class Perceiver3DDecoder(nn.Module):
         self.level_condition = level_condition
         self.separate_perceiver = separate_perceiver
         self.modulation_head = modulation_head
+        self.predict_difference_history_dim_lookup = predict_difference_history_dim_lookup
 
         self.level_decoder = PerceiverResampler(
             latent_dim=embed_dim,
@@ -188,9 +199,17 @@ class Perceiver3DDecoder(nn.Module):
 
         # If additional modulation heads are required, simulate them as different variables with
         # the suffix `_mod`.
-        if self.modulation_head:
-            surf_vars += tuple(f"{name}_mod" for name in surf_vars)
-            atmos_vars += tuple(f"{name}_mod" for name in atmos_vars)
+        if self.modulation_head and self.predict_difference_history_dim_lookup:
+            surf_vars += tuple(
+                f"{name}_mod"
+                for name in surf_vars
+                if name in self.predict_difference_history_dim_lookup
+            )
+            atmos_vars += tuple(
+                f"{name}_mod"
+                for name in atmos_vars
+                if name in self.predict_difference_history_dim_lookup
+            )
 
         # Compress the latent dimension from the U-net skip concatenation.
         B, L, D = x.shape
