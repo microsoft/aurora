@@ -336,7 +336,13 @@ class Aurora(torch.nn.Module):
         # In BF16 mode, the decoder is run in AMP PF16, and the output is converted back to FP32.
         # We run in PF16 as opposed to BF16 for improved relative precision.
         if self.bf16_mode:
-            device_type = "cuda" if torch.cuda.is_available() else "xpu" if torch.xpu.is_available() else "cpu"
+            device_type = (
+                "cuda"
+                if torch.cuda.is_available()
+                else "xpu"
+                if torch.xpu.is_available()
+                else "cpu"
+            )
             context = torch.autocast(device_type=device_type, dtype=torch.float16)
             x = x.to(torch.float16)
         else:
