@@ -428,6 +428,7 @@ class Aurora(torch.nn.Module):
             repo (str, optional): Name of the repository of the form `user/repo`.
             name (str, optional): Path to the checkpoint relative to the root of the repository,
                 e.g. `checkpoint.cpkt`.
+            revision (str, optional): Version hash of the Huggingface git repository commit
             strict (bool, optional): Error if the model parameters are not exactly equal to the
                 parameters in the checkpoint. Defaults to `True`.
         """
