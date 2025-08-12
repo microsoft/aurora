@@ -85,6 +85,7 @@ class Aurora(torch.nn.Module):
         atmos_static_vars: bool = False,
         separate_perceiver: tuple[str, ...] = (),
         modulation_head: bool = False,
+        predict_difference_history_dim_lookup: dict[str, int] = None,
         positive_surf_vars: tuple[str, ...] = (),
         positive_atmos_vars: tuple[str, ...] = (),
         clamp_at_first_step: bool = False,
@@ -160,6 +161,9 @@ class Aurora(torch.nn.Module):
                 separate Perceiver.
             modulation_head (bool, optional): Enable an additional head, the so-called modulation
                 head, that can be used to predict the difference. Defaults to `False`.
+            predict_difference_history_dim_lookup (dict[str, int]): For every variable that we want
+                to predict the difference for, the index into the history dimension that should be
+                used when predicting the difference.
             positive_surf_vars (tuple[str, ...], optional): Mark these surface-level variables as
                 positive. Clamp them before running them through the encoder, and also clamp them
                 when autoregressively rolling out the model. The variables are not clamped for the
@@ -246,6 +250,7 @@ class Aurora(torch.nn.Module):
             level_condition=level_condition,
             separate_perceiver=separate_perceiver,
             modulation_head=modulation_head,
+            predict_difference_history_dim_lookup=predict_difference_history_dim_lookup,
         )
 
         if autocast and not bf16_mode:
@@ -665,6 +670,21 @@ class AuroraAirPollution(Aurora):
         atmos_static_vars: bool = True,
         separate_perceiver: tuple[str, ...] = ("co", "no", "no2", "go3", "so2"),
         modulation_head: bool = True,
+        predict_difference_history_dim_lookup={
+            "pm1": 0,
+            "pm2p5": 0,
+            "pm10": 0,
+            "co": 1,
+            "tcco": 1,
+            "no": 0,
+            "tc_no": 0,
+            "no2": 0,
+            "tcno2": 0,
+            "so2": 1,
+            "tcso2": 1,
+            "go3": 1,
+            "gtco3": 1,
+        },
         positive_surf_vars: tuple[str, ...] = (
             ("pm1", "pm2p5", "pm10", "tcco", "tc_no", "tcno2", "gtco3", "tcso2")
         ),
@@ -683,12 +703,14 @@ class AuroraAirPollution(Aurora):
             atmos_static_vars=atmos_static_vars,
             separate_perceiver=separate_perceiver,
             modulation_head=modulation_head,
+            predict_difference_history_dim_lookup=predict_difference_history_dim_lookup,
             positive_surf_vars=positive_surf_vars,
             positive_atmos_vars=positive_atmos_vars,
             simulate_indexing_bug=simulate_indexing_bug,
             **kw_args,
         )
 
+        self.predict_difference_history_dim_lookup = predict_difference_history_dim_lookup
         self.surf_feature_combiner = torch.nn.ParameterDict(
             {v: nn.Linear(2, 1, bias=True) for v in self.positive_surf_vars}
         )
@@ -738,7 +760,7 @@ class AuroraAirPollution(Aurora):
         # previous timestep (12 hours ago or 24 hours ago) is given by
         # `Aurora._predict_difference_history_dim_lookup`.
 
-        dim_lookup = AuroraAirPollution._predict_difference_history_dim_lookup
+        dim_lookup = self.predict_difference_history_dim_lookup
 
         def _transform(
             prev: dict[str, torch.Tensor],
