@@ -32,6 +32,9 @@ class Model(metaclass=abc.ABCMeta):
         if torch.cuda.is_available():
             logger.info("GPU detected. Running on GPU.")
             self.target_device = torch.device("cuda")
+        elif torch.xpu.is_available():
+            logger.info("XPU detected. Running on XPU.")
+            self.target_device = torch.device("xpu")
         else:
             logger.warning("No GPU available. Running on CPU.")
             self.target_device = torch.device("cpu")
