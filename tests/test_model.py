@@ -72,6 +72,13 @@ def test_aurora_small(aurora_small: Aurora, test_input_output: tuple[Batch, Save
     assert pred.metadata.time == tuple(test_output["metadata"]["time"])
 
 
+@pytest.mark.skipif(
+    os.name == "nt",  # Checks if we're running on Windows.
+    reason=(
+        "DDP test suddenly started failing with error "
+        "`RuntimeError: makeDeviceForHostname(): unsupported gloo device` on Windows."
+    ),
+)
 def test_aurora_small_ddp(
     aurora_small: Aurora, test_input_output: tuple[Batch, SavedBatch]
 ) -> None:
