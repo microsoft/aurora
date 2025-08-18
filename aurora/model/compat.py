@@ -226,8 +226,9 @@ def _adapt_checkpoint_air_pollution(
             ("2t", "10u", "10v", "msl")
             + ("pm1", "pm2p5", "pm10", "tcco", "tc_no", "tcno2", "gtco3", "tcso2"),
         ):
-            d[f"decoder.surf_heads.{name}_mod.weight"] = weight[:, i]
-            d[f"decoder.surf_heads.{name}_mod.bias"] = bias[:, i]
+            if name in ["pm1", "pm2p5", "pm10", "tcco", "tc_no", "tcno2", "gtco3", "tcso2"]:
+                d[f"decoder.surf_heads.{name}_mod.weight"] = weight[:, i]
+                d[f"decoder.surf_heads.{name}_mod.bias"] = bias[:, i]
 
     for suffix in ("", "_mod"):
         for level in (50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000):
@@ -237,15 +238,16 @@ def _adapt_checkpoint_air_pollution(
                 del d[f"decoder.atmos_head{suffix}.layers.{level}.weight"]
                 del d[f"decoder.atmos_head{suffix}.layers.{level}.bias"]
 
-                n = 5
-                assert weight.shape[0] == n * patch_size**2
-                assert bias.shape[0] == n * patch_size**2
-                weight = weight.reshape(patch_size**2, n, -1)
-                bias = bias.reshape(patch_size**2, n)
+                if suffix != "_mod":
+                    n = 5
+                    assert weight.shape[0] == n * patch_size**2
+                    assert bias.shape[0] == n * patch_size**2
+                    weight = weight.reshape(patch_size**2, n, -1)
+                    bias = bias.reshape(patch_size**2, n)
 
-                for i, v in enumerate(("z", "u", "v", "t", "q")):
-                    d[f"decoder.atmos_heads.{v}{suffix}.layers.{level}.weight"] = weight[:, i]
-                    d[f"decoder.atmos_heads.{v}{suffix}.layers.{level}.bias"] = bias[:, i]
+                    for i, v in enumerate(("z", "u", "v", "t", "q")):
+                        d[f"decoder.atmos_heads.{v}{suffix}.layers.{level}.weight"] = weight[:, i]
+                        d[f"decoder.atmos_heads.{v}{suffix}.layers.{level}.bias"] = bias[:, i]
 
             if f"decoder.atmos_head{suffix}_new.layers.{level}.weight" in d:
                 weight = d[f"decoder.atmos_head{suffix}_new.layers.{level}.weight"]
