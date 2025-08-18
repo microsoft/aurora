@@ -49,6 +49,9 @@ class Aurora(torch.nn.Module):
     default_checkpoint_name = "aurora-0.25-finetuned.ckpt"
     """str: Name of the default checkpoint."""
 
+    default_checkpoint_revision = "0be7e57c685dac86b78c4a19a3ab149d13c6a3dd"
+    """str: Commit hash of the default checkpoint."""
+
     def __init__(
         self,
         *,
@@ -423,6 +426,7 @@ class Aurora(torch.nn.Module):
         self,
         repo: Optional[str] = None,
         name: Optional[str] = None,
+        revision: Optional[str] = None,
         strict: bool = True,
     ) -> None:
         """Load a checkpoint from HuggingFace.
@@ -431,12 +435,14 @@ class Aurora(torch.nn.Module):
             repo (str, optional): Name of the repository of the form `user/repo`.
             name (str, optional): Path to the checkpoint relative to the root of the repository,
                 e.g. `checkpoint.cpkt`.
+            revision (str, optional): Version hash of the Huggingface git repository commit.
             strict (bool, optional): Error if the model parameters are not exactly equal to the
                 parameters in the checkpoint. Defaults to `True`.
         """
         repo = repo or self.default_checkpoint_repo
         name = name or self.default_checkpoint_name
-        path = hf_hub_download(repo_id=repo, filename=name)
+        revision = revision or self.default_checkpoint_revision
+        path = hf_hub_download(repo_id=repo, filename=name, revision=revision)
         self.load_checkpoint_local(path, strict=strict)
 
     def load_checkpoint_local(self, path: str, strict: bool = True) -> None:
@@ -539,6 +545,7 @@ class AuroraPretrained(Aurora):
     """Pretrained version of Aurora."""
 
     default_checkpoint_name = "aurora-0.25-pretrained.ckpt"
+    default_checkpoint_revision = "0be7e57c685dac86b78c4a19a3ab149d13c6a3dd"
 
     def __init__(
         self,
@@ -559,6 +566,7 @@ class AuroraSmallPretrained(Aurora):
     """
 
     default_checkpoint_name = "aurora-0.25-small-pretrained.ckpt"
+    default_checkpoint_revision = "0be7e57c685dac86b78c4a19a3ab149d13c6a3dd"
 
     def __init__(
         self,
@@ -591,6 +599,7 @@ class Aurora12hPretrained(Aurora):
     """Pretrained version of Aurora with time step 12 hours."""
 
     default_checkpoint_name = "aurora-0.25-12h-pretrained.ckpt"
+    default_checkpoint_revision = "15e76e47b65bf4b28fd2246b7b5b951d6e2443b9"
 
     def __init__(
         self,
@@ -610,6 +619,7 @@ class AuroraHighRes(Aurora):
     """High-resolution version of Aurora."""
 
     default_checkpoint_name = "aurora-0.1-finetuned.ckpt"
+    default_checkpoint_revision = "0be7e57c685dac86b78c4a19a3ab149d13c6a3dd"
 
     def __init__(
         self,
@@ -631,6 +641,7 @@ class AuroraAirPollution(Aurora):
     """Fine-tuned version of Aurora for air pollution."""
 
     default_checkpoint_name = "aurora-0.4-air-pollution.ckpt"
+    default_checkpoint_revision = "1764d5630a53d3d7a7d169ca335236fc343e4bfc"
 
     _predict_difference_history_dim_lookup = {
         "pm1": 0,
@@ -788,6 +799,7 @@ class AuroraWave(Aurora):
     """Version of Aurora fined-tuned to HRES-WAM ocean wave data."""
 
     default_checkpoint_name = "aurora-0.25-wave.ckpt"
+    default_checkpoint_revision = "74598e8c65d53a96077c08bb91acdfa5525340c9"
 
     def __init__(
         self,
