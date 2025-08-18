@@ -128,7 +128,7 @@ To find out more, see [Responsible AI principles from Microsoft](https://www.m
 Our goal in publishing this code is
 (1) to facilitate reproducibility of our paper and
 (2) to support and accelerate further research into foundation model for atmospheric forecasting.
-This code has not been developed nor tested for non-academic purposes and hence should only be used as such at completely your own risk.
+This code has not been developed nor tested for non-academic purposes and hence should only be used as such completely at your own risk.
 
 ### Limitations
 Although Aurora was trained to accurately predict future weather, air pollution, and ocean waves,
