@@ -406,6 +406,9 @@ document.write(`
     <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-finetuned.ckpt&quot;</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Name of the default checkpoint.&quot;&quot;&quot;</span>
 
+    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">&quot;0be7e57c685dac86b78c4a19a3ab149d13c6a3dd&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Commit hash of the default checkpoint.&quot;&quot;&quot;</span>
+
 <div class="viewcode-block" id="Aurora.__init__">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -791,6 +794,7 @@ document.write(`
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">repo</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">revision</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a checkpoint from HuggingFace.</span>
@@ -799,12 +803,14 @@ document.write(`
 <span class="sd">            repo (str, optional): Name of the repository of the form `user/repo`.</span>
 <span class="sd">            name (str, optional): Path to the checkpoint relative to the root of the repository,</span>
 <span class="sd">                e.g. `checkpoint.cpkt`.</span>
+<span class="sd">            revision (str, optional): Version hash of the Huggingface git repository commit.</span>
 <span class="sd">            strict (bool, optional): Error if the model parameters are not exactly equal to the</span>
 <span class="sd">                parameters in the checkpoint. Defaults to `True`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">repo</span> <span class="o">=</span> <span class="n">repo</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_checkpoint_repo</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_checkpoint_name</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="n">hf_hub_download</span><span class="p">(</span><span class="n">repo_id</span><span class="o">=</span><span class="n">repo</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">revision</span> <span class="o">=</span> <span class="n">revision</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_checkpoint_revision</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">hf_hub_download</span><span class="p">(</span><span class="n">repo_id</span><span class="o">=</span><span class="n">repo</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">revision</span><span class="o">=</span><span class="n">revision</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">load_checkpoint_local</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">)</span></div>
 
 
@@ -920,6 +926,7 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Pretrained version of Aurora.&quot;&quot;&quot;</span>
 
     <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span>
+    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">&quot;0be7e57c685dac86b78c4a19a3ab149d13c6a3dd&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -943,6 +950,7 @@ document.write(`
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-small-pretrained.ckpt&quot;</span>
+    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">&quot;0be7e57c685dac86b78c4a19a3ab149d13c6a3dd&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -978,6 +986,7 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Pretrained version of Aurora with time step 12 hours.&quot;&quot;&quot;</span>
 
     <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-12h-pretrained.ckpt&quot;</span>
+    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">&quot;15e76e47b65bf4b28fd2246b7b5b951d6e2443b9&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1000,6 +1009,7 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;High-resolution version of Aurora.&quot;&quot;&quot;</span>
 
     <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.1-finetuned.ckpt&quot;</span>
+    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">&quot;0be7e57c685dac86b78c4a19a3ab149d13c6a3dd&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1024,6 +1034,7 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Fine-tuned version of Aurora for air pollution.&quot;&quot;&quot;</span>
 
     <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.4-air-pollution.ckpt&quot;</span>
+    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">&quot;1764d5630a53d3d7a7d169ca335236fc343e4bfc&quot;</span>
 
     <span class="n">_predict_difference_history_dim_lookup</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;pm1&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
@@ -1184,6 +1195,7 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Version of Aurora fined-tuned to HRES-WAM ocean wave data.&quot;&quot;&quot;</span>
 
     <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-wave.ckpt&quot;</span>
+    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">&quot;74598e8c65d53a96077c08bb91acdfa5525340c9&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
