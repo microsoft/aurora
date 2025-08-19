@@ -226,7 +226,8 @@ def _adapt_checkpoint_air_pollution(
             ("2t", "10u", "10v", "msl")
             + ("pm1", "pm2p5", "pm10", "tcco", "tc_no", "tcno2", "gtco3", "tcso2"),
         ):
-            if name in ["pm1", "pm2p5", "pm10", "tcco", "tc_no", "tcno2", "gtco3", "tcso2"]:
+            # Modulation heads should only be present for the pollution variables.
+            if name in ("pm1", "pm2p5", "pm10", "tcco", "tc_no", "tcno2", "gtco3", "tcso2"):
                 d[f"decoder.surf_heads.{name}_mod.weight"] = weight[:, i]
                 d[f"decoder.surf_heads.{name}_mod.bias"] = bias[:, i]
 
@@ -238,6 +239,7 @@ def _adapt_checkpoint_air_pollution(
                 del d[f"decoder.atmos_head{suffix}.layers.{level}.weight"]
                 del d[f"decoder.atmos_head{suffix}.layers.{level}.bias"]
 
+                # Modulation heads should only be present for the pollution variables.
                 if suffix != "_mod":
                     n = 5
                     assert weight.shape[0] == n * patch_size**2

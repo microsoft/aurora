@@ -84,7 +84,7 @@ class Aurora(torch.nn.Module):
         dynamic_vars: bool = False,
         atmos_static_vars: bool = False,
         separate_perceiver: tuple[str, ...] = (),
-        modulation_heads: Optional[tuple[str, ...]] = None,
+        modulation_heads: tuple[str, ...] = (),
         positive_surf_vars: tuple[str, ...] = (),
         positive_atmos_vars: tuple[str, ...] = (),
         clamp_at_first_step: bool = False,
@@ -160,7 +160,7 @@ class Aurora(torch.nn.Module):
                 separate Perceiver.
             modulation_heads (tuple[str, ...], optional): Names of every variable for which to
                 enable an additional head, the so-called modulation head, that can be used to
-                predict the difference. Defaults to `False`.
+                predict the difference.
             positive_surf_vars (tuple[str, ...], optional): Mark these surface-level variables as
                 positive. Clamp them before running them through the encoder, and also clamp them
                 when autoregressively rolling out the model. The variables are not clamped for the

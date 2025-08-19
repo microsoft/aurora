@@ -41,7 +41,7 @@ class Perceiver3DDecoder(nn.Module):
         perceiver_ln_eps: float = 1e-5,
         level_condition: Optional[tuple[int | float, ...]] = None,
         separate_perceiver: tuple[str, ...] = (),
-        modulation_heads: Optional[tuple[str, ...]] = None,
+        modulation_heads: tuple[str, ...] = (),
     ) -> None:
         """Initialise.
 
@@ -71,15 +71,15 @@ class Perceiver3DDecoder(nn.Module):
                 separate Perceiver.
             modulation_heads (tuple[str, ...], optional): Names of every variable for which to
                 enable an additional head, the so-called modulation head, that can be used to
-                predict the difference. Defaults to `False`.
+                predict the difference.
         """
         super().__init__()
 
         # If additional modulation heads are required, simulate them as different variables with
         # the suffix `_mod`.
+        surf_vars += tuple(f"{name}_mod" for name in surf_vars if name in modulation_heads)
+        atmos_vars += tuple(f"{name}_mod" for name in atmos_vars if name in modulation_heads)
         if modulation_heads:
-            surf_vars += tuple(f"{name}_mod" for name in surf_vars if name in modulation_heads)
-            atmos_vars += tuple(f"{name}_mod" for name in atmos_vars if name in modulation_heads)
             separate_perceiver += tuple(f"{name}_mod" for name in separate_perceiver)
 
         self.patch_size = patch_size
@@ -189,11 +189,8 @@ class Perceiver3DDecoder(nn.Module):
 
         # If additional modulation heads are required, simulate them as different variables with
         # the suffix `_mod`.
-        if self.modulation_heads:
-            surf_vars += tuple(f"{name}_mod" for name in surf_vars if name in self.modulation_heads)
-            atmos_vars += tuple(
-                f"{name}_mod" for name in atmos_vars if name in self.modulation_heads
-            )
+        surf_vars += tuple(f"{name}_mod" for name in surf_vars if name in self.modulation_heads)
+        atmos_vars += tuple(f"{name}_mod" for name in atmos_vars if name in self.modulation_heads)
 
         # Compress the latent dimension from the U-net skip concatenation.
         B, L, D = x.shape
