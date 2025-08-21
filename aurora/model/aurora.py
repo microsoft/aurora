@@ -87,7 +87,7 @@ class Aurora(torch.nn.Module):
         dynamic_vars: bool = False,
         atmos_static_vars: bool = False,
         separate_perceiver: tuple[str, ...] = (),
-        modulation_head: bool = False,
+        modulation_heads: tuple[str, ...] = (),
         positive_surf_vars: tuple[str, ...] = (),
         positive_atmos_vars: tuple[str, ...] = (),
         clamp_at_first_step: bool = False,
@@ -161,8 +161,9 @@ class Aurora(torch.nn.Module):
                 with variables that have a significantly different behaviour. If you want to enable
                 this features, set this to the collection of variables that should be run on a
                 separate Perceiver.
-            modulation_head (bool, optional): Enable an additional head, the so-called modulation
-                head, that can be used to predict the difference. Defaults to `False`.
+            modulation_heads (tuple[str, ...], optional): Names of every variable for which to
+                enable an additional head, the so-called modulation head, that can be used to
+                predict the difference.
             positive_surf_vars (tuple[str, ...], optional): Mark these surface-level variables as
                 positive. Clamp them before running them through the encoder, and also clamp them
                 when autoregressively rolling out the model. The variables are not clamped for the
@@ -248,7 +249,7 @@ class Aurora(torch.nn.Module):
             perceiver_ln_eps=perceiver_ln_eps,
             level_condition=level_condition,
             separate_perceiver=separate_perceiver,
-            modulation_head=modulation_head,
+            modulation_heads=modulation_heads,
         )
 
         if autocast and not bf16_mode:
@@ -682,7 +683,7 @@ class AuroraAirPollution(Aurora):
         dynamic_vars: bool = True,
         atmos_static_vars: bool = True,
         separate_perceiver: tuple[str, ...] = ("co", "no", "no2", "go3", "so2"),
-        modulation_head: bool = True,
+        modulation_heads: tuple[str, ...] = tuple(_predict_difference_history_dim_lookup.keys()),
         positive_surf_vars: tuple[str, ...] = (
             ("pm1", "pm2p5", "pm10", "tcco", "tc_no", "tcno2", "gtco3", "tcso2")
         ),
@@ -700,7 +701,7 @@ class AuroraAirPollution(Aurora):
             dynamic_vars=dynamic_vars,
             atmos_static_vars=atmos_static_vars,
             separate_perceiver=separate_perceiver,
-            modulation_head=modulation_head,
+            modulation_heads=modulation_heads,
             positive_surf_vars=positive_surf_vars,
             positive_atmos_vars=positive_atmos_vars,
             simulate_indexing_bug=simulate_indexing_bug,
