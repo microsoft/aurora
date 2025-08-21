@@ -446,7 +446,7 @@ document.write(`
         <span class="n">dynamic_vars</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">atmos_static_vars</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">separate_perceiver</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-        <span class="n">modulation_head</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">modulation_heads</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
         <span class="n">positive_surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
         <span class="n">positive_atmos_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
         <span class="n">clamp_at_first_step</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -520,8 +520,9 @@ document.write(`
 <span class="sd">                with variables that have a significantly different behaviour. If you want to enable</span>
 <span class="sd">                this features, set this to the collection of variables that should be run on a</span>
 <span class="sd">                separate Perceiver.</span>
-<span class="sd">            modulation_head (bool, optional): Enable an additional head, the so-called modulation</span>
-<span class="sd">                head, that can be used to predict the difference. Defaults to `False`.</span>
+<span class="sd">            modulation_heads (tuple[str, ...], optional): Names of every variable for which to</span>
+<span class="sd">                enable an additional head, the so-called modulation head, that can be used to</span>
+<span class="sd">                predict the difference.</span>
 <span class="sd">            positive_surf_vars (tuple[str, ...], optional): Mark these surface-level variables as</span>
 <span class="sd">                positive. Clamp them before running them through the encoder, and also clamp them</span>
 <span class="sd">                when autoregressively rolling out the model. The variables are not clamped for the</span>
@@ -607,7 +608,7 @@ document.write(`
             <span class="n">perceiver_ln_eps</span><span class="o">=</span><span class="n">perceiver_ln_eps</span><span class="p">,</span>
             <span class="n">level_condition</span><span class="o">=</span><span class="n">level_condition</span><span class="p">,</span>
             <span class="n">separate_perceiver</span><span class="o">=</span><span class="n">separate_perceiver</span><span class="p">,</span>
-            <span class="n">modulation_head</span><span class="o">=</span><span class="n">modulation_head</span><span class="p">,</span>
+            <span class="n">modulation_heads</span><span class="o">=</span><span class="n">modulation_heads</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">autocast</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">bf16_mode</span><span class="p">:</span>
@@ -1075,7 +1076,7 @@ document.write(`
         <span class="n">dynamic_vars</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">atmos_static_vars</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">separate_perceiver</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;co&quot;</span><span class="p">,</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="s2">&quot;no2&quot;</span><span class="p">,</span> <span class="s2">&quot;go3&quot;</span><span class="p">,</span> <span class="s2">&quot;so2&quot;</span><span class="p">),</span>
-        <span class="n">modulation_head</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">modulation_heads</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">_predict_difference_history_dim_lookup</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
         <span class="n">positive_surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
             <span class="p">(</span><span class="s2">&quot;pm1&quot;</span><span class="p">,</span> <span class="s2">&quot;pm2p5&quot;</span><span class="p">,</span> <span class="s2">&quot;pm10&quot;</span><span class="p">,</span> <span class="s2">&quot;tcco&quot;</span><span class="p">,</span> <span class="s2">&quot;tc_no&quot;</span><span class="p">,</span> <span class="s2">&quot;tcno2&quot;</span><span class="p">,</span> <span class="s2">&quot;gtco3&quot;</span><span class="p">,</span> <span class="s2">&quot;tcso2&quot;</span><span class="p">)</span>
         <span class="p">),</span>
@@ -1093,7 +1094,7 @@ document.write(`
             <span class="n">dynamic_vars</span><span class="o">=</span><span class="n">dynamic_vars</span><span class="p">,</span>
             <span class="n">atmos_static_vars</span><span class="o">=</span><span class="n">atmos_static_vars</span><span class="p">,</span>
             <span class="n">separate_perceiver</span><span class="o">=</span><span class="n">separate_perceiver</span><span class="p">,</span>
-            <span class="n">modulation_head</span><span class="o">=</span><span class="n">modulation_head</span><span class="p">,</span>
+            <span class="n">modulation_heads</span><span class="o">=</span><span class="n">modulation_heads</span><span class="p">,</span>
             <span class="n">positive_surf_vars</span><span class="o">=</span><span class="n">positive_surf_vars</span><span class="p">,</span>
             <span class="n">positive_atmos_vars</span><span class="o">=</span><span class="n">positive_atmos_vars</span><span class="p">,</span>
             <span class="n">simulate_indexing_bug</span><span class="o">=</span><span class="n">simulate_indexing_bug</span><span class="p">,</span>
