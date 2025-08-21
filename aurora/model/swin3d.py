@@ -156,7 +156,11 @@ class WindowAttention(nn.Module):
         attn_dropout = self.attn_drop if self.training else 0.0
 
         if mask is not None:
-            mask = mask.unsqueeze(1)  # (nW, 1, ws, ws)
+            mask = mask.unsqueeze(1).unsqueeze(0)  # (1, nW, 1, ws, ws)
+            # Repeat the mask for every batch size and merge `B` and `nW` into one
+            # dimension.
+            B = q.shape[0] // mask.shape[1]
+            mask = mask.repeat(B, 1, 1, 1, 1).reshape(-1, *mask.shape[2:])
             x = F.scaled_dot_product_attention(q, k, v, attn_mask=mask, dropout_p=attn_dropout)
         else:
             x = F.scaled_dot_product_attention(q, k, v, dropout_p=attn_dropout)
