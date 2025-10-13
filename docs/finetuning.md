@@ -19,13 +19,7 @@ You can do this as follows:
 ```python
 from aurora import AuroraPretrained
 
-model = AuroraPretrained(
-    # BF16 mode is an EXPERIMENTAL mode that saves memory by running the backbone in pure BF16
-    # and the decoder in FP16 AMP. This should enable gradient computation. USE AT YOUR OWN RISK.
-    # THIS WAS NOT USED IN THE DEVELOPMENT OF AURORA AND IS PURELY PROVIDED AS A STARTING POINT
-    # FOR FINE-TUNING.
-    bf16_mode=True,
-)
+model = AuroraPretrained(autocast=True)
 model.load_checkpoint()
 
 batch = ...  # Load some data.
@@ -38,6 +32,9 @@ pred = model.forward(batch)
 loss = ...
 loss.backward()
 ```
+
+Here `autocast` enables AMP with `bfloat16` for only the backbone.
+This is necessary to be able to fit gradients in memory.
 
 ## Exploding Gradients
 
