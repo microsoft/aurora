@@ -4,8 +4,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 WORKDIR /app
 SHELL ["/bin/bash", "-c"]
 
-# Copy over source, create the environment, and install the repo in editable
-# mode.
+# Create the environment and install the repo in editable mode.
 RUN mkdir -p /app/aurora/aurora
 COPY pyproject.toml LICENSE.txt /app/aurora
 RUN touch /app/aurora/__init__.py \
