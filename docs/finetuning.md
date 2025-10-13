@@ -10,6 +10,30 @@ model = AuroraPretrained()
 model.load_checkpoint()
 ```
 
+We provide a very basic Docker image and fine-tuning loop to get you started.
+The Docker image can be found at `finetuning/Dockerfile` and the fine-tuning
+loop at `finetuning/finetune.py`.
+You can build and run the image as follows:
+
+```bash
+docker build . -t aurora:latest -f finetuning/Dockerfile
+docker run --rm -it \
+    && --gpus all \
+    && --ipc=host \
+    && --ulimit memlock=-1 \
+    && --ulimit stack=67108864 \
+    && -v .:/app/aurora \
+    aurora:latest
+```
+
+Then, within the image, execute
+
+```bash
+python finetuning/finetune.py
+```
+
+to run the sample fine-tuning loop.
+
 ## Computing Gradients
 
 To compute gradients, you will need an A100 with 80 GB of memory.
