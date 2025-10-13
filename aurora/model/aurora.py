@@ -226,6 +226,7 @@ class Aurora(torch.nn.Module):
             embed_dim=embed_dim,
             mlp_ratio=mlp_ratio,
             drop_path_rate=drop_path,
+            attn_drop_rate=drop_rate,
             drop_rate=drop_rate,
             use_lora=use_lora,
             lora_steps=lora_steps,

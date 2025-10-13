@@ -41,7 +41,7 @@ class Perceiver3DEncoder(nn.Module):
         embed_dim: int = 1024,
         num_heads: int = 16,
         head_dim: int = 64,
-        drop_rate: float = 0.1,
+        drop_rate: float = 0.0,
         depth: int = 2,
         mlp_ratio: float = 4.0,
         max_history_size: int = 2,
@@ -66,7 +66,7 @@ class Perceiver3DEncoder(nn.Module):
                 Defaults to `16`.
             head_dim (int, optional): Dimension of attention heads used in aggregation blocks.
                 Defaults to `64`.
-            drop_rate (float, optional): Drop out rate for input patches. Defaults to `0.1`.
+            drop_rate (float, optional): Drop out rate for input patches. Defaults to `0.0`.
             depth (int, optional): Number of Perceiver cross-attention and feed-forward blocks.
                 Defaults to `2`.
             mlp_ratio (float, optional): Ratio of hidden dimensionality to embedding dimensionality
