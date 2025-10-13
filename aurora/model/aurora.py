@@ -502,26 +502,48 @@ class Aurora(torch.nn.Module):
 
                 checkpoint[name] = new_weight
 
-    def configure_activation_checkpointing(self):
+    def configure_activation_checkpointing(
+        self,
+        module_names: tuple[str, ...] = (
+            "Basic3DDecoderLayer",
+            "Basic3DEncoderLayer",
+            "LinearPatchReconstruction",
+            "Perceiver3DDecoder",
+            "Perceiver3DEncoder",
+            "Swin3DTransformerBackbone",
+            "Swin3DTransformerBlock",
+        ),
+    ) -> None:
         """Configure activation checkpointing.
 
         This is required in order to compute gradients without running out of memory.
+
+        Args:
+            module_names (tuple[str, ...], optional): Names of the modules to checkpoint
+                on.
+
+        Raises:
+            RuntimeError: If any module specifies in `module_names` was not found and
+                thus could not be checkpointed.
         """
-        # Checkpoint these modules:
-        module_names = (
-            "Perceiver3DEncoder",
-            "Swin3DTransformerBackbone",
-            "Basic3DEncoderLayer",
-            "Basic3DDecoderLayer",
-            "Perceiver3DDecoder",
-            "LinearPatchReconstruction",
-        )
+
+        found: set[str] = set()
 
         def check(x: torch.nn.Module) -> bool:
             name = x.__class__.__name__
-            return name in module_names
+            if name in module_names:
+                found.add(name)
+                return True
+            else:
+                return False
 
         apply_activation_checkpointing(self, check_fn=check)
+
+        if found != set(module_names):
+            raise RuntimeError(
+                f'Could not checkpoint on the following modules: '
+                f'{", ".join(sorted(set(module_names) - found))}.'
+            )
 
 
 class AuroraPretrained(Aurora):
