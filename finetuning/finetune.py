@@ -12,7 +12,7 @@ def loss(pred: Batch) -> torch.Tensor:
     return sum((x * x).sum() for x in tuple(surf_values) + tuple(atmos_values))
 
 
-model = AuroraPretrained()
+model = AuroraPretrained(autocast=True)
 model.load_checkpoint()
 model.configure_activation_checkpointing()
 model.train()
