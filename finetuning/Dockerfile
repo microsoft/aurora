@@ -6,7 +6,7 @@ SHELL ["/bin/bash", "-c"]
 
 # Create the environment and install the repo in editable mode.
 RUN mkdir -p /app/aurora/aurora
-COPY pyproject.toml LICENSE.txt /app/aurora
+COPY pyproject.toml LICENSE.txt /app/aurora/
 RUN touch /app/aurora/__init__.py \
     && touch /app/aurora/README.md \
     && uv venv --python 3.13 \

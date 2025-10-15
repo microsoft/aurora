@@ -10,6 +10,8 @@ model = AuroraPretrained()
 model.load_checkpoint()
 ```
 
+## Basic Fine-Tuning Environment
+
 We provide a very basic Docker image and fine-tuning loop to get you started.
 The Docker image can be found at `finetuning/Dockerfile` and the fine-tuning
 loop at `finetuning/finetune.py`.
@@ -17,12 +19,8 @@ You can build and run the image as follows:
 
 ```bash
 docker build . -t aurora:latest -f finetuning/Dockerfile
-docker run --rm -it \
-    && --gpus all \
-    && --ipc=host \
-    && --ulimit memlock=-1 \
-    && --ulimit stack=67108864 \
-    && -v .:/app/aurora \
+docker run --rm -it -v .:/app/aurora \
+    --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
     aurora:latest
 ```
 
@@ -33,6 +31,22 @@ python finetuning/finetune.py
 ```
 
 to run the sample fine-tuning loop.
+
+For example, on Azure, launch a VM with size `Standard_NC24ads_A100_v4`, image
+Ubuntu 24.04 LTS (x64), and 256 GB of disk space.
+Then [install CUDA](https://learn.microsoft.com/en-us/azure/virtual-machines/linux/n-series-driver-setup).
+Be sure to install the latest supported version of the CUDA Toolkit by
+checking `nvidia-smi` after installing the drivers with
+`sudo ubuntu-drivers autoinstall` and rebooting.
+Best performance is achieved with CUDA Toolkit 13.0 or higher, which
+requires drivers that support CUDA 13.0 or higher.
+Then install Docker with `sudo apt install docker.io`,
+set the right permissions for the current user with
+`sudo usermod -a -G docker $USER`,
+[install the NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html),
+and reboot.
+You should now be able to clone the repo and build and run the image using
+the instructions above.
 
 ## Computing Gradients
 
