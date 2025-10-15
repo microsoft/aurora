@@ -146,7 +146,7 @@ class Aurora(torch.nn.Module):
                 variables, adjust the normalisation to the given tuple consisting of a new location
                 and scale.
             autocast (bool, optional): To reduce memory usage, `torch.autocast` only the backbone
-                to BF16. This reduced memory usage and is critical to enable fine-tuning.
+                to BF16. This is critical to enable fine-tuning.
             level_condition (tuple[int | float, ...], optional): Make the patch embeddings dependent
                 on pressure level. If you want to enable this feature, provide a tuple of all
                 possible pressure levels.
