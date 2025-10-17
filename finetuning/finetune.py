@@ -39,7 +39,7 @@ for i in range(10):
     )
 
     opt.zero_grad()
-    prediction = model.forward(batch.to("cuda"))
+    prediction = model(batch.to("cuda")
     loss_value = loss(prediction)
     loss_value.backward()
     opt.step()
