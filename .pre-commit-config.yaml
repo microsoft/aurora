@@ -2,9 +2,6 @@ ci:
   autoupdate_commit_msg: "chore: Update pre-commit hooks"
   autofix_commit_msg: "style: Pre-commit fixes"
 
-default_language_version:
-  python: python3.10
-
 repos:
   - repo: meta
     hooks:

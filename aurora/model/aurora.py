@@ -145,10 +145,8 @@ class Aurora(torch.nn.Module):
             surf_stats (dict[str, tuple[float, float]], optional): For these surface-level
                 variables, adjust the normalisation to the given tuple consisting of a new location
                 and scale.
-            bf16_mode (bool, optional): To reduce memory usage, convert the tokens to BF16, run
-                the backbone in pure BF16, and run the decoder in FP16 AMP. This should enable a
-                gradient computation. USE AT YOUR OWN RISK. THIS WAS NOT USED DURING THE DEVELOPMENT
-                OF AURORA AND IS PURELY PROVIDED AS A STARTING POINT FOR FINE-TUNING.
+            autocast (bool, optional): To reduce memory usage, `torch.autocast` only the backbone
+                to BF16. This is critical to enable fine-tuning.
             level_condition (tuple[int | float, ...], optional): Make the patch embeddings dependent
                 on pressure level. If you want to enable this feature, provide a tuple of all
                 possible pressure levels.
@@ -228,6 +226,7 @@ class Aurora(torch.nn.Module):
             embed_dim=embed_dim,
             mlp_ratio=mlp_ratio,
             drop_path_rate=drop_path,
+            attn_drop_rate=drop_rate,
             drop_rate=drop_rate,
             use_lora=use_lora,
             lora_steps=lora_steps,
@@ -252,18 +251,16 @@ class Aurora(torch.nn.Module):
             modulation_heads=modulation_heads,
         )
 
-        if autocast and not bf16_mode:
+        if bf16_mode and not autocast:
             warnings.warn(
-                "The argument `autocast` no longer does anything due to limited utility. "
-                "Consider instead using `bf16_mode`.",
+                "`bf16_mode` was removed, because it caused serious issues for gradient "
+                "computation. `bf16_mode` now automatically activates `autocast`, which will not "
+                "save as much memory, but should be much more stable.",
                 stacklevel=2,
             )
+            autocast = True
 
-        self.bf16_mode = bf16_mode
-
-        if self.bf16_mode:
-            # We run the backbone in pure BF16.
-            self.backbone.to(torch.bfloat16)
+        self.autocast = autocast
 
     def forward(self, batch: Batch) -> Batch:
         """Forward pass.
@@ -327,44 +324,30 @@ class Aurora(torch.nn.Module):
             lead_time=self.timestep,
         )
 
-        # In BF16 mode, the backbone is run in pure BF16.
-        if self.bf16_mode:
-            x = x.to(torch.bfloat16)
-        x = self.backbone(
-            x,
-            lead_time=self.timestep,
-            patch_res=patch_res,
-            rollout_step=batch.metadata.rollout_step,
-        )
-
-        # In BF16 mode, the decoder is run in AMP PF16, and the output is converted back to FP32.
-        # We run in PF16 as opposed to BF16 for improved relative precision.
-        if self.bf16_mode:
-            device_type = (
-                "cuda"
-                if torch.cuda.is_available()
-                else "xpu"
-                if torch.xpu.is_available()
-                else "cpu"
-            )
-            context = torch.autocast(device_type=device_type, dtype=torch.float16)
-            x = x.to(torch.float16)
+        if self.autocast:
+            if torch.cuda.is_available():
+                device_type = "cuda"
+            elif torch.xpu.is_available():
+                device_type = "xpu"
+            else:
+                device_type = "cpu"
+            context = torch.autocast(device_type=device_type, dtype=torch.bfloat16)
         else:
             context = contextlib.nullcontext()
         with context:
-            pred = self.decoder(
+            x = self.backbone(
                 x,
-                batch,
                 lead_time=self.timestep,
                 patch_res=patch_res,
+                rollout_step=batch.metadata.rollout_step,
             )
-        if self.bf16_mode:
-            pred = dataclasses.replace(
-                pred,
-                surf_vars={k: v.float() for k, v in pred.surf_vars.items()},
-                static_vars={k: v.float() for k, v in pred.static_vars.items()},
-                atmos_vars={k: v.float() for k, v in pred.atmos_vars.items()},
-            )
+
+        pred = self.decoder(
+            x,
+            batch,
+            lead_time=self.timestep,
+            patch_res=patch_res,
+        )
 
         # Remove batch and history dimension from static variables.
         pred = dataclasses.replace(
@@ -520,26 +503,48 @@ class Aurora(torch.nn.Module):
 
                 checkpoint[name] = new_weight
 
-    def configure_activation_checkpointing(self):
+    def configure_activation_checkpointing(
+        self,
+        module_names: tuple[str, ...] = (
+            "Basic3DDecoderLayer",
+            "Basic3DEncoderLayer",
+            "LinearPatchReconstruction",
+            "Perceiver3DDecoder",
+            "Perceiver3DEncoder",
+            "Swin3DTransformerBackbone",
+            "Swin3DTransformerBlock",
+        ),
+    ) -> None:
         """Configure activation checkpointing.
 
         This is required in order to compute gradients without running out of memory.
+
+        Args:
+            module_names (tuple[str, ...], optional): Names of the modules to checkpoint
+                on.
+
+        Raises:
+            RuntimeError: If any module specifies in `module_names` was not found and
+                thus could not be checkpointed.
         """
-        # Checkpoint these modules:
-        module_names = (
-            "Perceiver3DEncoder",
-            "Swin3DTransformerBackbone",
-            "Basic3DEncoderLayer",
-            "Basic3DDecoderLayer",
-            "Perceiver3DDecoder",
-            "LinearPatchReconstruction",
-        )
+
+        found: set[str] = set()
 
         def check(x: torch.nn.Module) -> bool:
             name = x.__class__.__name__
-            return name in module_names
+            if name in module_names:
+                found.add(name)
+                return True
+            else:
+                return False
 
         apply_activation_checkpointing(self, check_fn=check)
+
+        if found != set(module_names):
+            raise RuntimeError(
+                f'Could not checkpoint on the following modules: '
+                f'{", ".join(sorted(set(module_names) - found))}.'
+            )
 
 
 class AuroraPretrained(Aurora):

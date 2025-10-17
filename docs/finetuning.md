@@ -10,6 +10,47 @@ model = AuroraPretrained()
 model.load_checkpoint()
 ```
 
+## Basic Fine-Tuning Environment
+
+We provide a very basic Docker image and fine-tuning loop to get you started.
+This Docker image is built from a NVIDIA PyTorch base image,
+so is tailored to work for NVIDIA GPUs, and has been tested on an 80 GB A100.
+The image can be found at `finetuning/Dockerfile` and the fine-tuning
+loop at `finetuning/finetune.py`.
+Assuming that you have cloned the Aurora repository, you can build and run
+the image by running the following from the root of the repository:
+
+```bash
+docker build . -t aurora:latest -f finetuning/Dockerfile
+docker run --rm -it -v .:/app/aurora \
+    --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
+    aurora:latest
+```
+
+Then, within the image, execute
+
+```bash
+python finetuning/finetune.py
+```
+
+to run the sample fine-tuning loop.
+
+For example, on Azure, launch a VM with size `Standard_NC24ads_A100_v4`, image
+Ubuntu 24.04 LTS (x64), and 256 GB of disk space.
+Then [install CUDA](https://learn.microsoft.com/en-us/azure/virtual-machines/linux/n-series-driver-setup).
+Be sure to install the latest supported version of the CUDA Toolkit by
+checking `nvidia-smi` after installing the drivers with
+`sudo ubuntu-drivers autoinstall` and rebooting.
+Best performance is achieved with CUDA Toolkit 13.0 or higher, which
+requires drivers that support CUDA 13.0 or higher.
+Then install Docker with `sudo apt install docker.io`,
+set the right permissions for the current user with
+`sudo usermod -a -G docker $USER`,
+[install the NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html),
+and reboot.
+You should now be able to clone the repo and build and run the image using
+the instructions above.
+
 ## Computing Gradients
 
 To compute gradients, you will need an A100 with 80 GB of memory.
@@ -19,13 +60,7 @@ You can do this as follows:
 ```python
 from aurora import AuroraPretrained
 
-model = AuroraPretrained(
-    # BF16 mode is an EXPERIMENTAL mode that saves memory by running the backbone in pure BF16
-    # and the decoder in FP16 AMP. This should enable gradient computation. USE AT YOUR OWN RISK.
-    # THIS WAS NOT USED IN THE DEVELOPMENT OF AURORA AND IS PURELY PROVIDED AS A STARTING POINT
-    # FOR FINE-TUNING.
-    bf16_mode=True,
-)
+model = AuroraPretrained(autocast=True)
 model.load_checkpoint()
 
 batch = ...  # Load some data.
@@ -38,6 +73,9 @@ pred = model.forward(batch)
 loss = ...
 loss.backward()
 ```
+
+Here `autocast` enables AMP with `bfloat16` for only the backbone.
+This is necessary to be able to fit gradients in memory.
 
 ## Exploding Gradients
 

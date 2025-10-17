@@ -762,8 +762,8 @@ class Swin3DTransformerBackbone(nn.Module):
         mlp_ratio: float = 4.0,
         qkv_bias: bool = True,
         drop_rate: float = 0.0,
-        attn_drop_rate: float = 0.1,
-        drop_path_rate: float = 0.1,
+        attn_drop_rate: float = 0.0,
+        drop_path_rate: float = 0.0,
         lora_steps: int = 40,
         lora_mode: LoRAMode = "single",
         use_lora: bool = False,
@@ -785,8 +785,8 @@ class Swin3DTransformerBackbone(nn.Module):
             qkv_bias (bool): If `True`, add a learnable bias to the query, key, and value. Defaults
                 to `True`.
             drop_rate (float): Drop-out rate. Defaults to `0.0`.
-            attn_drop_rate (float): Attention drop-out rate. Defaults to `0.1`.
-            drop_path_rate (float): Stochastic depth rate. Defaults to `0.1`.
+            attn_drop_rate (float): Attention drop-out rate. Defaults to `0.0`.
+            drop_path_rate (float): Stochastic depth rate. Defaults to `0.0`.
             lora_steps (int, optional): Maximum number of LoRA roll-out steps. Defaults to `40`.
             lora_mode (str, optional): LoRA mode. `"single"` uses the same LoRA for all roll-out
                 steps, `"from_second"` uses the same LoRA from the second roll-out step on,
