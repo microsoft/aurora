@@ -399,6 +399,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-fine-tuning-environment">Basic Fine-Tuning Environment</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#computing-gradients">Computing Gradients</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exploding-gradients">Exploding Gradients</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#extending-aurora-with-new-variables">Extending Aurora with New Variables</a></li>
@@ -425,6 +426,42 @@ you should build on the pretrained version:</p>
 <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">()</span>
 </pre></div>
 </div>
+<section id="basic-fine-tuning-environment">
+<h2>Basic Fine-Tuning Environment<a class="headerlink" href="#basic-fine-tuning-environment" title="Link to this heading">#</a></h2>
+<p>We provide a very basic Docker image and fine-tuning loop to get you started.
+This Docker image is built from a NVIDIA PyTorch base image,
+so is tailored to work for NVIDIA GPUs, and has been tested on an 80 GB A100.
+The image can be found at <code class="docutils literal notranslate"><span class="pre">finetuning/Dockerfile</span></code> and the fine-tuning
+loop at <code class="docutils literal notranslate"><span class="pre">finetuning/finetune.py</span></code>.
+Assuming that you have cloned the Aurora repository, you can build and run
+the image by running the following from the root of the repository:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>build<span class="w"> </span>.<span class="w"> </span>-t<span class="w"> </span>aurora:latest<span class="w"> </span>-f<span class="w"> </span>finetuning/Dockerfile
+docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-it<span class="w"> </span>-v<span class="w"> </span>.:/app/aurora<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--gpus<span class="w"> </span>all<span class="w"> </span>--ipc<span class="o">=</span>host<span class="w"> </span>--ulimit<span class="w"> </span><span class="nv">memlock</span><span class="o">=</span>-1<span class="w"> </span>--ulimit<span class="w"> </span><span class="nv">stack</span><span class="o">=</span><span class="m">67108864</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>aurora:latest
+</pre></div>
+</div>
+<p>Then, within the image, execute</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>finetuning/finetune.py
+</pre></div>
+</div>
+<p>to run the sample fine-tuning loop.</p>
+<p>For example, on Azure, launch a VM with size <code class="docutils literal notranslate"><span class="pre">Standard_NC24ads_A100_v4</span></code>, image
+Ubuntu 24.04 LTS (x64), and 256 GB of disk space.
+Then <a class="reference external" href="https://learn.microsoft.com/en-us/azure/virtual-machines/linux/n-series-driver-setup">install CUDA</a>.
+Be sure to install the latest supported version of the CUDA Toolkit by
+checking <code class="docutils literal notranslate"><span class="pre">nvidia-smi</span></code> after installing the drivers with
+<code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">ubuntu-drivers</span> <span class="pre">autoinstall</span></code> and rebooting.
+Best performance is achieved with CUDA Toolkit 13.0 or higher, which
+requires drivers that support CUDA 13.0 or higher.
+Then install Docker with <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt</span> <span class="pre">install</span> <span class="pre">docker.io</span></code>,
+set the right permissions for the current user with
+<code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">usermod</span> <span class="pre">-a</span> <span class="pre">-G</span> <span class="pre">docker</span> <span class="pre">$USER</span></code>,
+<a class="reference external" href="https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html">install the NVIDIA Container Toolkit</a>,
+and reboot.
+You should now be able to clone the repo and build and run the image using
+the instructions above.</p>
+</section>
 <section id="computing-gradients">
 <h2>Computing Gradients<a class="headerlink" href="#computing-gradients" title="Link to this heading">#</a></h2>
 <p>To compute gradients, you will need an A100 with 80 GB of memory.
@@ -432,13 +469,7 @@ In addition, you will need to use reduced precision and gradient checkpointing.
 You can do this as follows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraPretrained</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraPretrained</span><span class="p">(</span>
-    <span class="c1"># BF16 mode is an EXPERIMENTAL mode that saves memory by running the backbone in pure BF16</span>
-    <span class="c1"># and the decoder in FP16 AMP. This should enable gradient computation. USE AT YOUR OWN RISK.</span>
-    <span class="c1"># THIS WAS NOT USED IN THE DEVELOPMENT OF AURORA AND IS PURELY PROVIDED AS A STARTING POINT</span>
-    <span class="c1"># FOR FINE-TUNING.</span>
-    <span class="n">bf16_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraPretrained</span><span class="p">(</span><span class="n">autocast</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">()</span>
 
 <span class="n">batch</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># Load some data.</span>
@@ -452,6 +483,8 @@ You can do this as follows:</p>
 <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
 </pre></div>
 </div>
+<p>Here <code class="docutils literal notranslate"><span class="pre">autocast</span></code> enables AMP with <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code> for only the backbone.
+This is necessary to be able to fit gradients in memory.</p>
 </section>
 <section id="exploding-gradients">
 <h2>Exploding Gradients<a class="headerlink" href="#exploding-gradients" title="Link to this heading">#</a></h2>
@@ -609,6 +642,7 @@ Simply set <code class="docutils literal notranslate"><span class="pre">model.lo
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-fine-tuning-environment">Basic Fine-Tuning Environment</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#computing-gradients">Computing Gradients</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exploding-gradients">Exploding Gradients</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#extending-aurora-with-new-variables">Extending Aurora with New Variables</a></li>
