@@ -13,9 +13,12 @@ model.load_checkpoint()
 ## Basic Fine-Tuning Environment
 
 We provide a very basic Docker image and fine-tuning loop to get you started.
-The Docker image can be found at `finetuning/Dockerfile` and the fine-tuning
+This Docker image is built from a NVIDIA PyTorch base image,
+so is tailored to work for NVIDIA GPUs, and has been tested on an 80 GB A100.
+The image can be found at `finetuning/Dockerfile` and the fine-tuning
 loop at `finetuning/finetune.py`.
-You can build and run the image as follows:
+Assuming that you have cloned the Aurora repository, you can build and run
+the image by running the following from the root of the repository:
 
 ```bash
 docker build . -t aurora:latest -f finetuning/Dockerfile
