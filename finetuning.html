@@ -445,7 +445,19 @@ docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>finetuning/finetune.py
 </pre></div>
 </div>
-<p>to run the sample fine-tuning loop.</p>
+<p>to run the sample fine-tuning loop.
+This loop should run on an A100 with 80 GB of memory.
+If you need to reduce memory usage, you could try the following:
+(a) split the model and optimiser parameters across multiple GPUs with
+<a class="reference external" href="https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html">FSDP</a>;
+(b) use a more memory-efficient optimiser, such as
+<a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.Adafactor.html">Adafactor</a>;
+(c) split the model activations across multiple GPUs with model parallelism
+(you will need to implement this yourself or use an existing framework);
+(d) do CPU offloading of model or optimiser parameters; or
+(e) run everything in pure <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code> (this might lead to more unstable training).
+You could also try to optimise the activation checkpointing strategy, to
+see if there is something more to gain there.</p>
 <p>For example, on Azure, launch a VM with size <code class="docutils literal notranslate"><span class="pre">Standard_NC24ads_A100_v4</span></code>, image
 Ubuntu 24.04 LTS (x64), and 256 GB of disk space.
 Then <a class="reference external" href="https://learn.microsoft.com/en-us/azure/virtual-machines/linux/n-series-driver-setup">install CUDA</a>.
