@@ -34,6 +34,16 @@ python finetuning/finetune.py
 ```
 
 to run the sample fine-tuning loop.
+This loop should run on an A100 with 80 GB of memory.
+If you need to reduce memory usage, you could try the following:
+(a) split the model and optimiser parameters across multiple GPUs with
+[FSDP](https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html);
+(b) use a more memory-efficient optimiser, such as
+[Adafactor](https://docs.pytorch.org/docs/stable/generated/torch.optim.Adafactor.html);
+(c) split the model activations across multiple GPUs with model parallelism
+(you will need to implement this yourself or use an existing framework);
+(d) do CPU offloading of model or optimiser parameters; or
+(e) run everything in pure `bfloat16` (this might lead to more unstable training).
 
 For example, on Azure, launch a VM with size `Standard_NC24ads_A100_v4`, image
 Ubuntu 24.04 LTS (x64), and 256 GB of disk space.
@@ -50,6 +60,8 @@ set the right permissions for the current user with
 and reboot.
 You should now be able to clone the repo and build and run the image using
 the instructions above.
+
+
 
 ## Computing Gradients
 
