@@ -44,6 +44,8 @@ If you need to reduce memory usage, you could try the following:
 (you will need to implement this yourself or use an existing framework);
 (d) do CPU offloading of model or optimiser parameters; or
 (e) run everything in pure `bfloat16` (this might lead to more unstable training).
+You could also try to optimise the activation checkpointing strategy, to
+see if there is something more to gain there.
 
 For example, on Azure, launch a VM with size `Standard_NC24ads_A100_v4`, image
 Ubuntu 24.04 LTS (x64), and 256 GB of disk space.
