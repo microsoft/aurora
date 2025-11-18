@@ -399,7 +399,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-fine-tuning-environment">Basic Fine-Tuning Environment</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fine-tuning-environment">Fine-Tuning Environment</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#computing-gradients">Computing Gradients</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exploding-gradients">Exploding Gradients</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#extending-aurora-with-new-variables">Extending Aurora with New Variables</a></li>
@@ -426,8 +426,8 @@ you should build on the pretrained version:</p>
 <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">()</span>
 </pre></div>
 </div>
-<section id="basic-fine-tuning-environment">
-<h2>Basic Fine-Tuning Environment<a class="headerlink" href="#basic-fine-tuning-environment" title="Link to this heading">#</a></h2>
+<section id="fine-tuning-environment">
+<h2>Fine-Tuning Environment<a class="headerlink" href="#fine-tuning-environment" title="Link to this heading">#</a></h2>
 <p>We provide a very basic Docker image and fine-tuning loop to get you started.
 This Docker image is built from a NVIDIA PyTorch base image,
 so is tailored to work for NVIDIA GPUs, and has been tested on an 80 GB A100.
@@ -442,10 +442,13 @@ docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </
 </pre></div>
 </div>
 <p>Then, within the image, execute</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>finetuning/finetune.py
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">PYTORCH_CUDA_ALLOC_CONF</span><span class="o">=</span>backend:cudaMallocAsync<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>python<span class="w"> </span>finetuning/finetune.py
 </pre></div>
 </div>
 <p>to run the sample fine-tuning loop.
+<code class="docutils literal notranslate"><span class="pre">PYTORCH_CUDA_ALLOC_CONF=backend:cudaMallocAsync</span></code> enables CUDA’s built-in
+asynchronous memory allocator, which is recommended for Aurora.
 This loop should run on an A100 with 80 GB of memory.
 If you need to reduce memory usage, you could try the following:
 (a) split the model and optimiser parameters across multiple GPUs with
@@ -654,7 +657,7 @@ Simply set <code class="docutils literal notranslate"><span class="pre">model.lo
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-fine-tuning-environment">Basic Fine-Tuning Environment</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fine-tuning-environment">Fine-Tuning Environment</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#computing-gradients">Computing Gradients</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exploding-gradients">Exploding Gradients</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#extending-aurora-with-new-variables">Extending Aurora with New Variables</a></li>

@@ -10,7 +10,7 @@ model = AuroraPretrained()
 model.load_checkpoint()
 ```
 
-## Basic Fine-Tuning Environment
+## Fine-Tuning Environment
 
 We provide a very basic Docker image and fine-tuning loop to get you started.
 This Docker image is built from a NVIDIA PyTorch base image,
@@ -30,10 +30,13 @@ docker run --rm -it -v .:/app/aurora \
 Then, within the image, execute
 
 ```bash
-python finetuning/finetune.py
+PYTORCH_CUDA_ALLOC_CONF=backend:cudaMallocAsync \
+    python finetuning/finetune.py
 ```
 
 to run the sample fine-tuning loop.
+`PYTORCH_CUDA_ALLOC_CONF=backend:cudaMallocAsync` enables CUDA's built-in
+asynchronous memory allocator, which is recommended for Aurora.
 This loop should run on an A100 with 80 GB of memory.
 If you need to reduce memory usage, you could try the following:
 (a) split the model and optimiser parameters across multiple GPUs with
