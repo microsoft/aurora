@@ -619,13 +619,13 @@ separate LoRA for every roll-out step. Generally, you are safe to ignore this fi
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>model</strong> (<a class="reference internal" href="#aurora.Aurora" title="aurora.model.aurora.Aurora"><code class="xref py py-class docutils literal notranslate"><span class="pre">aurora.model.aurora.Aurora</span></code></a>) – The model to roll out.</p></li>
-<li><p><strong>batch</strong> (<a class="reference internal" href="#aurora.Batch" title="aurora.batch.Batch"><code class="xref py py-class docutils literal notranslate"><span class="pre">aurora.batch.Batch</span></code></a>) – The batch to start the roll-out from.</p></li>
+<li><p><strong>model</strong> (<a class="reference internal" href="#aurora.Aurora" title="aurora.Aurora"><code class="xref py py-class docutils literal notranslate"><span class="pre">aurora.Aurora</span></code></a>) – The model to roll out.</p></li>
+<li><p><strong>batch</strong> (<a class="reference internal" href="#aurora.Batch" title="aurora.Batch"><code class="xref py py-class docutils literal notranslate"><span class="pre">aurora.Batch</span></code></a>) – The batch to start the roll-out from.</p></li>
 <li><p><strong>steps</strong> (<em>int</em>) – The number of roll-out steps.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Yields<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="#aurora.Batch" title="aurora.batch.Batch"><code class="xref py py-class docutils literal notranslate"><span class="pre">aurora.batch.Batch</span></code></a> – The prediction after every step.</p>
+<dd class="field-even"><p><a class="reference internal" href="#aurora.Batch" title="aurora.Batch"><code class="xref py py-class docutils literal notranslate"><span class="pre">aurora.Batch</span></code></a> – The prediction after every step.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -651,7 +651,7 @@ implementation is by Wessel Bruinsma and features various improvements over the 
 <dd><p>Track the next step.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>batch</strong> (<a class="reference internal" href="#aurora.Batch" title="aurora.batch.Batch"><code class="xref py py-class docutils literal notranslate"><span class="pre">aurora.batch.Batch</span></code></a>) – Prediction.</p>
+<dd class="field-odd"><p><strong>batch</strong> (<a class="reference internal" href="#aurora.Batch" title="aurora.Batch"><code class="xref py py-class docutils literal notranslate"><span class="pre">aurora.Batch</span></code></a>) – Prediction.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -701,7 +701,7 @@ deaggregation blocks. The dimensionality of these attention heads will be equal 
 <li><p><strong>drop_rate</strong> (<em>float</em><em>, </em><em>optional</em>) – Drop-out rate.</p></li>
 <li><p><strong>drop_path</strong> (<em>float</em><em>, </em><em>optional</em>) – Drop-path rate.</p></li>
 <li><p><strong>enc_depth</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of Perceiver blocks in the encoder.</p></li>
-<li><p><strong>dec_depth</strong> (<em>int</em><em>, </em><em>optioanl</em>) – Number of Perceiver blocks in the decoder.</p></li>
+<li><p><strong>dec_depth</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of Perceiver blocks in the decoder.</p></li>
 <li><p><strong>dec_mlp_ratio</strong> (<em>float</em><em>, </em><em>optional</em>) – Hidden dim. to embedding dim. ratio for MLPs in the
 decoder. The embedding dimensionality here is different, which is why this is a
 separate parameter.</p></li>
@@ -764,7 +764,7 @@ to the original implementation. Defaults to <cite>False</cite>.</p></li>
 <cite>max_history_size</cite> than the current model.</p>
 <p>If a checkpoint was trained with a larger <cite>max_history_size</cite> than the current model,
 this function will assert fail to prevent loading the checkpoint. This is to
-prevent loading a checkpoint which will likely cause the checkpoint to degrade is
+prevent loading a checkpoint which will likely cause the checkpoint to degrade its
 performance.</p>
 <p>This implementation copies weights from the checkpoint to the model and fills zeros
 for the new history width dimension. It mutates <cite>checkpoint</cite>.</p>
@@ -833,7 +833,7 @@ on.</p>
 <dd><p>Forward pass.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>batch</strong> (<a class="reference internal" href="#aurora.Batch" title="aurora.Batch"><code class="xref py py-class docutils literal notranslate"><span class="pre">Batch</span></code></a>) – Batch to run the model on.</p>
+<dd class="field-odd"><p><strong>batch</strong> (<a class="reference internal" href="#aurora.Batch" title="aurora.Batch"><code class="xref py py-class docutils literal notranslate"><span class="pre">aurora.Batch</span></code></a>) – Batch to run the model on.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Prediction for the batch.</p>

@@ -372,12 +372,12 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform a roll-out to make long-term predictions.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        model (:class:`aurora.model.aurora.Aurora`): The model to roll out.</span>
-<span class="sd">        batch (:class:`aurora.batch.Batch`): The batch to start the roll-out from.</span>
+<span class="sd">        model (:class:`aurora.Aurora`): The model to roll out.</span>
+<span class="sd">        batch (:class:`aurora.Batch`): The batch to start the roll-out from.</span>
 <span class="sd">        steps (int): The number of roll-out steps.</span>
 
 <span class="sd">    Yields:</span>
-<span class="sd">        :class:`aurora.batch.Batch`: The prediction after every step.</span>
+<span class="sd">        :class:`aurora.Batch`: The prediction after every step.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># We will need to concatenate data, so ensure that everything is already of the right form.</span>
     <span class="n">batch</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">batch_transform_hook</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>  <span class="c1"># This might modify the available variables.</span>

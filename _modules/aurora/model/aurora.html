@@ -483,7 +483,7 @@ document.write(`
 <span class="sd">            drop_rate (float, optional): Drop-out rate.</span>
 <span class="sd">            drop_path (float, optional): Drop-path rate.</span>
 <span class="sd">            enc_depth (int, optional): Number of Perceiver blocks in the encoder.</span>
-<span class="sd">            dec_depth (int, optioanl): Number of Perceiver blocks in the decoder.</span>
+<span class="sd">            dec_depth (int, optional): Number of Perceiver blocks in the decoder.</span>
 <span class="sd">            dec_mlp_ratio (float, optional): Hidden dim. to embedding dim. ratio for MLPs in the</span>
 <span class="sd">                decoder. The embedding dimensionality here is different, which is why this is a</span>
 <span class="sd">                separate parameter.</span>
@@ -628,7 +628,7 @@ document.write(`
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward pass.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            batch (:class:`Batch`): Batch to run the model on.</span>
+<span class="sd">            batch (:class:`aurora.Batch`): Batch to run the model on.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            :class:`Batch`: Prediction for the batch.</span>
@@ -846,7 +846,7 @@ document.write(`
 
 <span class="sd">        If a checkpoint was trained with a larger `max_history_size` than the current model,</span>
 <span class="sd">        this function will assert fail to prevent loading the checkpoint. This is to</span>
-<span class="sd">        prevent loading a checkpoint which will likely cause the checkpoint to degrade is</span>
+<span class="sd">        prevent loading a checkpoint which will likely cause the checkpoint to degrade its</span>
 <span class="sd">        performance.</span>
 
 <span class="sd">        This implementation copies weights from the checkpoint to the model and fills zeros</span>
