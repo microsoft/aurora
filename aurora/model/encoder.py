@@ -51,6 +51,7 @@ class Perceiver3DEncoder(nn.Module):
         dynamic_vars: bool = False,
         atmos_static_vars: bool = False,
         simulate_indexing_bug: bool = False,
+        use_chunked_checkpointing: bool = False,
     ) -> None:
         """Initialise.
 
@@ -87,6 +88,7 @@ class Perceiver3DEncoder(nn.Module):
             simulate_indexing_bug (bool, optional): Simulate an indexing bug that's present for the
                 air pollution version of Aurora. This is necessary to obtain numerical equivalence
                 to the original implementation. Defaults to `False`.
+            use_chunked_checkpointing (bool, optional): Enable chunked-checkpointing.
         """
         super().__init__()
 
@@ -156,6 +158,7 @@ class Perceiver3DEncoder(nn.Module):
             mlp_ratio=mlp_ratio,
             ln_eps=perceiver_ln_eps,
             ln_k_q=stabilise_level_agg,
+            use_chunked_checkpointing=use_chunked_checkpointing,
         )
 
         # Drop patches after encoding.

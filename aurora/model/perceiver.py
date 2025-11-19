@@ -168,6 +168,7 @@ class PerceiverResampler(nn.Module):
         residual_latent: bool = True,
         ln_eps: float = 1e-5,
         ln_k_q: bool = False,
+        use_chunked_checkpointing = False,
     ) -> None:
         """Initialise.
 
@@ -191,6 +192,7 @@ class PerceiverResampler(nn.Module):
 
         self.residual_latent = residual_latent
         self.layers = nn.ModuleList([])
+        self.use_chunked_checkpointing = use_chunked_checkpointing
         mlp_hidden_dim = int(latent_dim * mlp_ratio)
         for i in range(depth):
             self.layers.append(
@@ -220,7 +222,10 @@ class PerceiverResampler(nn.Module):
         Returns:
             torch.Tensor: Latent features of shape `(B, L1, D1)`.
         """
-        return chunk_and_checkpoint(self._forward, latents, x, chunk_size=2025)
+        if self.use_chunked_checkpointing:
+            return chunk_and_checkpoint(self._forward, latents, x, chunk_size=2025)
+        else:
+            return self._forward(latents, x)
 
     def _forward(self, latents: torch.Tensor, x: torch.Tensor) -> torch.Tensor:
         for attn, ff, ln1, ln2 in self.layers:
