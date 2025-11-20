@@ -513,21 +513,22 @@ class Swin3DTransformerBlock(nn.Module):
 
         def norm_and_mlp(x, shortcut):
             x = shortcut + self.drop_path(self.norm1(x, c))
-            x = x + self.drop_path(self.norm2(self.mlp(x), c))
+            return x + self.drop_path(self.norm2(self.mlp(x), c))
 
-        if x.shape[1] == 259200:
-            chunk_size = 32400
-        elif x.shape[1] == 64800:
-            chunk_size = 16200
-        elif x.shape[1] == 16200:
-            chunk_size = 4050
+        if self.use_chunked_checkpointing:
+            if x.shape[1] == 259200:
+                chunk_size = 32400
+            elif x.shape[1] == 64800:
+                chunk_size = 16200
+            elif x.shape[1] == 16200:
+                chunk_size = 4050
+            else:
+                raise ValueError(f"Unexpected size {x.shape[1]}.")
+            return chunk_and_checkpoint(
+                norm_and_mlp, x, shortcut, chunk_size=chunk_size, batch_dim=1
+            )
         else:
-            raise ValueError(f"Unexpected size {x.shape[1]}.")
-        x = chunk_and_checkpoint(
-            norm_and_mlp, x, shortcut, chunk_size=chunk_size, batch_dim=1
-        )
-
-        return x
+            return norm_and_mlp(x, shortcut)
 
 
 class PatchMerging3D(nn.Module):
