@@ -111,7 +111,7 @@ def compute_patch_areas(lat: torch.Tensor, lon: torch.Tensor) -> torch.Tensor:
     """
     if not (lat.dim() == lon.dim() == 2):
         raise ValueError("`lat` and `lon` must both be matrices.")
-    if lat.shape != lat.shape:
+    if lat.shape != lon.shape:
         raise ValueError("`lat` and `lon` must have the same shape.")
 
     # Check that the latitude matrix is decreasing in the appropriate way.
