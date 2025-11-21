@@ -234,7 +234,6 @@ class Aurora(torch.nn.Module):
             use_lora=use_lora,
             lora_steps=lora_steps,
             lora_mode=lora_mode,
-            use_chunked_checkpointing=use_chunked_checkpointing,
         )
 
         self.decoder = Perceiver3DDecoder(

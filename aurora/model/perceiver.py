@@ -224,8 +224,7 @@ class PerceiverResampler(nn.Module):
         """
         if self.use_chunked_checkpointing:
             return chunk_and_checkpoint(self._forward, latents, x, chunk_size=2025)
-        else:
-            return self._forward(latents, x)
+        return self._forward(latents, x)
 
     def _forward(self, latents: torch.Tensor, x: torch.Tensor) -> torch.Tensor:
         for attn, ff, ln1, ln2 in self.layers:

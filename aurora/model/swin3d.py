@@ -383,7 +383,6 @@ class Swin3DTransformerBlock(nn.Module):
         lora_steps: int = 40,
         lora_mode: LoRAMode = "single",
         use_lora: bool = False,
-        use_chunked_checkpointing: bool = False,
     ) -> None:
         """Initialise.
 
@@ -410,8 +409,6 @@ class Swin3DTransformerBlock(nn.Module):
                 steps, `"from_second"` uses the same LoRA from the second roll-out step on,
                 and `"all"` uses a different LoRA for every roll-out step. Defaults to `"single"`.
             use_lora (bool): Enable LoRA. By default, LoRA is disabled.
-            use_chunked_checkpointing (bool, optional): Enable chunked-checkpointing of the
-                normalisation and MLP component of the model.
         """
         super().__init__()
         self.dim = dim
@@ -419,7 +416,6 @@ class Swin3DTransformerBlock(nn.Module):
         self.shift_size = shift_size
         self.num_heads = num_heads
         self.mlp_ratio = mlp_ratio
-        self.use_chunked_checkpointing = use_chunked_checkpointing
 
         self.norm1 = AdaptiveLayerNorm(dim, time_dim, scale_bias=scale_bias)
         self.attn = WindowAttention(
@@ -510,25 +506,8 @@ class Swin3DTransformerBlock(nn.Module):
             x = shifted_x
 
         x = x.reshape(B, C * H * W, D)
-
-        def norm_and_mlp(x, shortcut):
-            x = shortcut + self.drop_path(self.norm1(x, c))
-            return x + self.drop_path(self.norm2(self.mlp(x), c))
-
-        if self.use_chunked_checkpointing:
-            if x.shape[1] == 259200:
-                chunk_size = 32400
-            elif x.shape[1] == 64800:
-                chunk_size = 16200
-            elif x.shape[1] == 16200:
-                chunk_size = 4050
-            else:
-                raise ValueError(f"Unexpected size {x.shape[1]}.")
-            return chunk_and_checkpoint(
-                norm_and_mlp, x, shortcut, chunk_size=chunk_size, batch_dim=1
-            )
-        else:
-            return norm_and_mlp(x, shortcut)
+        x = shortcut + self.drop_path(self.norm1(x, c))
+        return x + self.drop_path(self.norm2(self.mlp(x), c))
 
 
 class PatchMerging3D(nn.Module):
@@ -656,7 +635,6 @@ class BasicLayer3D(nn.Module):
         lora_steps: int = 40,
         lora_mode: LoRAMode = "single",
         use_lora: bool = False,
-        use_chunked_checkpointing: bool = False,
     ) -> None:
         """Initialise.
 
@@ -682,8 +660,6 @@ class BasicLayer3D(nn.Module):
                 steps, `"from_second"` uses the same LoRA from the second roll-out step on,
                 and `"all"` uses a different LoRA for every roll-out step. Defaults to `"single"`.
             use_lora (bool): Enable LoRA. By default, LoRA is disabled.
-            use_chunked_checkpointing (bool, optional): Enable chunked-checkpointing in
-                each of the transformer blocks.
         """
         super().__init__()
 
@@ -712,7 +688,6 @@ class BasicLayer3D(nn.Module):
                     use_lora=use_lora,
                     lora_steps=lora_steps,
                     lora_mode=lora_mode,
-                    use_chunked_checkpointing=use_chunked_checkpointing,
                 )
                 for i in range(depth)
             ]
@@ -793,7 +768,6 @@ class Swin3DTransformerBackbone(nn.Module):
         lora_steps: int = 40,
         lora_mode: LoRAMode = "single",
         use_lora: bool = False,
-        use_chunked_checkpointing: bool = False,
     ) -> None:
         """Initialise.
 
@@ -820,7 +794,6 @@ class Swin3DTransformerBackbone(nn.Module):
                 steps, `"from_second"` uses the same LoRA from the second roll-out step on,
                 and `"all"` uses a different LoRA for every roll-out step. Defaults to `"single"`.
             use_lora (bool, optional): Enable LoRA. By default, LoRA is disabled.
-            use_chunked_checkpointing (bool, optional): Enable chunked-checkpointing.
         """
         super().__init__()
 
@@ -860,7 +833,6 @@ class Swin3DTransformerBackbone(nn.Module):
                 use_lora=use_lora,
                 lora_steps=lora_steps,
                 lora_mode=lora_mode,
-                use_chunked_checkpointing=use_chunked_checkpointing,
             )
             self.encoder_layers.append(layer)
 
@@ -883,7 +855,6 @@ class Swin3DTransformerBackbone(nn.Module):
                 use_lora=use_lora,
                 lora_steps=lora_steps,
                 lora_mode=lora_mode,
-                use_chunked_checkpointing=use_chunked_checkpointing,
             )
             self.decoder_layers.append(layer)
 
