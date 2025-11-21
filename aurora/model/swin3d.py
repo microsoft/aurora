@@ -506,8 +506,10 @@ class Swin3DTransformerBlock(nn.Module):
             x = shifted_x
 
         x = x.reshape(B, C * H * W, D)
+
         x = shortcut + self.drop_path(self.norm1(x, c))
-        return x + self.drop_path(self.norm2(self.mlp(x), c))
+        x = x + self.drop_path(self.norm2(self.mlp(x), c))
+        return x
 
 
 class PatchMerging3D(nn.Module):
