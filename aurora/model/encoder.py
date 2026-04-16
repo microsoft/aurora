@@ -1,6 +1,5 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
-from datetime import timedelta
 from typing import Optional
 
 import numpy as np
@@ -12,6 +11,7 @@ from aurora.batch import Batch
 from aurora.model.fourier import (
     absolute_time_expansion,
     lead_time_expansion,
+    lead_time_expansion_v2,
     levels_expansion,
     pos_expansion,
     scale_expansion,
@@ -51,6 +51,7 @@ class Perceiver3DEncoder(nn.Module):
         dynamic_vars: bool = False,
         atmos_static_vars: bool = False,
         simulate_indexing_bug: bool = False,
+        use_updated_lead_time_embedding: bool = False,
     ) -> None:
         """Initialise.
 
@@ -87,6 +88,8 @@ class Perceiver3DEncoder(nn.Module):
             simulate_indexing_bug (bool, optional): Simulate an indexing bug that's present for the
                 air pollution version of Aurora. This is necessary to obtain numerical equivalence
                 to the original implementation. Defaults to `False`.
+            use_updated_lead_time_embedding (bool, optional): Whether to use the updated lead time
+                embedding with a minimum wavelength of 2 hours. Defaults to `False`.
         """
         super().__init__()
 
@@ -130,6 +133,7 @@ class Perceiver3DEncoder(nn.Module):
         self.lead_time_embed = nn.Linear(embed_dim, embed_dim)
         self.absolute_time_embed = nn.Linear(embed_dim, embed_dim)
         self.atmos_levels_embed = nn.Linear(embed_dim, embed_dim)
+        self.use_updated_lead_time_embedding = use_updated_lead_time_embedding
 
         # Patch embeddings:
         assert max_history_size > 0, "At least one history step is required."
@@ -195,12 +199,16 @@ class Perceiver3DEncoder(nn.Module):
         x = torch.einsum("blcd->bcld", x)  # (B, C, L, D)
         return x
 
-    def forward(self, batch: Batch, lead_time: timedelta) -> torch.Tensor:
+    def forward(
+        self,
+        batch: Batch,
+        lead_times: torch.Tensor,
+    ) -> torch.Tensor:
         """Peform encoding.
 
         Args:
             batch (:class:`aurora.Batch`): Batch to encode.
-            lead_time (timedelta): Lead time.
+            lead_times (:class:`torch.Tensor`): Lead times of shape ``(batch,)`` in hours.
 
         Returns:
             torch.Tensor: Encoding of shape `(B, L, D)`.
@@ -349,9 +357,10 @@ class Perceiver3DEncoder(nn.Module):
         x = x.reshape(B, -1, self.embed_dim)  # (B, C + 1, L, D) to (B, L', D)
 
         # Add lead time embedding.
-        lead_hours = lead_time.total_seconds() / 3600
-        lead_times = lead_hours * torch.ones(B, dtype=dtype, device=x.device)
-        lead_time_encode = lead_time_expansion(lead_times, self.embed_dim).to(dtype=dtype)
+        lead_time_cls = (
+            lead_time_expansion_v2 if self.use_updated_lead_time_embedding else lead_time_expansion
+        )
+        lead_time_encode = lead_time_cls(lead_times, self.embed_dim).to(dtype=dtype)
         lead_time_emb = self.lead_time_embed(lead_time_encode)  # (B, D)
         x = x + lead_time_emb.unsqueeze(1)  # (B, L', D) + (B, 1, D)
 

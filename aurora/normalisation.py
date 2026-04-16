@@ -1,5 +1,6 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
+import math
 from functools import partial
 from typing import Optional
 
@@ -7,6 +8,8 @@ import torch
 
 __all__ = [
     "level_to_str",
+    "log_scale",
+    "log_unscale",
     "normalise_surf_var",
     "normalise_atmos_var",
     "unnormalise_surf_var",
@@ -72,6 +75,19 @@ def normalise_atmos_var(
 
 unnormalise_surf_var = partial(normalise_surf_var, unnormalise=True)
 unnormalise_atmos_var = partial(normalise_atmos_var, unnormalise=True)
+
+_LOG_SCALE_EPS = 1e-3
+
+
+def log_scale(x: torch.Tensor) -> torch.Tensor:
+    """Log-scale a variable: ``log(x + eps) - log(eps)`` with ``eps = 1e-3``."""
+    return torch.log(x + _LOG_SCALE_EPS) - math.log(_LOG_SCALE_EPS)
+
+
+def log_unscale(x: torch.Tensor) -> torch.Tensor:
+    """Inverse of :func:`log_scale`: ``eps * (exp(x) - 1)``.
+    Ensure using float32 or double to avoid numerical instability."""
+    return _LOG_SCALE_EPS * (torch.exp(x) - 1)
 
 
 locations: dict[str, float] = {
@@ -263,6 +279,66 @@ locations: dict[str, float] = {
     "dwi": 0.00000e00,
     "10u_wave": 2.90337e-01,
     "10v_wave": 1.26789e-01,
+    # v1.5 additional input surface variables
+    "2d": 2.73876923e02,
+    "tcwv": 1.82695427e01,
+    "tcc": 6.7472446e-01,
+    "100u": 2.712852507829666e-02,
+    "100v": 1.9762367010116577e-01,
+    "sp": 9.6647375e04,
+    "lcc": 4.616926610469818e-01,
+    "mcc": 2.986297309398651e-01,
+    "hcc": 3.2651442289352417e-01,
+    "skt": 2.788576354980469e02,
+    "stl1": 2.7956781005859375e02,
+    "swvl1": 8.593245595693588e-02,
+    "ci": 1.1092530190944672e-01,
+    "scaled_sd": 1.3165518045425415e00,
+    # v1.5 output-only surface variables
+    "i10fg": 9.003422737121582e00,
+    "blh": 6.290673217773438e02,
+    "uvb_6h": 4.1924728125e05,
+    "ssrd_6h": 3.53410025e06,
+    "ttr_6h": -4.88246e06,
+    "scaled_tp_1h": 7.03631192445755e-02,
+    "scaled_sf_1h": 1.3227290473878384e-02,
+    # Insolation (not normalised during training)
+    "insolation": 0.000000e00,
+    # Static variables from constants_normalized.zarr (pre-normalised)
+    "anor": 0.000000e00,
+    "isor": 0.000000e00,
+    "cvh": 0.000000e00,
+    "cl": 0.000000e00,
+    "dl": 0.000000e00,
+    "cvl": 0.000000e00,
+    "slor": 0.000000e00,
+    "slt_0": 0.000000e00,
+    "slt_1": 0.000000e00,
+    "slt_2": 0.000000e00,
+    "slt_3": 0.000000e00,
+    "slt_4": 0.000000e00,
+    "slt_5": 0.000000e00,
+    "slt_6": 0.000000e00,
+    "slt_7": 0.000000e00,
+    "sdfor": 0.000000e00,
+    "sdor": 0.000000e00,
+    "tvh_0": 0.000000e00,
+    "tvh_18": 0.000000e00,
+    "tvh_19": 0.000000e00,
+    "tvh_3": 0.000000e00,
+    "tvh_4": 0.000000e00,
+    "tvh_5": 0.000000e00,
+    "tvh_6": 0.000000e00,
+    "tvl_0": 0.000000e00,
+    "tvl_1": 0.000000e00,
+    "tvl_10": 0.000000e00,
+    "tvl_11": 0.000000e00,
+    "tvl_13": 0.000000e00,
+    "tvl_16": 0.000000e00,
+    "tvl_17": 0.000000e00,
+    "tvl_2": 0.000000e00,
+    "tvl_7": 0.000000e00,
+    "tvl_9": 0.000000e00,
 }
 
 scales: dict[str, float] = {
@@ -454,4 +530,64 @@ scales: dict[str, float] = {
     "dwi": 1.00000e00,
     "10u_wave": 6.43740e00,
     "10v_wave": 5.40235e00,
+    # v1.5 additional input surface variables
+    "2d": 2.07733974e01,
+    "tcwv": 1.6429491e01,
+    "tcc": 3.65822792e-01,
+    "100u": 6.970843315124512e00,
+    "100v": 6.088253498077393e00,
+    "sp": 9.58669140625e03,
+    "lcc": 3.931414783000946e-01,
+    "mcc": 3.729339838027954e-01,
+    "hcc": 4.131758511066437e-01,
+    "skt": 2.2333234786987305e01,
+    "stl1": 2.144609832763672e01,
+    "swvl1": 1.4150479435920715e-01,
+    "ci": 2.9736775159835815e-01,
+    "scaled_sd": 3.0272440910339355e00,
+    # v1.5 output-only surface variables
+    "i10fg": 4.655707359313965e00,
+    "blh": 4.7048150634765625e02,
+    "uvb_6h": 5.663253125e05,
+    "ssrd_6h": 4.772643e06,
+    "ttr_6h": 1.0520575e06,
+    "scaled_tp_1h": 1.8630525469779968e-01,
+    "scaled_sf_1h": 5.945565551519394e-02,
+    # Insolation (not normalised during training)
+    "insolation": 1.000000e00,
+    # Static variables from constants_normalized.zarr (pre-normalised)
+    "anor": 1.000000e00,
+    "isor": 1.000000e00,
+    "cvh": 1.000000e00,
+    "cl": 1.000000e00,
+    "dl": 1.000000e00,
+    "cvl": 1.000000e00,
+    "slor": 1.000000e00,
+    "slt_0": 1.000000e00,
+    "slt_1": 1.000000e00,
+    "slt_2": 1.000000e00,
+    "slt_3": 1.000000e00,
+    "slt_4": 1.000000e00,
+    "slt_5": 1.000000e00,
+    "slt_6": 1.000000e00,
+    "slt_7": 1.000000e00,
+    "sdfor": 1.000000e00,
+    "sdor": 1.000000e00,
+    "tvh_0": 1.000000e00,
+    "tvh_18": 1.000000e00,
+    "tvh_19": 1.000000e00,
+    "tvh_3": 1.000000e00,
+    "tvh_4": 1.000000e00,
+    "tvh_5": 1.000000e00,
+    "tvh_6": 1.000000e00,
+    "tvl_0": 1.000000e00,
+    "tvl_1": 1.000000e00,
+    "tvl_10": 1.000000e00,
+    "tvl_11": 1.000000e00,
+    "tvl_13": 1.000000e00,
+    "tvl_16": 1.000000e00,
+    "tvl_17": 1.000000e00,
+    "tvl_2": 1.000000e00,
+    "tvl_7": 1.000000e00,
+    "tvl_9": 1.000000e00,
 }

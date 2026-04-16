@@ -1,6 +1,7 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
 from aurora.batch import Batch, Metadata
+from aurora.insolation import insolation
 from aurora.model.aurora import (
     Aurora,
     Aurora12hPretrained,
@@ -9,6 +10,10 @@ from aurora.model.aurora import (
     AuroraPretrained,
     AuroraSmall,
     AuroraSmallPretrained,
+    AuroraV1p5,
+    AuroraV1p5Ensemble,
+    AuroraV1p5EnsemblePrerelease,
+    AuroraV1p5Prerelease,
     AuroraWave,
 )
 from aurora.rollout import rollout
@@ -23,8 +28,13 @@ __all__ = [
     "AuroraHighRes",
     "AuroraAirPollution",
     "AuroraWave",
+    "AuroraV1p5",
+    "AuroraV1p5Ensemble",
+    "AuroraV1p5Prerelease",
+    "AuroraV1p5EnsemblePrerelease",
     "Batch",
     "Metadata",
+    "insolation",
     "rollout",
     "Tracker",
 ]

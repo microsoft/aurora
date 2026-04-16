@@ -71,7 +71,7 @@ def test_aurora_small(aurora_small: Aurora, test_input_output: tuple[Batch, Save
         assert_approx_equality(
             pred.static_vars[k].numpy(),
             batch.static_vars[k].numpy(),
-            1e-10,  # These should be exactly equal.
+            1e-7,  # tolerance for double->float conversion in normalization back and forth.
         )
     for k in pred.atmos_vars:
         assert_approx_equality(

@@ -13,6 +13,7 @@ __all__ = [
     "pos_expansion",
     "scale_expansion",
     "lead_time_expansion",
+    "lead_time_expansion_v2",
     "levels_expansion",
     "absolute_time_expansion",
 ]
@@ -119,6 +120,11 @@ kilometers."""
 
 lead_time_expansion = FourierExpansion(1 / 60, 24 * 7 * 3)
 """:class:`.FourierExpansion`: Fourier expansion for the lead time encoding in hours."""
+
+lead_time_expansion_v2 = FourierExpansion(2, 24 * 7 * 3, assert_range=False)
+""":class:`.FourierExpansion`: Updated Fourier expansion for the lead time encoding in hours. This
+uses a minimum lead time of 2 hours to ensure hourly steps are not larger than the minimum
+wavelength. Disables range assertion since lead times can be smaller than the set minimum."""
 
 levels_expansion = FourierExpansion(0.01, 1e5)
 """:class:`.FourierExpansion`: Fourier expansion for the pressure level encoding in hPa."""
