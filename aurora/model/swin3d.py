@@ -526,12 +526,12 @@ class Swin3DTransformerBlock(nn.Module):
 class PatchMerging3D(nn.Module):
     """Patch merging layer."""
 
-    def __init__(self, dim: int, out_dim: int | None = None, norm=True) -> None:
+    def __init__(self, dim: int, out_dim: int | None = None, norm: bool = True) -> None:
         """Initialise.
 
         Args:
             dim (int): Number of input channels.
-            out_dim (int, optional): Number of output channels. Defaults to `dim`.
+            out_dim (int, optional): Number of output channels. Defaults to `2 * dim`.
             norm (bool, optional): If `True`, apply LayerNorm before channel reduction. Defaults
                 to `True`.
         """
@@ -584,12 +584,12 @@ class PatchSplitting3D(nn.Module):
 
         Args:
             dim (int): Number of input channels.
-            out_dim (int, optional): Number of output channels. Defaults to `dim`.
+            out_dim (int, optional): Number of output channels. Defaults to `dim // 2`.
         """
         super().__init__()
         self.dim = dim
-        out_dim = out_dim or dim // 2
-        assert dim % 2 == 0, f"dim ({dim}) should be divisible by 2."
+        assert dim % 2 == 0, f"`dim` ({dim}) should be divisible by 2."
+        out_dim = out_dim or dim // 2
         self.lin1 = nn.Linear(dim, out_dim * 4, bias=False)
         self.lin2 = nn.Linear(out_dim, out_dim, bias=False)
         self.norm = nn.LayerNorm(out_dim)
@@ -910,12 +910,11 @@ class Swin3DTransformerBackbone(nn.Module):
             bly.init_respostnorm()
 
     def reset_noise(self) -> None:
-        """Flush the noise cache.
-
-        Call this to clear all cached noise tensors, e.g. at the beginning
-        of a new forecast issue time. After reset, the next forward call
-        starts building the cache afresh.
-        """
+        """Flush the noise cache.
+
+        Call this to clear all cached noise tensors, e.g. at the beginning of a new forecast issue
+        time. After reset, the next forward call starts building the cache afresh.
+        """
         if self.stochastic:
             self._noise_cache.clear()
 

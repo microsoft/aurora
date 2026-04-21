@@ -208,7 +208,7 @@ class Perceiver3DEncoder(nn.Module):
 
         Args:
             batch (:class:`aurora.Batch`): Batch to encode.
-            lead_times (:class:`torch.Tensor`): Lead times of shape ``(batch,)`` in hours.
+            lead_times (:class:`torch.Tensor`): Lead times of shape `(batch,)` in hours.
 
         Returns:
             torch.Tensor: Encoding of shape `(B, L, D)`.
@@ -357,10 +357,10 @@ class Perceiver3DEncoder(nn.Module):
         x = x.reshape(B, -1, self.embed_dim)  # (B, C + 1, L, D) to (B, L', D)
 
         # Add lead time embedding.
-        lead_time_cls = (
+        expansion = (
             lead_time_expansion_v2 if self.use_updated_lead_time_embedding else lead_time_expansion
         )
-        lead_time_encode = lead_time_cls(lead_times, self.embed_dim).to(dtype=dtype)
+        lead_time_encode = expansion(lead_times, self.embed_dim).to(dtype=dtype)
         lead_time_emb = self.lead_time_embed(lead_time_encode)  # (B, D)
         x = x + lead_time_emb.unsqueeze(1)  # (B, L', D) + (B, 1, D)
 

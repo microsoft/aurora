@@ -178,7 +178,7 @@ class Perceiver3DDecoder(nn.Module):
             x (torch.Tensor): Backbone output of shape `(B, L, D)`.
             batch (:class:`aurora.Batch`): Batch to make predictions for.
             patch_res (tuple[int, int, int]): Patch resolution
-            lead_times (torch.Tensor): Lead times of shape ``(batch,)`` in hours.
+            lead_times (torch.Tensor): Lead times of shape `(batch,)` in hours.
 
         Returns:
             :class:`aurora.batch.Batch`: Prediction for `batch`.
