@@ -80,10 +80,9 @@ def insolation(
     rho = ((1.0 - ecc**2.0) / (1.0 + ecc * np.cos(lambda_ - om))).astype("float32", copy=False)
 
     # Insolation.
-    diff = (
-        np.sin(np.pi / 180.0 * new_lat[None, ...]) * np.sin(dec)
-        - np.cos(np.pi / 180.0 * new_lat[None, ...]) * np.cos(dec) * np.cos(h)
-    )
+    diff = np.sin(np.pi / 180.0 * new_lat[None, ...]) * np.sin(dec) - np.cos(
+        np.pi / 180.0 * new_lat[None, ...]
+    ) * np.cos(dec) * np.cos(h)
     sol = s0 * diff * rho**-2.0
     if clip_zero:
         sol[sol < 0.0] = 0.0

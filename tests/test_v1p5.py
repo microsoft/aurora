@@ -327,7 +327,6 @@ class TestAuroraV1p5Forward:
         # After `log_unscale` the output should contain only non-negative values.
         for k in pred.surf_vars:
             if k.startswith("scaled_"):
-
                 message = f"Log-scaled var `{k}` has unexpected negative values."
                 assert (pred.surf_vars[k] >= -1e-6).all(), message
 

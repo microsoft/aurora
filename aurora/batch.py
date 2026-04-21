@@ -108,8 +108,8 @@ class Batch:
         Args:
             surf_stats (dict[str, tuple[float, float]]): For these surface-level variables, adjust
                 the normalisation to the given tuple consisting of a new location and scale.
-            log_scaled_surf_vars (tuple[str, ...], optional): Surface-level variables to log-transform
-                prior to normalising.
+            log_scaled_surf_vars (tuple[str, ...], optional): Surface-level variables to
+                log-transform prior to normalising.
 
         Returns:
             :class:`.Batch`: Normalised batch.

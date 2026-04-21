@@ -85,10 +85,11 @@ def log_scale(x: torch.Tensor) -> torch.Tensor:
 
 
 def log_unscale(x: torch.Tensor) -> torch.Tensor:
-    """Inverse of :func:`log_scale`: ``eps * (exp(x) - 1)``.
-    
-   Use float32 or double to avoid numerical instability.
-    """
+    """Inverse of :func:`log_scale`: ``eps * (exp(x) - 1)``.
+
+    Use float32 or double to avoid numerical instability.
+    """
+
     return _LOG_SCALE_EPS * (torch.exp(x) - 1)
 
 

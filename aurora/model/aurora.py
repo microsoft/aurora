@@ -325,7 +325,7 @@ class Aurora(torch.nn.Module):
 
     def reset_noise(self) -> None:
         """Flush the backbone noise cache.
-        
+
         See :meth:`Swin3DTransformerBackbone.reset_noise`."""
         self.backbone.reset_noise()
 
