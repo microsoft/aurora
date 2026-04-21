@@ -1,7 +1,7 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license.
 
-Tests for Aurora V1.5 features: insolation, log scaling, fp16-safe attention,
-variable lead-time models, rollout sub-stepping, and noise accumulation.
+Tests for Aurora V1.5 features: insolation, log scaling, fp16-safe attention, variable lead-time
+models, rollout sub-stepping, and noise accumulation.
 """
 
 import dataclasses
@@ -246,7 +246,7 @@ class TestAuroraV1p5Forward:
         with torch.inference_mode():
             pred = model.forward(batch)
 
-        # Model should predict all surf_vars including output-only ones.
+        # Model should predict all `surf_vars` including output-only ones.
         for v in _SURF_VARS:
             assert v in pred.surf_vars, f"Missing surface variable: {v}"
         for v in _ATMOS_VARS:
@@ -324,12 +324,12 @@ class TestAuroraV1p5Forward:
         with torch.inference_mode():
             pred = model.forward(batch)
 
-        # After log_unscale the output should contain only non-negative values.
+        # After `log_unscale` the output should contain only non-negative values.
         for k in pred.surf_vars:
             if k.startswith("scaled_"):
-                assert (
-                    pred.surf_vars[k] >= -1e-3
-                ).all(), f"Log-scaled var '{k}' has unexpected negative values"
+
+                message = f"Log-scaled var `{k}` has unexpected negative values."
+                assert (pred.surf_vars[k] >= -1e-6).all(), message
 
 
 # ---------------------------------------------------------------------------
@@ -376,7 +376,7 @@ class TestRolloutSubStepping:
         with torch.inference_mode():
             preds = list(rollout(model, batch, steps, fine_lead_times=fine_lead_times))
 
-        # Should be steps * len(fine_lead_times) outputs.
+        # Should be `steps * len(fine_lead_times)` outputs.
         assert len(preds) == steps * len(fine_lead_times)
 
     def test_fine_lead_times_correct_output_times(self):
@@ -388,7 +388,7 @@ class TestRolloutSubStepping:
 
         fine_lead_times = [2.0, 4.0, 6.0]
         with torch.inference_mode():
-            preds = list(rollout(model, batch, steps=1, fine_lead_times=fine_lead_times))
+            preds = list(rollout(model, batch, steps=2, fine_lead_times=fine_lead_times))
 
         base_time = batch.metadata.time[0]
         for i, lt in enumerate(fine_lead_times):
@@ -396,7 +396,7 @@ class TestRolloutSubStepping:
             assert preds[i].metadata.time[0] == expected
 
     def test_fine_lead_times_requires_variable_lead_time(self):
-        # Create a plain Aurora model (variable_lead_time=False by default).
+        # Create a plain `Aurora` model (`variable_lead_time=False` by default).
         from aurora import Aurora
 
         model = Aurora(use_lora=False)
@@ -439,8 +439,8 @@ class TestRolloutInputClipping:
 
         # Create a prediction-like batch with out-of-range values.
         pred = _make_batch(lead_times=torch.tensor([6.0]))
-        # For AuroraV1p5 defaults, "scaled_tp_1h" won't be in clipping;
-        # let's test with a model that has clipping for a known var.
+        # For `AuroraV1p5` defaults, `scaled_tp_1h` won't be in clipping; let's test with a model
+        # that has clipping for a known var.
         model_clipped = _make_small_v1p5(
             rollout_input_clipping={"2t": {"min": -10.0, "max": 10.0}},
         )
@@ -510,8 +510,8 @@ class TestNoiseAccumulation:
                 _ = model.forward(dataclasses.replace(batch, lead_times=torch.tensor([lt])))
         assert model.backbone._noise_cache_size == 2
 
-        # Forward with rollout to check noise accumulation is enabled
-        # and then properly disabled after.
+        # Forward with rollout to check noise accumulation is enabled and then properly disabled
+        # after.
         with torch.inference_mode():
             preds = list(
                 rollout(

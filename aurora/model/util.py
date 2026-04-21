@@ -84,9 +84,9 @@ def fp16_safe_scaled_dot_product_attention(
 ) -> torch.Tensor:
     """Scaled dot-product attention with float16 overflow protection.
 
-    Equivalent to :func:`torch.nn.functional.scaled_dot_product_attention` but
-    clamps intermediate attention weights when running in float16 to prevent
-    overflow / inf values that can appear with large sequence lengths.
+    Equivalent to :func:`torch.nn.functional.scaled_dot_product_attention`, but clamps intermediate
+    attention weights when running in float16 to prevent overflow or inf values that can appear with
+    large sequence lengths.
     """
     scale_factor = 1 / math.sqrt(query.size(-1)) if scale is None else scale
     # Multiply scale into the key (instead of the result) to keep magnitudes lower.

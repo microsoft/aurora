@@ -13,21 +13,23 @@ __all__ = ["rollout"]
 
 def _update_batch_lead_time(batch: Batch, lead_time_hours: float):
     """Return a copy of `batch` with the lead time updated to `lead_time_hours`."""
-    _example_batch = next(iter(batch.surf_vars.values()))
+    _example_variable = next(iter(batch.surf_vars.values()))
     lead_time_tensor = torch.full(
-        (_example_batch.shape[0],),
+        (_example_variable.shape[0],),
         lead_time_hours,
-        device=_example_batch.device,
-        dtype=_example_batch.dtype,
+        device=_example_variable.device,
+        dtype=_example_variable.dtype,
     )
     return dataclasses.replace(batch, lead_times=lead_time_tensor)
 
 
 def _advance_batch(batch: Batch, pred: Batch) -> Batch:
     """Construct the next autoregressive input by sliding the history window.
+
     Removes the oldest time step and concatenating the new prediction. Only variables that are
-    present in both the input batch and the prediction are concatenated, discarding
-    output-only variables."""
+    present in both the input batch and the prediction are concatenated, discarding output-only
+    variables.
+    """
     new_surf = {}
     for k, v in pred.surf_vars.items():
         if k in batch.surf_vars:
@@ -53,19 +55,18 @@ def rollout(
         batch (:class:`aurora.Batch`): The batch to start the roll-out from.
         steps (int): The number of main roll-out steps.  Each step advances the
             forecast by the model's base time-step (typically 6 hours).
-        fine_lead_times (sequence of float, optional): Sub-step lead times in hours
-            to iterate within each main step.  For example, ``[1, 2, 3, 4, 5, 6]``
-            produces predictions at every hour.  The *last* entry should equal the
-            model's base time-step and is the one that advances the autoregressive
-            state.  Requires ``model.variable_lead_time == True``.  When ``None``
-            (default), no sub-stepping is performed and behaviour is unchanged from
-            the original ``rollout``.
-        use_noise_accumulation (bool): Whether to enable noise accumulation when
-            the model is stochastic and sub-stepping. This enables smoother
-            transitions between fine_lead_time intermediate steps. It is
-            intended to continue caching across fine and major steps to optimize
-            smoothness across all lead times in the forecast. Has no effect
-            when ``fine_lead_times`` is ``None``.  Default: ``True``.
+        fine_lead_times (sequence of float, optional): Sub-step lead times in hours to iterate
+            within each main step. These sub-steps are all initialised from the previous main step
+            and thus do not autoregress onto each other. For example, `[1, 2, 3, 4, 5, 6]` produces
+            predictions at every hour. The *last* entry should equal the model's base time-step
+            and is the one that advances the autoregressive state. Requires
+            `model.variable_lead_time == True`. When `None` (default), no sub-stepping is performed
+            and behaviour is unchanged from the original `rollout`.
+        use_noise_accumulation (bool): Whether to enable noise accumulation when the model is
+            stochastic and sub-stepping. This enables smoother transitions between `fine_lead_time`
+            intermediate steps. It is intended to continue caching across fine and major steps to
+            optimise smoothness across all lead times in the forecast. Has no effect when
+            `fine_lead_times` is `None`. Default: `True`.
 
     Yields:
         :class:`aurora.Batch`: The prediction after every (sub-)step.
@@ -81,7 +82,7 @@ def rollout(
     if fine_lead_times is not None and not model.variable_lead_time:
         raise ValueError("`fine_lead_times` requires `model.variable_lead_time=True`.")
 
-    # Assert that the model's expected timestep is included at the end of fine_lead_times.
+    # Assert that the model's expected timestep is included at the end of `fine_lead_times`.
     if fine_lead_times is not None:
         base_timestep_hours = model.timestep.total_seconds() / 3600.0
         if fine_lead_times[-1] != base_timestep_hours:
@@ -116,6 +117,6 @@ def rollout(
 
             batch = _advance_batch(batch, model.apply_rollout_input_clipping(pred))
 
-    # Disable noise accumulation after roll-out is complete, in case the model
-    # will be used for normal inference or training afterwards.
+    # Disable noise accumulation after roll-out is complete, in case the model will be used for
+    # normal inference or training afterwards.
     model.set_noise_accumulation(False)

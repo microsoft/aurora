@@ -966,7 +966,7 @@ class Swin3DTransformerBackbone(nn.Module):
 
         Args:
             x (torch.Tensor): Input tokens of shape `(B, L, D)`.
-            lead_times (torch.Tensor): Lead times of shape ``(batch,)`` in hours.
+            lead_times (torch.Tensor): Lead times of shape `(batch,)` in hours.
             rollout_step (int): Roll-out step.
             patch_res (tuple[int, int, int]): Patch resolution of the form `(C, H, W)`.
 

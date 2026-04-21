@@ -27,25 +27,25 @@ def insolation(
 
     Args:
         dates: 1-D sequence of datetime-like objects.
-        lat: 1-D or 2-D array of latitudes in degrees (``-90`` to ``90``).
-        lon: 1-D or 2-D array of longitudes in degrees (``0`` to ``360``). If 2-D, must have the
-            same shape as *lat*.
-        s0: Scaling factor (solar constant). Defaults to ``1.0``.
-        daily: If ``True``, return the daily maximum solar radiation (depends only on latitude
-            and day of year). Defaults to ``False``.
-        enforce_2d: If ``True`` and *lat* / *lon* are 1-D, broadcast them into 2-D meshgrids.
-            Defaults to ``False``.
-        clip_zero: If ``True``, set negative (night-time) values to zero. Defaults to ``False``.
+        lat: 1-D or 2-D array of latitudes in degrees (`-90` to `90`).
+        lon: 1-D or 2-D array of longitudes in degrees (`0` to `360`). If 2-D, must have the same
+            shape as `lat`.
+        s0: Scaling factor (solar constant). Defaults to `1.0`.
+        daily: If `True`, return the daily maximum solar radiation (depends only on latitude and day
+            of year). Defaults to `False`.
+        enforce_2d: If `True` and `lat` / `lon` are 1-D, broadcast them into 2-D meshgrids. Defaults
+            to `False`.
+        clip_zero: If `True`, set negative (night-time) values to zero. Defaults to `False`.
 
     Returns:
-        :class:`numpy.ndarray`: Insolation array of shape ``(len(dates), *lat.shape)``.
+        :class:`numpy.ndarray`: Insolation array of shape `(len(dates), *lat.shape)`.
     """
-    if len(lat.shape) != len(lon.shape):
-        raise ValueError("'lat' and 'lon' must have the same number of dimensions")
-    if len(lat.shape) == 1 and enforce_2d:
+    if lat.ndim != lon.ndim:
+        raise ValueError("`lat` and `lon` must have the same number of dimensions.")
+    if lat.ndim == 1 and enforce_2d:
         lon, lat = np.meshgrid(lon, lat)
     if lat.shape != lon.shape:  # Assert same shape after potential broadcasting
-        raise ValueError(f"shape mismatch between lat ({lat.shape}) and lon ({lon.shape})")
+        raise ValueError(f"Shape mismatch between `lat` (`{lat.shape}`) and `lon` (`{lon.shape}`).")
     n_dim = len(lat.shape)
     new_lat = lat.astype(np.float32)
 
@@ -62,7 +62,7 @@ def insolation(
     for _ in range(n_dim):
         days_arr = np.expand_dims(days_arr, -1)
 
-    new_lon = lon.astype(np.float32, copy=True)
+    new_lon = lon.astype(np.float32, copy=True)  # Copy to safely mutate.
     if daily:
         days_arr = 0.5 + np.round(days_arr)
         new_lon[:] = 0.0
@@ -80,14 +80,11 @@ def insolation(
     rho = ((1.0 - ecc**2.0) / (1.0 + ecc * np.cos(lambda_ - om))).astype("float32", copy=False)
 
     # Insolation.
-    sol = (
-        s0
-        * (
-            np.sin(np.pi / 180.0 * new_lat[None, ...]) * np.sin(dec)
-            - np.cos(np.pi / 180.0 * new_lat[None, ...]) * np.cos(dec) * np.cos(h)
-        )
-        * rho**-2.0
+    diff = (
+        np.sin(np.pi / 180.0 * new_lat[None, ...]) * np.sin(dec)
+        - np.cos(np.pi / 180.0 * new_lat[None, ...]) * np.cos(dec) * np.cos(h)
     )
+    sol = s0 * diff * rho**-2.0
     if clip_zero:
         sol[sol < 0.0] = 0.0
 

@@ -165,13 +165,13 @@ class Aurora(torch.nn.Module):
                 and scale.
             autocast (bool, optional): To reduce memory usage, `torch.autocast` only the backbone
                 to a lower-precision dtype. This is critical to enable fine-tuning.
-            autocast_dtype (torch.dtype, optional): Data type to use when ``autocast`` is enabled.
-                Defaults to ``torch.bfloat16``.
+            autocast_dtype (torch.dtype, optional): Data type to use when `autocast` is enabled.
+                Defaults to `torch.bfloat16`.
             use_fp16_safe_attention (bool, optional): Replace
                 :func:`torch.nn.functional.scaled_dot_product_attention` with a manual
                 implementation that clamps intermediate values to prevent float16 overflow.
-                Recommended when running with ``autocast_dtype=torch.float16``.
-                Defaults to ``False``.
+                Recommended when running with `autocast_dtype=torch.float16`.
+                Defaults to `False`.
             level_condition (tuple[int | float, ...], optional): Make the patch embeddings dependent
                 on pressure level. If you want to enable this feature, provide a tuple of all
                 possible pressure levels.
@@ -205,22 +205,22 @@ class Aurora(torch.nn.Module):
             use_updated_lead_time_embedding (bool, optional): Whether to use the updated lead time
                 embedding with a minimum wavelength of 2 hours. Defaults to `False`.
             variable_lead_time (bool, optional): If `True`, use per-sample lead times from
-                ``batch.lead_times`` (a tensor of shape ``(batch,)`` in hours) instead of
-                the fixed ``timestep``. When enabled, the batch must provide ``lead_times``.
+                `batch.lead_times` (a tensor of shape `(batch,)` in hours) instead of
+                the fixed `timestep`. When enabled, the batch must provide `lead_times`.
                 Defaults to `False`.
             rollout_input_clipping (dict[str, dict[str, float]], optional): Per-variable
                 clipping bounds applied to predictions during autoregressive rollout before they
-                become the next input. Keys are variable names (must match ``surf_vars`` or
-                ``atmos_vars``). Values are dicts with optional ``"min"`` and ``"max"`` keys.
-                Example: ``{"tcc": {"min": 0, "max": 1}}``. Defaults to ``None``.
+                become the next input. Keys are variable names (must match `surf_vars` or
+                `atmos_vars`). Values are dicts with optional `"min"` and `"max"` keys.
+                Example: `{"tcc": {"min": 0, "max": 1}}`. Defaults to `None`.
             output_only_surf_vars (tuple[str, ...], optional): Surface-level variables that the
                 model predicts but that are not present in real input data. These will be
-                zero-padded in the input batch during rollout. Defaults to ``()``.
+                zero-padded in the input batch during rollout. Defaults to `()`.
             output_only_atmos_vars (tuple[str, ...], optional): Atmospheric variables that the
                 model predicts but that are not present in real input data. These will be
-                zero-padded in the input batch during rollout. Defaults to ``()``.
+                zero-padded in the input batch during rollout. Defaults to `()`.
             log_scaled_surf_vars (tuple[str, ...], optional): Surface-level variables to log-scale
-                during preprocessing. Defaults to ``()``.
+                during preprocessing. Defaults to `()`.
         """
         super().__init__()
         self.surf_vars = surf_vars
@@ -324,8 +324,9 @@ class Aurora(torch.nn.Module):
                     m.use_fp16_safe_attention = True
 
     def reset_noise(self) -> None:
-        """Flush the backbone noise cache. See
-        :meth:`Swin3DTransformerBackbone.reset_noise`."""
+        """Flush the backbone noise cache.
+        
+        See :meth:`Swin3DTransformerBackbone.reset_noise`."""
         self.backbone.reset_noise()
 
     def set_noise_accumulation(self, enabled: bool, n: int = 0) -> None:

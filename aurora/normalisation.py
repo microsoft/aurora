@@ -304,7 +304,7 @@ locations: dict[str, float] = {
     "scaled_sf_1h": 1.3227290473878384e-02,
     # Insolation (not normalised during training)
     "insolation": 0.000000e00,
-    # Static variables from constants_normalized.zarr (pre-normalised)
+    # Static variables
     "anor": 0.000000e00,
     "isor": 0.000000e00,
     "cvh": 0.000000e00,
@@ -555,7 +555,7 @@ scales: dict[str, float] = {
     "scaled_sf_1h": 5.945565551519394e-02,
     # Insolation (not normalised during training)
     "insolation": 1.000000e00,
-    # Static variables from constants_normalized.zarr (pre-normalised)
+    # Static variables
     "anor": 1.000000e00,
     "isor": 1.000000e00,
     "cvh": 1.000000e00,
