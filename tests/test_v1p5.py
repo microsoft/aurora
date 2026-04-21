@@ -144,7 +144,7 @@ class TestInsolation:
         dates = [datetime(2023, 6, 15, 12)]
         lat = np.zeros((5, 10))
         lon = np.zeros((3, 10))
-        with pytest.raises(ValueError, match="shape mismatch"):
+        with pytest.raises(ValueError, match="(?i)shape mismatch"):
             insolation(dates, lat, lon)
 
 
@@ -305,8 +305,8 @@ class TestAuroraV1p5Forward:
         with torch.inference_mode():
             pred = model.forward(batch)
 
-        # Insolation should have been recomputed analytically, not merely
-        # passed through the network.  Check it contains finite values.
+        # Insolation should have been recomputed analytically, not merely passed through the
+        # network.  Check it contains finite values.
         assert torch.isfinite(pred.surf_vars["insolation"]).all()
 
     def test_log_scaled_vars_are_nonnegative(self):
@@ -324,11 +324,12 @@ class TestAuroraV1p5Forward:
         with torch.inference_mode():
             pred = model.forward(batch)
 
-        # After `log_unscale` the output should contain only non-negative values.
+        # `log_unscale(x) = eps * (exp(x) - 1)` with `eps = 1e-3`, so the theoretical minimum
+        # is `-eps` (when x -> -inf).  Allow that margin.
         for k in pred.surf_vars:
             if k.startswith("scaled_"):
                 message = f"Log-scaled var `{k}` has unexpected negative values."
-                assert (pred.surf_vars[k] >= -1e-6).all(), message
+                assert (pred.surf_vars[k] >= -1e-3).all(), message
 
 
 # ---------------------------------------------------------------------------
