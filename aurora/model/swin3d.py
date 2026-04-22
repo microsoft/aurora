@@ -927,25 +927,24 @@ class Swin3DTransformerBackbone(nn.Module):
         if self.stochastic:
             self._noise_cache.clear()
 
-    def set_noise_accumulation(self, enabled: bool, n: int = 0) -> None:
+    def set_noise_accumulation(self, n: int = 0) -> None:
         """Enable or disable noise caching across forward calls.
 
-        When enabled with cache size *n* > 0, the backbone maintains a FIFO
-        cache of the last *n* noise tensors.  On each forward call a new
-        noise tensor is generated and appended to the cache; if the cache
-        already contains *n* entries the oldest one is evicted.  The
-        effective noise is ``sum(cache) / sqrt(len(cache))``.
+        When enabled with cache size *n* > 0, the backbone maintains a FIFO cache of the last *n*
+        noise tensors.  On each forward call a new noise tensor is generated and appended to the
+        cache; if the cache already contains *n* entries the oldest one is evicted. The effective
+        noise is `sum(cache) / sqrt(len(cache))`.
 
-        When disabled (the default) or when *n* == 0, each forward call uses
-        a fresh independent noise sample without any caching.
+        When disabled (the default) or when *n* == 0, each forward call uses a fresh independent
+        noise sample without any caching.
 
-        Calling this method also flushes any previously cached noise so that
-        caching always starts clean.
+        Calling this method also flushes any previously cached noise so that caching always starts
+        clean.
         """
         if self.stochastic:
             self._noise_cache.clear()
             self._noise_cache_size = max(n, 0)
-            self._accumulate_noise = enabled and self._noise_cache_size > 0
+            self._accumulate_noise = self._noise_cache_size > 0
 
     def get_encoder_specs(
         self, patch_res: tuple[int, int, int]
@@ -1022,11 +1021,13 @@ class Swin3DTransformerBackbone(nn.Module):
             c = c.unsqueeze(1) + self.noise_mlp(effective_noise)
 
         skips = []
+        # Saved contexts at higher resolutions to be reused in the backbone U-Net decoder
         saved_cs = []
         for i, layer in enumerate(self.encoder_layers):
             saved_cs.append(c)
             x, x_unscaled = layer(x, c, all_enc_res[i], rollout_step=rollout_step)
-            if self.stochastic and i < len(self.context_down_layers):
+            # There should be a `context_down_layer` for every encoder layer except the last.
+            if self.stochastic and i < self.num_encoder_layers - 1:
                 c = self.context_down_layers[i](c, all_enc_res[i])
             skips.append(x_unscaled)
         for i, layer in enumerate(self.decoder_layers):

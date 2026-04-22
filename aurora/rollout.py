@@ -1,6 +1,7 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
 import dataclasses
+import math
 from typing import Generator, Optional, Sequence
 
 import torch
@@ -47,8 +48,26 @@ def rollout(
     steps: int,
     fine_lead_times: Optional[Sequence[float]] = None,
     use_noise_accumulation: bool = True,
+    apply_rollout_input_clipping: bool = True,
 ) -> Generator[Batch, None, None]:
     """Perform a roll-out to make long-term predictions.
+
+    For Aurora models prior to Aurora 1.5, the rollout is straightforward: iteratively make a
+    prediction based on inputs, then feed that prediction back as the new input for the next step.
+    Aurora 1.5 introduces support for variable lead times, which enables sub-stepping within each
+    main step. When `fine_lead_times` is provided, the model will produce predictions at each of the
+    specified lead times within each main step, all of which are initialised from the same previous
+    step and thus do not autoregress onto each other. We do require that the last fine_lead_time
+    be the same as the model time step so we can construct proper next inputs. For instance, if
+    specifying fine_lead_times = [3, 6] for a model with a 6-hour time step, the model will produce
+    predictions at +3 and +6 hours, but only the +6 hour prediction will be fed back as input to
+    continue the rollout.
+
+    Aurora 1.5 Ensemble also introduces stochasticity. When `use_noise_accumulation` is `True`,
+    noise will be continuously accumulated across both fine and major steps, introducing an auto-
+    correlation between noise samples for more continuous predictions. Conveniently, setting the
+    number of accumulation steps to the same length as `fine_lead_times` ensures the noise is
+    effectively new between each major step, which matches the training regimen.
 
     Args:
         model (:class:`aurora.Aurora`): The model to roll out.
@@ -67,6 +86,11 @@ def rollout(
             intermediate steps. It is intended to continue caching across fine and major steps to
             optimise smoothness across all lead times in the forecast. Has no effect when
             `fine_lead_times` is `None`. Default: `True`.
+        apply_rollout_input_clipping (bool): Whether to apply the model's input clipping during
+            roll-out. This is typically desirable to prevent unrealistic predictions from being fed
+            back into the model during roll-out, but may be undesirable if the model was not trained
+            with clipping and the user wants to preserve the raw model predictions for analysis.
+            Default: `True`.
 
     Yields:
         :class:`aurora.Batch`: The prediction after every (sub-)step.
@@ -85,7 +109,7 @@ def rollout(
     # Assert that the model's expected timestep is included at the end of `fine_lead_times`.
     if fine_lead_times is not None:
         base_timestep_hours = model.timestep.total_seconds() / 3600.0
-        if fine_lead_times[-1] != base_timestep_hours:
+        if not math.isclose(fine_lead_times[-1], base_timestep_hours):
             raise ValueError(
                 f"The last entry in `fine_lead_times` must equal the model's base time-step "
                 f"of {base_timestep_hours} hours. Found {fine_lead_times[-1]} hours."
@@ -93,7 +117,7 @@ def rollout(
 
     # Enable noise accumulation when the model is stochastic and sub-stepping.
     if use_noise_accumulation and fine_lead_times is not None:
-        model.set_noise_accumulation(True, n=len(fine_lead_times))
+        model.set_noise_accumulation(n=len(fine_lead_times))
 
     # Pre-populate model lead times for models with variable lead time support.
     if model.variable_lead_time:
@@ -108,15 +132,19 @@ def rollout(
 
                 yield pred
 
-            # Apply clipping before feeding predictions back as inputs.
-            batch = _advance_batch(batch, model.apply_rollout_input_clipping(pred))
+            # If desired, apply clipping before feeding predictions back as inputs.
+            if apply_rollout_input_clipping:
+                pred = model.apply_rollout_input_clipping(pred)
+            batch = _advance_batch(batch, pred)
         else:
             pred = model.forward(batch)
 
             yield pred
 
-            batch = _advance_batch(batch, model.apply_rollout_input_clipping(pred))
+            if apply_rollout_input_clipping:
+                pred = model.apply_rollout_input_clipping(pred)
+            batch = _advance_batch(batch, pred)
 
     # Disable noise accumulation after roll-out is complete, in case the model will be used for
     # normal inference or training afterwards.
-    model.set_noise_accumulation(False)
+    model.set_noise_accumulation(n=0)

@@ -19,6 +19,7 @@ parts:
     - file: example_cams
     - file: example_wave
     - file: example_tc_tracking
+    - file: example_v1p5
 - caption: Foundry
   chapters:
    - file: foundry/intro

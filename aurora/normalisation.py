@@ -8,8 +8,8 @@ import torch
 
 __all__ = [
     "level_to_str",
-    "log_scale",
-    "log_unscale",
+    "log_transform",
+    "log_untransform",
     "normalise_surf_var",
     "normalise_atmos_var",
     "unnormalise_surf_var",
@@ -76,21 +76,21 @@ def normalise_atmos_var(
 unnormalise_surf_var = partial(normalise_surf_var, unnormalise=True)
 unnormalise_atmos_var = partial(normalise_atmos_var, unnormalise=True)
 
-_LOG_SCALE_EPS = 1e-3
+_LOG_TRANSFORM_EPS = 1e-3
 
 
-def log_scale(x: torch.Tensor) -> torch.Tensor:
-    """Log-scale a variable: ``log(x + eps) - log(eps)`` with ``eps = 1e-3``."""
-    return torch.log(x + _LOG_SCALE_EPS) - math.log(_LOG_SCALE_EPS)
+def log_transform(x: torch.Tensor) -> torch.Tensor:
+    """Log-transform a variable: `log(x + eps) - log(eps)` with `eps = 1e-3`."""
+    return torch.log(x + _LOG_TRANSFORM_EPS) - math.log(_LOG_TRANSFORM_EPS)
 
 
-def log_unscale(x: torch.Tensor) -> torch.Tensor:
-    """Inverse of :func:`log_scale`: ``eps * (exp(x) - 1)``.
+def log_untransform(x: torch.Tensor) -> torch.Tensor:
+    """Inverse of :func:`log_transform`: `eps * (exp(x) - 1)`.
 
     Use float32 or double to avoid numerical instability.
     """
 
-    return _LOG_SCALE_EPS * (torch.exp(x) - 1)
+    return _LOG_TRANSFORM_EPS * (torch.exp(x) - 1)
 
 
 locations: dict[str, float] = {

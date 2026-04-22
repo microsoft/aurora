@@ -11,8 +11,8 @@ import torch
 from scipy.interpolate import RegularGridInterpolator as RGI
 
 from aurora.normalisation import (
-    log_scale,
-    log_unscale,
+    log_transform,
+    log_untransform,
     normalise_atmos_var,
     normalise_surf_var,
     unnormalise_atmos_var,
@@ -101,27 +101,19 @@ class Batch:
     def normalise(
         self,
         surf_stats: dict[str, tuple[float, float]],
-        log_scaled_surf_vars: tuple[str, ...] = (),
     ) -> "Batch":
         """Normalise all variables in the batch.
 
         Args:
             surf_stats (dict[str, tuple[float, float]]): For these surface-level variables, adjust
                 the normalisation to the given tuple consisting of a new location and scale.
-            log_scaled_surf_vars (tuple[str, ...], optional): Surface-level variables to
-                log-transform prior to normalising.
 
         Returns:
             :class:`.Batch`: Normalised batch.
         """
         return Batch(
             surf_vars={
-                k: normalise_surf_var(
-                    log_scale(v) if k in log_scaled_surf_vars else v,
-                    k,
-                    stats=surf_stats,
-                )
-                for k, v in self.surf_vars.items()
+                k: normalise_surf_var(v, k, stats=surf_stats) for k, v in self.surf_vars.items()
             },
             static_vars={
                 k: normalise_surf_var(v, k, stats=surf_stats) for k, v in self.static_vars.items()
@@ -137,25 +129,19 @@ class Batch:
     def unnormalise(
         self,
         surf_stats: dict[str, tuple[float, float]],
-        log_scaled_surf_vars: tuple[str, ...] = (),
     ) -> "Batch":
         """Unnormalise all variables in the batch.
 
         Args:
             surf_stats (dict[str, tuple[float, float]]): For these surface-level variables, adjust
                 the normalisation to the given tuple consisting of a new location and scale.
-            log_scaled_surf_vars (tuple[str, ...], optional): Surface-level variables to
-                unnormalise with inverse log scaling.
 
         Returns:
             :class:`.Batch`: Unnormalised batch.
         """
         return Batch(
             surf_vars={
-                k: log_unscale(unnormalise_surf_var(v, k, stats=surf_stats))
-                if k in log_scaled_surf_vars
-                else unnormalise_surf_var(v, k, stats=surf_stats)
-                for k, v in self.surf_vars.items()
+                k: unnormalise_surf_var(v, k, stats=surf_stats) for k, v in self.surf_vars.items()
             },
             static_vars={
                 k: unnormalise_surf_var(v, k, stats=surf_stats) for k, v in self.static_vars.items()
@@ -164,6 +150,54 @@ class Batch:
                 k: unnormalise_atmos_var(v, k, self.metadata.atmos_levels)
                 for k, v in self.atmos_vars.items()
             },
+            metadata=self.metadata,
+            lead_times=self.lead_times,
+        )
+
+    def transform(
+        self,
+        log_transformed_surf_vars: tuple[str, ...] = (),
+    ) -> "Batch":
+        """Apply log-transform to specified surface-level variables.
+
+        Args:
+            log_transformed_surf_vars (tuple[str, ...], optional): Surface-level variables to
+                log-transform.
+
+        Returns:
+            :class:`.Batch`: Transformed batch.
+        """
+        return Batch(
+            surf_vars={
+                k: log_transform(v) if k in log_transformed_surf_vars else v
+                for k, v in self.surf_vars.items()
+            },
+            static_vars=self.static_vars,
+            atmos_vars=self.atmos_vars,
+            metadata=self.metadata,
+            lead_times=self.lead_times,
+        )
+
+    def untransform(
+        self,
+        log_transformed_surf_vars: tuple[str, ...] = (),
+    ) -> "Batch":
+        """Apply inverse log-transform to specified surface-level variables.
+
+        Args:
+            log_transformed_surf_vars (tuple[str, ...], optional): Surface-level variables to
+                inverse-log-transform.
+
+        Returns:
+            :class:`.Batch`: Untransformed batch.
+        """
+        return Batch(
+            surf_vars={
+                k: log_untransform(v) if k in log_transformed_surf_vars else v
+                for k, v in self.surf_vars.items()
+            },
+            static_vars=self.static_vars,
+            atmos_vars=self.atmos_vars,
             metadata=self.metadata,
             lead_times=self.lead_times,
         )

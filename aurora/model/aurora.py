@@ -109,7 +109,7 @@ class Aurora(torch.nn.Module):
         rollout_input_clipping: Optional[dict[str, dict[str, Optional[float]]]] = None,
         output_only_surf_vars: tuple[str, ...] = (),
         output_only_atmos_vars: tuple[str, ...] = (),
-        log_scaled_surf_vars: tuple[str, ...] = (),
+        log_transformed_surf_vars: tuple[str, ...] = (),
     ) -> None:
         """Construct an instance of the model.
 
@@ -219,8 +219,8 @@ class Aurora(torch.nn.Module):
             output_only_atmos_vars (tuple[str, ...], optional): Atmospheric variables that the
                 model predicts but that are not present in real input data. These will be
                 zero-padded in the input batch during rollout. Defaults to `()`.
-            log_scaled_surf_vars (tuple[str, ...], optional): Surface-level variables to log-scale
-                during preprocessing. Defaults to `()`.
+            log_transformed_surf_vars (tuple[str, ...], optional): Surface-level variables to
+                log-transform during preprocessing. Defaults to `()`.
         """
         super().__init__()
         self.surf_vars = surf_vars
@@ -238,7 +238,7 @@ class Aurora(torch.nn.Module):
         self.rollout_input_clipping = rollout_input_clipping
         self.output_only_surf_vars = output_only_surf_vars
         self.output_only_atmos_vars = output_only_atmos_vars
-        self.log_scaled_surf_vars = log_scaled_surf_vars
+        self.log_transformed_surf_vars = log_transformed_surf_vars
 
         if self.surf_stats:
             warnings.warn(
@@ -316,6 +316,9 @@ class Aurora(torch.nn.Module):
 
         self.autocast = autocast
         self.autocast_dtype = autocast_dtype
+        self.autocast_encoder = False
+        self.autocast_backbone = autocast
+        self.autocast_decoder = False
 
         # Enable fp16-safe attention on all attention modules.
         if use_fp16_safe_attention:
@@ -329,10 +332,15 @@ class Aurora(torch.nn.Module):
         See :meth:`Swin3DTransformerBackbone.reset_noise`."""
         self.backbone.reset_noise()
 
-    def set_noise_accumulation(self, enabled: bool, n: int = 0) -> None:
-        """Enable or disable noise caching in the backbone. See
-        :meth:`Swin3DTransformerBackbone.set_noise_accumulation`."""
-        self.backbone.set_noise_accumulation(enabled, n)
+    def set_noise_accumulation(self, n: int = 0) -> None:
+        """Enable or disable noise caching in the backbone.
+
+        See :meth:`Swin3DTransformerBackbone.set_noise_accumulation`.
+
+        Args:
+            n (int): Number of steps for noise accumulation. Disables accumulation if `n=0`.
+        """
+        self.backbone.set_noise_accumulation(n)
 
     def forward(self, batch: Batch) -> Batch:
         """Forward pass.
@@ -348,9 +356,9 @@ class Aurora(torch.nn.Module):
         # Get the first parameter. We'll derive the data type and device from this parameter.
         p = next(self.parameters())
         batch = batch.type(p.dtype)
+        batch = self._pre_norm_hook(batch)
         batch = batch.normalise(
             surf_stats=self.surf_stats,
-            log_scaled_surf_vars=self.log_scaled_surf_vars,
         )
         batch = batch.crop(patch_size=self.patch_size)
         batch = batch.to(p.device)
@@ -406,9 +414,36 @@ class Aurora(torch.nn.Module):
             lead_hours = self.timestep.total_seconds() / 3600
             lead_times = torch.full((B,), lead_hours, device=p.device, dtype=p.dtype)
 
-        pred = self.forward_model(
-            transformed_batch, batch, lead_times=lead_times, patch_res=patch_res
-        )
+        if torch.cuda.is_available():
+            device_type = "cuda"
+        elif torch.xpu.is_available():
+            device_type = "xpu"
+        else:
+            device_type = "cpu"
+        autocast = torch.autocast(device_type=device_type, dtype=self.autocast_dtype)
+        context_encoder = autocast if self.autocast_encoder else contextlib.nullcontext()
+        context_backbone = autocast if self.autocast_backbone else contextlib.nullcontext()
+        context_decoder = autocast if self.autocast_decoder else contextlib.nullcontext()
+
+        with context_encoder:
+            x = self.encoder(
+                transformed_batch,
+                lead_times=lead_times,
+            )
+        with context_backbone:
+            x = self.backbone(
+                x,
+                lead_times=lead_times,
+                patch_res=patch_res,
+                rollout_step=batch.metadata.rollout_step,
+            )
+        with context_decoder:
+            pred = self.decoder(
+                x,
+                batch,
+                lead_times=lead_times,
+                patch_res=patch_res,
+            )
 
         # Remove batch and history dimension from static variables.
         pred = dataclasses.replace(
@@ -452,64 +487,10 @@ class Aurora(torch.nn.Module):
         pred = pred.type(torch.float32)
         pred = pred.unnormalise(
             surf_stats=self.surf_stats,
-            log_scaled_surf_vars=self.log_scaled_surf_vars,
         )
 
-        pred = self._post_forward_hook(batch, pred)
+        pred = self._post_unnorm_hook(batch, pred)
 
-        return pred
-
-    def forward_model(
-        self,
-        transformed_batch: Batch,
-        batch: Batch,
-        *,
-        lead_times: torch.Tensor,
-        patch_res: tuple[int, int, int],
-    ) -> Batch:
-        """Run encoder, backbone, and decoder.
-
-        Subclasses can override this to wrap the computation in a different
-        context (e.g. ``torch.autocast``).
-
-        Args:
-            transformed_batch (:class:`Batch`): Pre-processed batch for the encoder.
-            batch (:class:`Batch`): Original batch (used by the decoder).
-            lead_times (torch.Tensor): Lead times of shape ``(batch,)`` in hours.
-            patch_res (tuple[int, int, int]): Patch resolution.
-
-        Returns:
-            :class:`Batch`: Raw prediction (before un-normalisation).
-        """
-        x = self.encoder(
-            transformed_batch,
-            lead_times=lead_times,
-        )
-
-        if self.autocast:
-            if torch.cuda.is_available():
-                device_type = "cuda"
-            elif torch.xpu.is_available():
-                device_type = "xpu"
-            else:
-                device_type = "cpu"
-            context = torch.autocast(device_type=device_type, dtype=self.autocast_dtype)
-        else:
-            context = contextlib.nullcontext()
-        with context:
-            x = self.backbone(
-                x,
-                lead_times=lead_times,
-                patch_res=patch_res,
-                rollout_step=batch.metadata.rollout_step,
-            )
-
-        pred = self.decoder(
-            x,
-            batch,
-            lead_times=lead_times,
-            patch_res=patch_res,
-        )
         return pred
 
     def batch_transform_hook(self, batch: Batch) -> Batch:
@@ -523,51 +504,60 @@ class Aurora(torch.nn.Module):
         """Transform the batch before it goes through the encoder."""
         return batch
 
+    def _pre_norm_hook(self, batch: Batch) -> Batch:
+        """Transform the batch before normalisation.
+
+        This is called automatically in :meth:`forward` right before :meth:`Batch.normalise`. Unlike
+        :meth:`batch_transform_hook`, this hook is *not* called separately in rollout, so
+        non-idempotent transforms (e.g. log-scaling) belong here.
+        """
+        return batch
+
     def _post_decoder_hook(self, batch: Batch, pred: Batch) -> Batch:
         """Transform the prediction right after the decoder."""
         return pred
 
-    def _post_forward_hook(self, batch: Batch, pred: Batch) -> Batch:
+    def _post_unnorm_hook(self, batch: Batch, pred: Batch) -> Batch:
         """Transform the prediction after un-normalisation, in physical space.
 
-        Subclasses can override this to apply post-processing that must operate
-        on un-normalised (physical) values, such as recomputing prescribed
-        channels.
+        Subclasses can override this to apply post-processing that must operate on un-normalised
+        (physical) values, such as inverse log-scaling or recomputing prescribed channels.
         """
         return pred
 
     def apply_rollout_input_clipping(self, pred: Batch) -> Batch:
-        """Clamp specified variables according to ``rollout_input_clipping``.
+        """Clamp specified variables according to `rollout_input_clipping`.
 
-        This is intended to be called during autoregressive rollout *before*
-        feeding a prediction back as input, so that the unclipped prediction
-        remains available for loss computation during training.
+        This is intended to be called during autoregressive rollout *before* feeding a prediction
+        back as input, so that the unclipped prediction remains available for loss computation
+        during training. To minimize any other changes to the data flow from models prior to V1p5,
+        this is not called automatically in :meth:`forward`.
         """
         if not self.rollout_input_clipping:
             return pred
 
-        new_surf = dict(pred.surf_vars)
-        new_atmos = dict(pred.atmos_vars)
+        clipped_surf = dict(pred.surf_vars)
+        clipped_atmos = dict(pred.atmos_vars)
 
         for var_name, bounds in self.rollout_input_clipping.items():
             lo = bounds.get("min")
             hi = bounds.get("max")
-            if var_name in new_surf:
-                v = new_surf[var_name]
+            if var_name in clipped_surf:
+                v = clipped_surf[var_name]
                 if lo is not None:
                     v = v.clamp(min=lo)
                 if hi is not None:
                     v = v.clamp(max=hi)
-                new_surf[var_name] = v
-            elif var_name in new_atmos:
-                v = new_atmos[var_name]
+                clipped_surf[var_name] = v
+            if var_name in clipped_atmos:
+                v = clipped_atmos[var_name]
                 if lo is not None:
                     v = v.clamp(min=lo)
                 if hi is not None:
                     v = v.clamp(max=hi)
-                new_atmos[var_name] = v
+                clipped_atmos[var_name] = v
 
-        return dataclasses.replace(pred, surf_vars=new_surf, atmos_vars=new_atmos)
+        return dataclasses.replace(pred, surf_vars=clipped_surf, atmos_vars=clipped_atmos)
 
     def load_checkpoint(
         self,
@@ -1098,11 +1088,10 @@ class AuroraWave(Aurora):
 class AuroraV1p5(Aurora):
     """Aurora V1.5 with expanded surface variables, variable lead-time support, and insolation.
 
-    This variant was trained with an extended set of surface variables (26 total),
-    additional static fields, and prescribed solar insolation as an input channel.
-    It supports variable lead-time embeddings, enabling sub-6-hour prediction steps.
-    Seven surface variables are output-only (not present in the real input data) and
-    are zero-padded during autoregressive rollout.
+    This variant was trained with an extended set of surface variables (26 total), additional static
+    fields, and prescribed solar insolation as an input channel. It supports variable lead-time
+    embeddings, enabling sub-6-hour prediction steps. Seven surface variables are output-only (not
+    present in the real input data) and are zero-padded during autoregressive rollout.
     """
 
     default_checkpoint_repo = ""
@@ -1118,80 +1107,19 @@ class AuroraV1p5(Aurora):
         self,
         *,
         surf_vars: tuple[str, ...] = (
-            "2t",
-            "10u",
-            "10v",
-            "msl",
-            "2d",
-            "tcwv",
-            "tcc",
-            "100u",
-            "100v",
-            "sp",
-            "lcc",
-            "mcc",
-            "hcc",
-            "skt",
-            "stl1",
-            "swvl1",
-            "ci",
-            "scaled_sd",
-            "i10fg",
-            "blh",
-            "uvb_1h",
-            "ssrd_1h",
-            "ttr_1h",
-            "scaled_tp_1h",
-            "scaled_sf_1h",
-            "insolation",
+            ("2t", "10u", "10v", "msl", "2d", "tcwv", "tcc", "100u", "100v", "sp", "lcc", "mcc")
+            + ("hcc", "skt", "stl1", "swvl1", "ci", "scaled_sd", "i10fg", "blh", "uvb_1h")
+            + ("ssrd_1h", "ttr_1h", "scaled_tp_1h", "scaled_sf_1h", "insolation")
         ),
         static_vars: tuple[str, ...] = (
-            "lsm",
-            "z",
-            "anor",
-            "isor",
-            "cvh",
-            "cl",
-            "dl",
-            "cvl",
-            "slor",
-            "slt_0",
-            "slt_1",
-            "slt_2",
-            "slt_3",
-            "slt_4",
-            "slt_5",
-            "slt_6",
-            "slt_7",
-            "sdfor",
-            "sdor",
-            "tvh_0",
-            "tvh_18",
-            "tvh_19",
-            "tvh_3",
-            "tvh_4",
-            "tvh_5",
-            "tvh_6",
-            "tvl_0",
-            "tvl_1",
-            "tvl_10",
-            "tvl_11",
-            "tvl_13",
-            "tvl_16",
-            "tvl_17",
-            "tvl_2",
-            "tvl_7",
-            "tvl_9",
+            ("lsm", "z", "anor", "isor", "cvh", "cl", "dl", "cvl", "slor", "slt_0", "slt_1")
+            + ("slt_2", "slt_3", "slt_4", "slt_5", "slt_6", "slt_7", "sdfor", "sdor", "tvh_0")
+            + ("tvh_18", "tvh_19", "tvh_3", "tvh_4", "tvh_5", "tvh_6", "tvl_0", "tvl_1", "tvl_10")
+            + ("tvl_11", "tvl_13", "tvl_16", "tvl_17", "tvl_2", "tvl_7", "tvl_9")
         ),
         atmos_vars: tuple[str, ...] = ("z", "u", "v", "t", "q"),
         output_only_surf_vars: tuple[str, ...] = (
-            "i10fg",
-            "blh",
-            "uvb_1h",
-            "ssrd_1h",
-            "ttr_1h",
-            "scaled_tp_1h",
-            "scaled_sf_1h",
+            ("i10fg", "blh", "uvb_1h", "ssrd_1h", "ttr_1h", "scaled_tp_1h", "scaled_sf_1h")
         ),
         rollout_input_clipping: Optional[dict[str, dict[str, Optional[float]]]] = None,
         variable_lead_time: bool = True,
@@ -1202,18 +1130,28 @@ class AuroraV1p5(Aurora):
         autocast_dtype: torch.dtype = torch.float16,
         **kw_args,
     ) -> None:
-        log_scaled = tuple(v for v in surf_vars if v.startswith("scaled_"))
-        if rollout_input_clipping is None:
-            rollout_input_clipping = {
-                "tcwv": {"min": 0.0, "max": None},
-                "tcc": {"min": 0.0, "max": 1.0},
-                "lcc": {"min": 0.0, "max": 1.0},
-                "mcc": {"min": 0.0, "max": 1.0},
-                "hcc": {"min": 0.0, "max": 1.0},
-                "swvl1": {"min": 0.0, "max": 70.0},
-                "ci": {"min": 0.0, "max": 1.0},
-                "scaled_sd": {"min": 0.0, "max": 10.0},
-            }
+        # Variable naming scheme assumes that all log-transformed variables start with "scaled_".
+        log_transformed_surf_vars = tuple(v for v in surf_vars if v.startswith("scaled_"))
+        # Define default clipping ranges for rollout inputs, which can be overridden by passing in
+        # `rollout_input_clipping`.
+        rollout_input_clipping = rollout_input_clipping or {}
+        if "tcwv" not in rollout_input_clipping:
+            rollout_input_clipping["tcwv"] = {"min": 0.0, "max": None}
+        if "tcc" not in rollout_input_clipping:
+            rollout_input_clipping["tcc"] = {"min": 0.0, "max": 1.0}
+        if "lcc" not in rollout_input_clipping:
+            rollout_input_clipping["lcc"] = {"min": 0.0, "max": 1.0}
+        if "mcc" not in rollout_input_clipping:
+            rollout_input_clipping["mcc"] = {"min": 0.0, "max": 1.0}
+        if "hcc" not in rollout_input_clipping:
+            rollout_input_clipping["hcc"] = {"min": 0.0, "max": 1.0}
+        if "swvl1" not in rollout_input_clipping:
+            rollout_input_clipping["swvl1"] = {"min": 0.0, "max": 70.0}
+        if "ci" not in rollout_input_clipping:
+            rollout_input_clipping["ci"] = {"min": 0.0, "max": 1.0}
+        if "scaled_sd" not in rollout_input_clipping:
+            rollout_input_clipping["scaled_sd"] = {"min": 0.0, "max": 10.0}
+
         super().__init__(
             surf_vars=surf_vars,
             static_vars=static_vars,
@@ -1226,58 +1164,21 @@ class AuroraV1p5(Aurora):
             use_fp16_safe_attention=use_fp16_safe_attention,
             autocast=autocast,
             autocast_dtype=autocast_dtype,
-            log_scaled_surf_vars=log_scaled,
+            log_transformed_surf_vars=log_transformed_surf_vars,
             **kw_args,
         )
-
-    def forward_model(
-        self,
-        transformed_batch: Batch,
-        batch: Batch,
-        *,
-        lead_times: torch.Tensor,
-        patch_res: tuple[int, int, int],
-    ) -> Batch:
-        """Wrap the entire encoder-backbone-decoder pass in autocast."""
-        if self.autocast:
-            if torch.cuda.is_available():
-                device_type = "cuda"
-            elif torch.xpu.is_available():
-                device_type = "xpu"
-            else:
-                device_type = "cpu"
-            context = torch.autocast(device_type=device_type, dtype=self.autocast_dtype)
-        else:
-            context = contextlib.nullcontext()
-
-        with context:
-            x = self.encoder(
-                transformed_batch,
-                lead_times=lead_times,
-            )
-            x = self.backbone(
-                x,
-                lead_times=lead_times,
-                patch_res=patch_res,
-                rollout_step=transformed_batch.metadata.rollout_step,
-            )
-            pred = self.decoder(
-                x,
-                transformed_batch,
-                lead_times=lead_times,
-                patch_res=patch_res,
-            )
-        return pred
+        self.autocast_encoder = autocast
+        self.autocast_backbone = autocast
+        self.autocast_decoder = autocast
 
     def _pre_encoder_hook(self, batch: Batch) -> Batch:
         """Zero-pad output-only variables.
 
-        Output-only variables are predicted by the model but are not present in
-        real input data.  They are added as zero tensors so the encoder receives
-        the correct number of channels.  Mutates ``batch.surf_vars`` /
-        ``batch.atmos_vars`` in place so that both ``batch`` and
-        ``transformed_batch`` in the caller see the new keys. Zero tensors
-        are added post-normalization.
+        Output-only variables are predicted by the model but are not present in real input data.
+        They are added as zero tensors so the encoder receives the correct number of channels.
+        Mutates `batch.surf_vars` / `batch.atmos_vars` in place so that both `batch` and
+        `transformed_batch` in the caller see the new keys. Zero tensors are added post-
+        normalization.
         """
         for var in self.output_only_surf_vars:
             ref = next(iter(batch.surf_vars.values()))
@@ -1287,14 +1188,19 @@ class AuroraV1p5(Aurora):
             batch.atmos_vars[var] = torch.zeros_like(ref)
         return batch
 
-    def _post_forward_hook(self, batch: Batch, pred: Batch) -> Batch:
-        """Recompute prescribed insolation in physical (un-normalised) space."""
+    def _pre_norm_hook(self, batch: Batch) -> Batch:
+        """Apply log-transform to scaled surface variables before normalisation."""
+        return batch.transform(log_transformed_surf_vars=self.log_transformed_surf_vars)
+
+    def _post_unnorm_hook(self, batch: Batch, pred: Batch) -> Batch:
+        """Apply inverse log-transform and recompute prescribed insolation."""
+        pred = pred.untransform(log_transformed_surf_vars=self.log_transformed_surf_vars)
         pred = self._update_insolation(pred)
         return pred
 
     def _update_insolation(self, pred: Batch) -> Batch:
         """Recompute prescribed insolation for the prediction's valid time."""
-        if "insolation" not in self.surf_vars or "insolation" not in pred.surf_vars:
+        if "insolation" not in pred.surf_vars:
             return pred
 
         lat_np = pred.metadata.lat.cpu().numpy().astype(np.float32)
@@ -1303,13 +1209,13 @@ class AuroraV1p5(Aurora):
         sol_all = []
         for t in pred.metadata.time:
             sol = insolation([t], lat_np, lon_np, enforce_2d=True)
-            sol_all.append(sol[0])  # shape (H, W)
+            sol_all.append(sol[0])  # Shape (H, W)
         sol_tensor = torch.tensor(
             np.stack(sol_all, axis=0),
             dtype=pred.surf_vars["insolation"].dtype,
             device=pred.surf_vars["insolation"].device,
         )
-        # pred.surf_vars["insolation"] has shape (B, 1, H, W)
+        # `pred.surf_vars["insolation"]` has shape (B, 1, H, W)
         sol_tensor = sol_tensor[:, None, :, :]
 
         return dataclasses.replace(
@@ -1357,43 +1263,14 @@ class AuroraV1p5Prerelease(AuroraV1p5):
         self,
         *,
         surf_vars: tuple[str, ...] = (
-            "2t",
-            "10u",
-            "10v",
-            "msl",
-            "2d",
-            "tcwv",
-            "tcc",
-            "100u",
-            "100v",
-            "sp",
-            "lcc",
-            "mcc",
-            "hcc",
-            "skt",
-            "stl1",
-            "swvl1",
-            "ci",
-            "scaled_sd",
-            "i10fg",
-            "blh",
-            "uvb_6h",  # Previously used 6-hour accumulation for radiation
-            "ssrd_6h",
-            "ttr_6h",
-            "scaled_tp_1h",
-            "scaled_sf_1h",
-            "insolation",
-        ),
-        atmos_vars: tuple[str, ...] = ("z", "u", "v", "t", "q"),
+            ("2t", "10u", "10v", "msl", "2d", "tcwv", "tcc", "100u", "100v", "sp", "lcc", "mcc")
+            + ("hcc", "skt", "stl1", "swvl1", "ci", "scaled_sd", "i10fg", "blh", "uvb_6h")
+            + ("ssrd_6h", "ttr_6h", "scaled_tp_1h", "scaled_sf_1h", "insolation")
+        ),  # Note the 6h radiation variables instead of 1h
+        atmos_vars: tuple[str, ...] = ("z", "t", "u", "v", "q"),  # Trained with an incorrect order
         output_only_surf_vars: tuple[str, ...] = (
-            "i10fg",
-            "blh",
-            "uvb_6h",
-            "ssrd_6h",
-            "ttr_6h",
-            "scaled_tp_1h",
-            "scaled_sf_1h",
-        ),
+            ("i10fg", "blh", "uvb_6h", "ssrd_6h", "ttr_6h", "scaled_tp_1h", "scaled_sf_1h")
+        ),  # Note the 6h radiation variables instead of 1h
         **kw_args,
     ) -> None:
         super().__init__(
@@ -1406,10 +1283,10 @@ class AuroraV1p5Prerelease(AuroraV1p5):
     def _update_insolation(self, pred: Batch) -> Batch:
         """Recompute prescribed insolation for the prediction's valid time.
 
-        There is a bug in pre-release Aurora 1.5 whereby the insolation was not used
-        correctly at train time, and instead only zeros were used.
+        There is a bug in pre-release Aurora 1.5 whereby the insolation was not used correctly at
+        train time, and instead only zeros were used.
         """
-        if "insolation" not in self.surf_vars or "insolation" not in pred.surf_vars:
+        if "insolation" not in pred.surf_vars:
             return pred
 
         spatial_shape = pred.surf_vars["insolation"].shape[-2:]  # (H, W)

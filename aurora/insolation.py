@@ -47,7 +47,7 @@ def insolation(
     if lat.shape != lon.shape:  # Assert same shape after potential broadcasting
         raise ValueError(f"Shape mismatch between `lat` (`{lat.shape}`) and `lon` (`{lon.shape}`).")
     n_dim = len(lat.shape)
-    new_lat = lat.astype(np.float32)
+    lat = lat.astype(np.float32)  # No mutation - safe to redefine the local variable.
 
     # Constants for year 1995.
     eps = 23.4441 * np.pi / 180.0  # Obliquity of Earth
@@ -62,10 +62,12 @@ def insolation(
     for _ in range(n_dim):
         days_arr = np.expand_dims(days_arr, -1)
 
-    new_lon = lon.astype(np.float32, copy=True)  # Copy to safely mutate.
     if daily:
         days_arr = 0.5 + np.round(days_arr)
+        new_lon = lon.astype(np.float32, copy=True)  # Copy to safely mutate.
         new_lon[:] = 0.0
+    else:
+        new_lon = lon.astype(np.float32)  # No mutation - safe to redefine the local variable.
 
     # Longitude of Earth relative to the orbit (1st-order approximation).
     lambda_m0 = ecc * (1.0 + beta) * np.sin(om)
@@ -80,8 +82,8 @@ def insolation(
     rho = ((1.0 - ecc**2.0) / (1.0 + ecc * np.cos(lambda_ - om))).astype("float32", copy=False)
 
     # Insolation.
-    diff = np.sin(np.pi / 180.0 * new_lat[None, ...]) * np.sin(dec) - np.cos(
-        np.pi / 180.0 * new_lat[None, ...]
+    diff = np.sin(np.pi / 180.0 * lat[None, ...]) * np.sin(dec) - np.cos(
+        np.pi / 180.0 * lat[None, ...]
     ) * np.cos(dec) * np.cos(h)
     sol = s0 * diff * rho**-2.0
     if clip_zero:
