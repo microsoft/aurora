@@ -4,7 +4,7 @@ import dataclasses
 from datetime import datetime
 from functools import partial
 from pathlib import Path
-from typing import Callable, List, Optional
+from typing import Callable, List
 
 import numpy as np
 import torch
@@ -81,17 +81,12 @@ class Batch:
         atmos_vars (dict[str, :class:`torch.Tensor`]): Atmospheric variables with shape
             `(b, t, c, h, w)`.
         metadata (:class:`Metadata`): Metadata associated to this batch.
-        lead_times (:class:`torch.Tensor`, optional): Lead times of shape `(batch,)` in hours.
-            If provided, the model uses per-sample lead times instead of a fixed timestep.
-            This is only used when the model is configured with `variable_lead_time=True`.
-            Defaults to `None`.
     """
 
     surf_vars: dict[str, torch.Tensor]
     static_vars: dict[str, torch.Tensor]
     atmos_vars: dict[str, torch.Tensor]
     metadata: Metadata
-    lead_times: Optional[torch.Tensor] = None
 
     @property
     def spatial_shape(self) -> tuple[int, int]:
@@ -123,7 +118,6 @@ class Batch:
                 for k, v in self.atmos_vars.items()
             },
             metadata=self.metadata,
-            lead_times=self.lead_times,
         )
 
     def unnormalise(
@@ -151,7 +145,6 @@ class Batch:
                 for k, v in self.atmos_vars.items()
             },
             metadata=self.metadata,
-            lead_times=self.lead_times,
         )
 
     def transform(
@@ -175,7 +168,6 @@ class Batch:
             static_vars=self.static_vars,
             atmos_vars=self.atmos_vars,
             metadata=self.metadata,
-            lead_times=self.lead_times,
         )
 
     def untransform(
@@ -199,7 +191,6 @@ class Batch:
             static_vars=self.static_vars,
             atmos_vars=self.atmos_vars,
             metadata=self.metadata,
-            lead_times=self.lead_times,
         )
 
     def crop(self, patch_size: int) -> "Batch":
@@ -223,7 +214,6 @@ class Batch:
                     time=self.metadata.time,
                     rollout_step=self.metadata.rollout_step,
                 ),
-                lead_times=self.lead_times,
             )
         else:
             raise ValueError(
@@ -243,7 +233,6 @@ class Batch:
                 time=self.metadata.time,
                 rollout_step=self.metadata.rollout_step,
             ),
-            lead_times=(f(self.lead_times) if self.lead_times is not None else None),
         )
 
     def to(self, device: str | torch.device) -> "Batch":
@@ -284,7 +273,6 @@ class Batch:
                 time=self.metadata.time,
                 rollout_step=self.metadata.rollout_step,
             ),
-            lead_times=self.lead_times,
         )
 
     def to_netcdf(self, path: str | Path) -> None:
@@ -318,7 +306,6 @@ class Batch:
                 "time": list(self.metadata.time),
                 "level": list(self.metadata.atmos_levels),
                 "rollout_step": self.metadata.rollout_step,
-                **({"lead_times": _np(self.lead_times)} if self.lead_times is not None else {}),
             },
         )
         ds.to_netcdf(path)
@@ -355,9 +342,6 @@ class Batch:
                 time=tuple(ds.time.values.astype("datetime64[s]").tolist()),
                 atmos_levels=tuple(ds.level.values),
                 rollout_step=int(ds.rollout_step.values),
-            ),
-            lead_times=(
-                torch.from_numpy(ds.lead_times.values) if "lead_times" in ds.coords else None
             ),
         )
 

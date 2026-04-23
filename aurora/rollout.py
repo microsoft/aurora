@@ -12,16 +12,15 @@ from aurora.model.aurora import Aurora
 __all__ = ["rollout"]
 
 
-def _update_batch_lead_time(batch: Batch, lead_time_hours: float):
-    """Return a copy of `batch` with the lead time updated to `lead_time_hours`."""
+def _make_lead_time_tensor(batch: Batch, lead_time_hours: float) -> torch.Tensor:
+    """Construct a per-sample lead-time tensor matching `batch`."""
     _example_variable = next(iter(batch.surf_vars.values()))
-    lead_time_tensor = torch.full(
+    return torch.full(
         (_example_variable.shape[0],),
         lead_time_hours,
         device=_example_variable.device,
         dtype=_example_variable.dtype,
     )
-    return dataclasses.replace(batch, lead_times=lead_time_tensor)
 
 
 def _advance_batch(batch: Batch, pred: Batch) -> Batch:
@@ -119,16 +118,19 @@ def rollout(
     if use_noise_accumulation and fine_lead_times is not None:
         model.set_noise_accumulation(n=len(fine_lead_times))
 
-    # Pre-populate model lead times for models with variable lead time support.
+    # Pre-compute the base lead-time tensor for models with variable lead time support.
+    base_lead_times: Optional[torch.Tensor] = None
     if model.variable_lead_time:
-        batch = _update_batch_lead_time(batch, model.timestep.total_seconds() / 3600.0)
+        base_lead_times = _make_lead_time_tensor(
+            batch, model.timestep.total_seconds() / 3600.0
+        )
 
     for _ in range(steps):
         if fine_lead_times is not None:
             # Inner loop: iterate over sub-step lead times.
             for lt_hours in fine_lead_times:
-                sub_batch = _update_batch_lead_time(batch, lt_hours)
-                pred = model.forward(sub_batch)
+                sub_lead_times = _make_lead_time_tensor(batch, lt_hours)
+                pred = model.forward(batch, lead_times=sub_lead_times)
 
                 yield pred
 
@@ -137,7 +139,7 @@ def rollout(
                 pred = model.apply_rollout_input_clipping(pred)
             batch = _advance_batch(batch, pred)
         else:
-            pred = model.forward(batch)
+            pred = model.forward(batch, lead_times=base_lead_times)
 
             yield pred
 

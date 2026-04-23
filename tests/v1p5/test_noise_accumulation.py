@@ -3,8 +3,6 @@
 Tests for noise accumulation in stochastic V1.5 models.
 """
 
-import dataclasses
-
 import torch
 
 from ._helpers import _OUTPUT_ONLY_SURF, _SURF_VARS, _make_batch, _make_small_v1p5
@@ -40,10 +38,9 @@ def test_stochastic_forward_runs():
     model.eval()
     batch = _make_batch(
         surf_vars=tuple(v for v in _SURF_VARS if v not in _OUTPUT_ONLY_SURF),
-        lead_times=torch.tensor([6.0]),
     )
     with torch.inference_mode():
-        pred = model.forward(batch)
+        pred = model.forward(batch, lead_times=torch.tensor([6.0]))
     for v in _SURF_VARS:
         assert v in pred.surf_vars
 
@@ -60,7 +57,7 @@ def test_noise_accumulation_in_rollout():
     # Forward the model manually to populate the noise cache.
     with torch.inference_mode():
         for lt in fine_lead_times:
-            _ = model.forward(dataclasses.replace(batch, lead_times=torch.tensor([lt])))
+            _ = model.forward(batch, lead_times=torch.tensor([lt]))
     assert model.backbone._noise_cache_size == 2
 
     # Forward with rollout to check noise accumulation is enabled and then properly disabled

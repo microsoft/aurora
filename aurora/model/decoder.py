@@ -278,5 +278,4 @@ class Perceiver3DDecoder(nn.Module):
                 atmos_levels=atmos_levels,
                 rollout_step=batch.metadata.rollout_step + 1,
             ),
-            lead_times=lead_times,
         )

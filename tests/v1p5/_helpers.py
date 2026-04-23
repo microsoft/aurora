@@ -26,7 +26,6 @@ def _make_batch(
     surf_vars: tuple[str, ...] = _SURF_VARS,
     static_vars: tuple[str, ...] = _STATIC_VARS,
     atmos_vars: tuple[str, ...] = _ATMOS_VARS,
-    lead_times: torch.Tensor | None = None,
 ) -> Batch:
     """Create a minimal synthetic batch."""
     return Batch(
@@ -39,7 +38,6 @@ def _make_batch(
             time=(datetime(2023, 6, 15, 12, 0),),
             atmos_levels=(100, 250, 500, 850),
         ),
-        lead_times=lead_times,
     )
 
 

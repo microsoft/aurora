@@ -204,9 +204,10 @@ class Aurora(torch.nn.Module):
                 Defaults to `False`.
             use_updated_lead_time_embedding (bool, optional): Whether to use the updated lead time
                 embedding with a minimum wavelength of 2 hours. Defaults to `False`.
-            variable_lead_time (bool, optional): If `True`, use per-sample lead times from
-                `batch.lead_times` (a tensor of shape `(batch,)` in hours) instead of
-                the fixed `timestep`. When enabled, the batch must provide `lead_times`.
+            variable_lead_time (bool, optional): If `True`, use per-sample lead times passed
+                via the `lead_times` argument to `forward` (a tensor of shape `(batch,)` in
+                hours) instead of the fixed `timestep`. When enabled, `lead_times` must be
+                provided.
                 Defaults to `False`.
             rollout_input_clipping (dict[str, dict[str, float]], optional): Per-variable
                 clipping bounds applied to predictions during autoregressive rollout before they
@@ -342,11 +343,14 @@ class Aurora(torch.nn.Module):
         """
         self.backbone.set_noise_accumulation(n)
 
-    def forward(self, batch: Batch) -> Batch:
+    def forward(self, batch: Batch, lead_times: Optional[torch.Tensor] = None) -> Batch:
         """Forward pass.
 
         Args:
             batch (:class:`aurora.Batch`): Batch to run the model on.
+            lead_times (:class:`torch.Tensor`, optional): Per-sample lead times of shape
+                `(batch,)` in hours. Required when the model was configured with
+                `variable_lead_time=True`. Ignored otherwise.
 
         Returns:
             :class:`Batch`: Prediction for the batch.
@@ -403,10 +407,9 @@ class Aurora(torch.nn.Module):
 
         # Resolve lead times to a tensor of shape (B,) in hours.
         if self.variable_lead_time:
-            lead_times = batch.lead_times
             if lead_times is None:
                 raise ValueError(
-                    "`variable_lead_time=True` but `batch.lead_times` is `None`. "
+                    "`variable_lead_time=True` but `lead_times` is `None`. "
                     "Please provide a `lead_times` tensor of shape `(batch,)` in hours."
                 )
             lead_times = lead_times.to(device=p.device, dtype=p.dtype)
