@@ -121,9 +121,7 @@ def rollout(
     # Pre-compute the base lead-time tensor for models with variable lead time support.
     base_lead_times: Optional[torch.Tensor] = None
     if model.variable_lead_time:
-        base_lead_times = _make_lead_time_tensor(
-            batch, model.timestep.total_seconds() / 3600.0
-        )
+        base_lead_times = _make_lead_time_tensor(batch, model.timestep.total_seconds() / 3600.0)
 
     for _ in range(steps):
         if fine_lead_times is not None:
