@@ -300,9 +300,12 @@ locations: dict[str, float] = {
     # v1.5 output-only surface variables
     "i10fg": 9.003422737121582e00,
     "blh": 6.290673217773438e02,
-    "uvb_6h": 4.1924728125e05,
-    "ssrd_6h": 3.53410025e06,
-    "ttr_6h": -4.88246e06,
+    "uvb_1h": 6.96176e04,
+    "ssrd_1h": 5.889046e05,
+    "ttr_1h": -8.144387e05,
+    "uvb_6h": 4.1924728125e05,  # Needed for Prerelease models; to remove
+    "ssrd_6h": 3.53410025e06,  # Needed for Prerelease models; to remove
+    "ttr_6h": -4.88246e06,  # Needed for Prerelease models; to remove
     "scaled_tp_1h": 7.03631192445755e-02,
     "scaled_sf_1h": 1.3227290473878384e-02,
     # Insolation (not normalised during training)
@@ -551,9 +554,12 @@ scales: dict[str, float] = {
     # v1.5 output-only surface variables
     "i10fg": 4.655707359313965e00,
     "blh": 4.7048150634765625e02,
-    "uvb_6h": 5.663253125e05,
-    "ssrd_6h": 4.772643e06,
-    "ttr_6h": 1.0520575e06,
+    "uvb_1h": 1.061103e05,
+    "ssrd_1h": 8.915032e05,
+    "ttr_1h": 1.771002e05,
+    "uvb_6h": 5.663253125e05,  # Needed for Prerelease models; to remove
+    "ssrd_6h": 4.772643e06,  # Needed for Prerelease models; to remove
+    "ttr_6h": 1.0520575e06,  # Needed for Prerelease models; to remove
     "scaled_tp_1h": 1.8630525469779968e-01,
     "scaled_sf_1h": 5.945565551519394e-02,
     # Insolation (not normalised during training)
