@@ -514,6 +514,8 @@ class Aurora(torch.nn.Module):
         :meth:`batch_transform_hook`, this hook is *not* called separately in rollout, so
         non-idempotent transforms (e.g. log-scaling) belong here.
         """
+        if self.log_transformed_surf_vars:  # Be explicit about checking if variables are requested
+            batch = batch.transform(log_transformed_surf_vars=self.log_transformed_surf_vars)
         return batch
 
     def _post_decoder_hook(self, batch: Batch, pred: Batch) -> Batch:
@@ -526,6 +528,8 @@ class Aurora(torch.nn.Module):
         Subclasses can override this to apply post-processing that must operate on un-normalised
         (physical) values, such as inverse log-scaling or recomputing prescribed channels.
         """
+        if self.log_transformed_surf_vars:  # Be explicit about checking if variables are requested
+            pred = pred.untransform(log_transformed_surf_vars=self.log_transformed_surf_vars)
         return pred
 
     def apply_rollout_input_clipping(self, pred: Batch) -> Batch:
@@ -1191,13 +1195,9 @@ class AuroraV1p5(Aurora):
             batch.atmos_vars[var] = torch.zeros_like(ref)
         return batch
 
-    def _pre_norm_hook(self, batch: Batch) -> Batch:
-        """Apply log-transform to scaled surface variables before normalisation."""
-        return batch.transform(log_transformed_surf_vars=self.log_transformed_surf_vars)
-
     def _post_unnorm_hook(self, batch: Batch, pred: Batch) -> Batch:
         """Apply inverse log-transform and recompute prescribed insolation."""
-        pred = pred.untransform(log_transformed_surf_vars=self.log_transformed_surf_vars)
+        pred = super()._post_unnorm_hook(batch, pred)
         pred = self._update_insolation(pred)
         return pred
 

@@ -916,12 +916,8 @@ class Swin3DTransformerBackbone(nn.Module):
     def reset_noise(self) -> None:
         """Flush the noise cache.
 
-
-
         Call this to clear all cached noise tensors, e.g. at the beginning of a new forecast issue
-
         time. After reset, the next forward call starts building the cache afresh.
-
         """
 
         if self.stochastic:
