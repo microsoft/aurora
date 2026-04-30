@@ -22,6 +22,7 @@ from aurora.model.compat import (
     _adapt_checkpoint_v1p5,
     _adapt_checkpoint_wave,
 )
+from aurora.normalisation import log_transform, log_untransform
 from aurora.model.decoder import Perceiver3DDecoder
 from aurora.model.encoder import Perceiver3DEncoder
 from aurora.model.lora import LoRAMode
@@ -109,7 +110,6 @@ class Aurora(torch.nn.Module):
         rollout_input_clipping: Optional[dict[str, dict[str, Optional[float]]]] = None,
         output_only_surf_vars: tuple[str, ...] = (),
         output_only_atmos_vars: tuple[str, ...] = (),
-        log_transformed_surf_vars: tuple[str, ...] = (),
     ) -> None:
         """Construct an instance of the model.
 
@@ -220,8 +220,6 @@ class Aurora(torch.nn.Module):
             output_only_atmos_vars (tuple[str, ...], optional): Atmospheric variables that the
                 model predicts but that are not present in real input data. These will be
                 zero-padded in the input batch during rollout. Defaults to `()`.
-            log_transformed_surf_vars (tuple[str, ...], optional): Surface-level variables to
-                log-transform during preprocessing. Defaults to `()`.
         """
         super().__init__()
         self.surf_vars = surf_vars
@@ -239,7 +237,6 @@ class Aurora(torch.nn.Module):
         self.rollout_input_clipping = rollout_input_clipping
         self.output_only_surf_vars = output_only_surf_vars
         self.output_only_atmos_vars = output_only_atmos_vars
-        self.log_transformed_surf_vars = log_transformed_surf_vars
 
         if self.surf_stats:
             warnings.warn(
@@ -361,9 +358,7 @@ class Aurora(torch.nn.Module):
         p = next(self.parameters())
         batch = batch.type(p.dtype)
         batch = self._pre_norm_hook(batch)
-        batch = batch.normalise(
-            surf_stats=self.surf_stats,
-        )
+        batch = batch.normalise(surf_stats=self.surf_stats)
         batch = batch.crop(patch_size=self.patch_size)
         batch = batch.to(p.device)
 
@@ -488,9 +483,7 @@ class Aurora(torch.nn.Module):
 
         # Cast to float32 before unnormalising to avoid overflow.
         pred = pred.type(torch.float32)
-        pred = pred.unnormalise(
-            surf_stats=self.surf_stats,
-        )
+        pred = pred.unnormalise(surf_stats=self.surf_stats)
 
         pred = self._post_unnorm_hook(batch, pred)
 
@@ -514,8 +507,6 @@ class Aurora(torch.nn.Module):
         :meth:`batch_transform_hook`, this hook is *not* called separately in rollout, so
         non-idempotent transforms (e.g. log-scaling) belong here.
         """
-        if self.log_transformed_surf_vars:  # Be explicit about checking if variables are requested
-            batch = batch.transform(log_transformed_surf_vars=self.log_transformed_surf_vars)
         return batch
 
     def _post_decoder_hook(self, batch: Batch, pred: Batch) -> Batch:
@@ -528,8 +519,6 @@ class Aurora(torch.nn.Module):
         Subclasses can override this to apply post-processing that must operate on un-normalised
         (physical) values, such as inverse log-scaling or recomputing prescribed channels.
         """
-        if self.log_transformed_surf_vars:  # Be explicit about checking if variables are requested
-            pred = pred.untransform(log_transformed_surf_vars=self.log_transformed_surf_vars)
         return pred
 
     def apply_rollout_input_clipping(self, pred: Batch) -> Batch:
@@ -1137,8 +1126,6 @@ class AuroraV1p5(Aurora):
         autocast_dtype: torch.dtype = torch.float16,
         **kw_args,
     ) -> None:
-        # Variable naming scheme assumes that all log-transformed variables start with "scaled_".
-        log_transformed_surf_vars = tuple(v for v in surf_vars if v.startswith("scaled_"))
         # Define default clipping ranges for rollout inputs, which can be overridden by passing in
         # `rollout_input_clipping`.
         rollout_input_clipping = rollout_input_clipping or {}
@@ -1171,12 +1158,14 @@ class AuroraV1p5(Aurora):
             use_fp16_safe_attention=use_fp16_safe_attention,
             autocast=autocast,
             autocast_dtype=autocast_dtype,
-            log_transformed_surf_vars=log_transformed_surf_vars,
             **kw_args,
         )
         self.autocast_encoder = autocast
         self.autocast_backbone = autocast
         self.autocast_decoder = autocast
+
+        # Variable naming scheme assumes that all log-transformed variables start with "scaled_".
+        self.log_transformed_surf_vars = tuple(v for v in self.surf_vars if v.startswith("scaled_"))
 
     def _pre_encoder_hook(self, batch: Batch) -> Batch:
         """Zero-pad output-only variables.
@@ -1195,9 +1184,25 @@ class AuroraV1p5(Aurora):
             batch.atmos_vars[var] = torch.zeros_like(ref)
         return batch
 
+    def _pre_norm_hook(self, batch: Batch) -> Batch:
+        """Apply log-transform to scaled surface variables before normalisation."""
+        return dataclasses.replace(
+            batch,
+            surf_vars={
+                k: log_transform(v) if k in self.log_transformed_surf_vars else v
+                for k, v in batch.surf_vars.items()
+            },
+        )
+
     def _post_unnorm_hook(self, batch: Batch, pred: Batch) -> Batch:
         """Apply inverse log-transform and recompute prescribed insolation."""
-        pred = super()._post_unnorm_hook(batch, pred)
+        pred = dataclasses.replace(
+            pred,
+            surf_vars={
+                k: log_untransform(v) if k in self.log_transformed_surf_vars else v
+                for k, v in pred.surf_vars.items()
+            },
+        )
         pred = self._update_insolation(pred)
         return pred
 

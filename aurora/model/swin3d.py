@@ -926,12 +926,12 @@ class Swin3DTransformerBackbone(nn.Module):
     def set_noise_accumulation(self, n: int = 0) -> None:
         """Enable or disable noise caching across forward calls.
 
-        When enabled with cache size *n* > 0, the backbone maintains a FIFO cache of the last *n*
+        When enabled with cache size `n > 0`, the backbone maintains a FIFO cache of the last `n`
         noise tensors.  On each forward call a new noise tensor is generated and appended to the
-        cache; if the cache already contains *n* entries the oldest one is evicted. The effective
+        cache; if the cache already contains `n` entries the oldest one is evicted. The effective
         noise is `sum(cache) / sqrt(len(cache))`.
 
-        When disabled (the default) or when *n* == 0, each forward call uses a fresh independent
+        When disabled (the default) or when `n == 0`, each forward call uses a fresh independent
         noise sample without any caching.
 
         Calling this method also flushes any previously cached noise so that caching always starts

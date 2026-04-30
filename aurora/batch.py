@@ -11,8 +11,6 @@ import torch
 from scipy.interpolate import RegularGridInterpolator as RGI
 
 from aurora.normalisation import (
-    log_transform,
-    log_untransform,
     normalise_atmos_var,
     normalise_surf_var,
     unnormalise_atmos_var,
@@ -144,52 +142,6 @@ class Batch:
                 k: unnormalise_atmos_var(v, k, self.metadata.atmos_levels)
                 for k, v in self.atmos_vars.items()
             },
-            metadata=self.metadata,
-        )
-
-    def transform(
-        self,
-        log_transformed_surf_vars: tuple[str, ...] = (),
-    ) -> "Batch":
-        """Apply log-transform to specified surface-level variables.
-
-        Args:
-            log_transformed_surf_vars (tuple[str, ...], optional): Surface-level variables to
-                log-transform.
-
-        Returns:
-            :class:`.Batch`: Transformed batch.
-        """
-        return Batch(
-            surf_vars={
-                k: log_transform(v) if k in log_transformed_surf_vars else v
-                for k, v in self.surf_vars.items()
-            },
-            static_vars=self.static_vars,
-            atmos_vars=self.atmos_vars,
-            metadata=self.metadata,
-        )
-
-    def untransform(
-        self,
-        log_transformed_surf_vars: tuple[str, ...] = (),
-    ) -> "Batch":
-        """Apply inverse log-transform to specified surface-level variables.
-
-        Args:
-            log_transformed_surf_vars (tuple[str, ...], optional): Surface-level variables to
-                inverse-log-transform.
-
-        Returns:
-            :class:`.Batch`: Untransformed batch.
-        """
-        return Batch(
-            surf_vars={
-                k: log_untransform(v) if k in log_transformed_surf_vars else v
-                for k, v in self.surf_vars.items()
-            },
-            static_vars=self.static_vars,
-            atmos_vars=self.atmos_vars,
             metadata=self.metadata,
         )
 

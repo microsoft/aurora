@@ -56,11 +56,11 @@ def rollout(
     Aurora 1.5 introduces support for variable lead times, which enables sub-stepping within each
     main step. When `fine_lead_times` is provided, the model will produce predictions at each of the
     specified lead times within each main step, all of which are initialised from the same previous
-    step and thus do not autoregress onto each other. We do require that the last fine_lead_time
+    step and thus do not autoregress onto each other. We do require that the last `fine_lead_time`
     be the same as the model time step so we can construct proper next inputs. For instance, if
-    specifying fine_lead_times = [3, 6] for a model with a 6-hour time step, the model will produce
-    predictions at +3 and +6 hours, but only the +6 hour prediction will be fed back as input to
-    continue the rollout.
+    specifying `fine_lead_times = [3, 6]` for a model with a 6-hour time step, the model will
+    produce predictions at +3 and +6 hours, but only the +6 hour prediction will be fed back as
+    input to continue the rollout.
 
     Aurora 1.5 Ensemble also introduces stochasticity. When `use_noise_accumulation` is `True`,
     noise will be continuously accumulated across both fine and major steps, introducing an auto-
