@@ -22,12 +22,12 @@ from aurora.model.compat import (
     _adapt_checkpoint_v1p5,
     _adapt_checkpoint_wave,
 )
-from aurora.normalisation import log_transform, log_untransform
 from aurora.model.decoder import Perceiver3DDecoder
 from aurora.model.encoder import Perceiver3DEncoder
 from aurora.model.lora import LoRAMode
 from aurora.model.perceiver import PerceiverAttention
 from aurora.model.swin3d import Swin3DTransformerBackbone, WindowAttention
+from aurora.normalisation import log_transform, log_untransform
 
 __all__ = [
     "Aurora",
