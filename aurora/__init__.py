@@ -12,8 +12,6 @@ from aurora.model.aurora import (
     AuroraSmallPretrained,
     AuroraV1p5,
     AuroraV1p5Ensemble,
-    AuroraV1p5EnsemblePrerelease,
-    AuroraV1p5Prerelease,
     AuroraWave,
 )
 from aurora.rollout import rollout
@@ -30,8 +28,6 @@ __all__ = [
     "AuroraWave",
     "AuroraV1p5",
     "AuroraV1p5Ensemble",
-    "AuroraV1p5Prerelease",
-    "AuroraV1p5EnsemblePrerelease",
     "Batch",
     "Metadata",
     "insolation",

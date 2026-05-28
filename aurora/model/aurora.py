@@ -40,8 +40,6 @@ __all__ = [
     "AuroraWave",
     "AuroraV1p5",
     "AuroraV1p5Ensemble",
-    "AuroraV1p5Prerelease",
-    "AuroraV1p5EnsemblePrerelease",
 ]
 
 
@@ -1247,75 +1245,6 @@ class AuroraV1p5Ensemble(AuroraV1p5):
     """Aurora V1.5 ensemble version with stochastic noise injection."""
 
     default_checkpoint_name = "aurora-0.25-v1.5-ensemble.ckpt"
-    default_checkpoint_revision = ""
-
-    def __init__(
-        self,
-        *,
-        stochastic: bool = True,
-        **kw_args,
-    ) -> None:
-        super().__init__(
-            stochastic=stochastic,
-            **kw_args,
-        )
-
-
-class AuroraV1p5Prerelease(AuroraV1p5):
-    """Pre-release version of Aurora V1.5."""
-
-    default_checkpoint_name = "aurora-0.25-v1.5-prerelease.ckpt"
-    default_checkpoint_revision = ""
-
-    def __init__(
-        self,
-        *,
-        surf_vars: tuple[str, ...] = (
-            ("2t", "10u", "10v", "msl", "2d", "tcwv", "tcc", "100u", "100v", "sp", "lcc", "mcc")
-            + ("hcc", "skt", "stl1", "swvl1", "ci", "scaled_sd", "i10fg", "blh", "uvb_6h")
-            + ("ssrd_6h", "ttr_6h", "scaled_tp_1h", "scaled_sf_1h", "insolation")
-        ),  # Note the 6h radiation variables instead of 1h
-        atmos_vars: tuple[str, ...] = ("z", "t", "u", "v", "q"),  # Trained with an incorrect order
-        output_only_surf_vars: tuple[str, ...] = (
-            ("i10fg", "blh", "uvb_6h", "ssrd_6h", "ttr_6h", "scaled_tp_1h", "scaled_sf_1h")
-        ),  # Note the 6h radiation variables instead of 1h
-        **kw_args,
-    ) -> None:
-        super().__init__(
-            surf_vars=surf_vars,
-            atmos_vars=atmos_vars,
-            output_only_surf_vars=output_only_surf_vars,
-            **kw_args,
-        )
-
-    def _update_insolation(self, pred: Batch) -> Batch:
-        """Recompute prescribed insolation for the prediction's valid time.
-
-        There is a bug in pre-release Aurora 1.5 whereby the insolation was not used correctly at
-        train time, and instead only zeros were used.
-        """
-        if "insolation" not in pred.surf_vars:
-            return pred
-
-        spatial_shape = pred.surf_vars["insolation"].shape[-2:]  # (H, W)
-        sol_tensor = torch.zeros(
-            (len(pred.metadata.time), 1, *spatial_shape),
-            dtype=pred.surf_vars["insolation"].dtype,
-            device=pred.surf_vars["insolation"].device,
-        )
-
-        return dataclasses.replace(
-            pred,
-            surf_vars={
-                k: (sol_tensor if k == "insolation" else v) for k, v in pred.surf_vars.items()
-            },
-        )
-
-
-class AuroraV1p5EnsemblePrerelease(AuroraV1p5Prerelease):
-    """Pre-release version of Aurora V1.5 ensemble."""
-
-    default_checkpoint_name = "aurora-0.25-v1.5-ensemble-prerelease.ckpt"
     default_checkpoint_revision = ""
 
     def __init__(
