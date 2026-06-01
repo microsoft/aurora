@@ -282,7 +282,7 @@ locations: dict[str, float] = {
     "dwi": 0.00000e00,
     "10u_wave": 2.90337e-01,
     "10v_wave": 1.26789e-01,
-    # v1.5 additional input surface variables
+    # Aurora 1.5 additional input surface variables
     "2d": 2.73876923e02,
     "tcwv": 1.82695427e01,
     "tcc": 6.7472446e-01,
@@ -297,7 +297,7 @@ locations: dict[str, float] = {
     "swvl1": 8.593245595693588e-02,
     "ci": 1.1092530190944672e-01,
     "scaled_sd": 1.3165518045425415e00,
-    # v1.5 output-only surface variables
+    # Aurora 1.5 output-only surface variables
     "i10fg": 9.003422737121582e00,
     "blh": 6.290673217773438e02,
     "uvb_1h": 6.96176e04,
@@ -533,7 +533,7 @@ scales: dict[str, float] = {
     "dwi": 1.00000e00,
     "10u_wave": 6.43740e00,
     "10v_wave": 5.40235e00,
-    # v1.5 additional input surface variables
+    # Aurora 1.5 additional input surface variables
     "2d": 2.07733974e01,
     "tcwv": 1.6429491e01,
     "tcc": 3.65822792e-01,
@@ -548,7 +548,7 @@ scales: dict[str, float] = {
     "swvl1": 1.4150479435920715e-01,
     "ci": 2.9736775159835815e-01,
     "scaled_sd": 3.0272440910339355e00,
-    # v1.5 output-only surface variables
+    # Aurora 1.5 output-only surface variables
     "i10fg": 4.655707359313965e00,
     "blh": 4.7048150634765625e02,
     "uvb_1h": 1.061103e05,

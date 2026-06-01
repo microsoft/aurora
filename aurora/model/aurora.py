@@ -1080,7 +1080,7 @@ class AuroraWave(Aurora):
 
 
 class AuroraV1p5(Aurora):
-    """Aurora V1.5 with expanded surface variables, variable lead-time support, and insolation.
+    """Aurora 1.5 with expanded surface variables, variable lead-time support, and insolation.
 
     This variant was trained with an extended set of surface variables (26 total), additional static
     fields, and prescribed solar insolation as an input channel. It supports variable lead-time
@@ -1242,7 +1242,7 @@ class AuroraV1p5(Aurora):
 
 
 class AuroraV1p5Ensemble(AuroraV1p5):
-    """Aurora V1.5 ensemble version with stochastic noise injection."""
+    """Aurora 1.5 ensemble version with stochastic noise injection."""
 
     default_checkpoint_name = "aurora-0.25-v1.5-ensemble.ckpt"
     default_checkpoint_revision = ""

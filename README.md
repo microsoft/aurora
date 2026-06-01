@@ -130,6 +130,14 @@ Our goal in publishing this code is
 (2) to support and accelerate further research into foundation model for atmospheric forecasting.
 This code has not been developed nor tested for non-academic purposes and hence should only be used as such completely at your own risk.
 
+### Intended use
+Aurora is intended for medium- and high-resolution weather prediction, air pollution forecasting, ocean wave prediction, and global environmental modelling tasks.
+The model can be adapted to specialised atmospheric forecasting tasks with relatively limited task-specific training data due to its foundation-model architecture.
+
+### Out-of-scope use cases
+Aurora is not designed or evaluated for direct operational decision-making without expert review, applications requiring guaranteed forecast accuracy, or non-environmental prediction tasks.
+Use in safety-critical planning or automated decision pipelines should be accompanied by appropriate domain validation.
+
 ### Limitations
 Although Aurora was trained to accurately predict future weather, air pollution, and ocean waves,
 Aurora is based on neural networks, which means that there are no strict guarantees that predictions will always be accurate.
@@ -146,6 +154,30 @@ originally developed internally.
 Whereas we tried to be as thorough as possible, it is possible that the models published here
 deviate from the original model in subtle, unintended ways.
 This may affect predictive performance.
+
+### Responsible AI considerations
+Aurora is a research forecasting model and should not be treated as an operational weather service.
+While the model can match or exceed traditional numerical baselines on established benchmarks,
+its reliability can degrade in out-of-distribution conditions
+(e.g., rare extremes, regime shifts, or regions/variables with limited historical fidelity in underlying reanalyses and simulations).
+Outputs may also be misinterpreted if users overlook uncertainty, ensemble spread, or known limitations of the underlying training data.
+
+The primary Responsible AI risks are
+(1) unintended use by non-experts and
+(2) downstream use in consequential decision-making without domain validation
+(e.g., emergency response, critical infrastructure operations, safety-of-life planning).
+To mitigate these risks, developers should:
+clearly communicate that the release is for research evaluation and reproducibility;
+require domain-expert review before any real-world decisions are informed by outputs;
+implement basic input validation to ensure initial conditions come from credible sources
+(e.g., established meteorological agencies and data providers);
+and benchmark performance against accepted physical modelling systems for the specific geography, horizon, and variable(s) relevant to the intended application.
+
+Aurora is best integrated as a decision-support component for expert analysis,
+not as a fully autonomous trigger for actions.
+For higher-risk scenarios, apply additional safeguards such as human-in-the-loop review,
+conservative thresholds for alerts, calibration/verification tests,
+and ongoing monitoring for drift when changing input sources or pre/post-processing.
 
 ### Data
 The models included in the code have been trained on a variety of publicly available data.

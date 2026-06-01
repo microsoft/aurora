@@ -1,6 +1,6 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license.
 
-Tests for noise accumulation in stochastic V1.5 models.
+Tests for noise accumulation in stochastic Aurora 1.5 models.
 """
 
 import torch

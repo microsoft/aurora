@@ -8,11 +8,9 @@ For details on how exactly the model works, [please see the paper](https://www.n
 Aurora is a machine learning model that can predict atmospheric variables, such as temperature.
 It is a _foundation model_, which means that it was first generally trained on a lot of data,
 and then can adapted to specialised atmospheric forecasting tasks with relatively little data.
-We provide four such specialised versions:
-one for medium-resolution weather prediction,
-one for high-resolution weather prediction,
-one for air pollution prediction,
-and one for ocean wave prediction.
+We provide specialised versions for medium-resolution weather prediction,
+high-resolution weather prediction, air pollution prediction, ocean wave prediction,
+and the new Aurora 1.5 family with expanded variables, hourly lead times, and ensemble support.
 
 Cite us as follows:
 

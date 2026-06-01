@@ -1,6 +1,6 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license.
 
-Shared helpers and constants for V1.5 tests.
+Shared helpers and constants for Aurora 1.5 tests.
 """
 
 from datetime import datetime
@@ -10,7 +10,7 @@ import torch
 
 from aurora import AuroraV1p5, Batch, Metadata
 
-# Minimal variable sets for a lightweight V1.5-like model.
+# Minimal variable sets for a lightweight Aurora 1.5-like model.
 _SURF_VARS = ("2t", "10u", "10v", "msl", "scaled_tp_1h", "insolation")
 _STATIC_VARS = ("lsm", "z")
 _ATMOS_VARS = ("z", "u", "v", "t", "q")
@@ -42,7 +42,7 @@ def _make_batch(
 
 
 def _make_small_v1p5(**overrides: Any) -> AuroraV1p5:
-    """Create a small V1.5 model for fast unit tests."""
+    """Create a small Aurora 1.5 model for fast unit tests."""
     defaults: dict[str, Any] = dict(
         surf_vars=_SURF_VARS,
         static_vars=_STATIC_VARS,
