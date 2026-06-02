@@ -11,7 +11,7 @@ from aurora.batch import Batch
 from aurora.model.fourier import (
     absolute_time_expansion,
     lead_time_expansion,
-    lead_time_expansion_v2,
+    lead_time_expansion_v3,
     levels_expansion,
     pos_expansion,
     scale_expansion,
@@ -89,7 +89,7 @@ class Perceiver3DEncoder(nn.Module):
                 air pollution version of Aurora. This is necessary to obtain numerical equivalence
                 to the original implementation. Defaults to `False`.
             use_updated_lead_time_embedding (bool, optional): Whether to use the updated lead time
-                embedding with a minimum wavelength of 2 hours. Defaults to `False`.
+                embedding with a minimum wavelength of 6 hours. Defaults to `False`.
         """
         super().__init__()
 
@@ -358,7 +358,7 @@ class Perceiver3DEncoder(nn.Module):
 
         # Add lead time embedding.
         expansion = (
-            lead_time_expansion_v2 if self.use_updated_lead_time_embedding else lead_time_expansion
+            lead_time_expansion_v3 if self.use_updated_lead_time_embedding else lead_time_expansion
         )
         lead_time_encode = expansion(lead_times, self.embed_dim).to(dtype=dtype)
         lead_time_emb = self.lead_time_embed(lead_time_encode)  # (B, D)

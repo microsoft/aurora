@@ -18,7 +18,7 @@ from einops import rearrange
 from timm.layers import DropPath, to_3tuple
 
 from aurora.model.film import AdaptiveLayerNorm
-from aurora.model.fourier import lead_time_expansion
+from aurora.model.fourier import lead_time_expansion, lead_time_expansion_v3
 from aurora.model.lora import LoRAMode, LoRARollout
 from aurora.model.util import (
     fp16_safe_scaled_dot_product_attention,
@@ -795,6 +795,7 @@ class Swin3DTransformerBackbone(nn.Module):
         lora_mode: LoRAMode = "single",
         use_lora: bool = False,
         stochastic: bool = False,
+        use_updated_lead_time_embedding: bool = False,
     ) -> None:
         """Initialise.
 
@@ -823,6 +824,8 @@ class Swin3DTransformerBackbone(nn.Module):
             use_lora (bool, optional): Enable LoRA. By default, LoRA is disabled.
             stochastic (bool, optional): If `True`, enable stochastic mode with noise injection.
                 Defaults to `False`.
+            use_updated_lead_time_embedding (bool, optional): Whether to use the updated lead time
+                embedding with a minimum wavelength of 6 hours. Defaults to `False`.
         """
         super().__init__()
 
@@ -838,6 +841,7 @@ class Swin3DTransformerBackbone(nn.Module):
             nn.SiLU(),
             nn.Linear(embed_dim, embed_dim, bias=True),
         )
+        self.use_updated_lead_time_embedding = use_updated_lead_time_embedding
 
         # Noise embedding MLP
         self.stochastic = stochastic
@@ -986,7 +990,10 @@ class Swin3DTransformerBackbone(nn.Module):
 
         all_enc_res, padded_outs = self.get_encoder_specs(patch_res)
 
-        c = self.time_mlp(lead_time_expansion(lead_times, self.embed_dim).to(dtype=x.dtype))
+        expansion = (
+            lead_time_expansion_v3 if self.use_updated_lead_time_embedding else lead_time_expansion
+        )
+        c = self.time_mlp(expansion(lead_times, self.embed_dim).to(dtype=x.dtype))
 
         if self.stochastic:
             noise_shape = x.shape[:-1] + (self.embed_dim,)

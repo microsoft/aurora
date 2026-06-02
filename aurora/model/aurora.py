@@ -281,6 +281,7 @@ class Aurora(torch.nn.Module):
             lora_steps=lora_steps,
             lora_mode=lora_mode,
             stochastic=stochastic,
+            use_updated_lead_time_embedding=use_updated_lead_time_embedding,
         )
 
         self.decoder = Perceiver3DDecoder(

@@ -13,7 +13,7 @@ __all__ = [
     "pos_expansion",
     "scale_expansion",
     "lead_time_expansion",
-    "lead_time_expansion_v2",
+    "lead_time_expansion_v3",
     "levels_expansion",
     "absolute_time_expansion",
 ]
@@ -93,6 +93,40 @@ class FourierExpansion(nn.Module):
         return encoding.float()  # Cast to `float32` to avoid incompatibilities.
 
 
+class FourierExpansionWithLinear(FourierExpansion):
+    """Fourier expansion that replaces the sin of the largest wavelength with a linear feature.
+
+    Since `sin(2 pi x / lambda) ~ 2 pi x / lambda` for `x << lambda`, the sin channel at the
+    largest wavelength carries almost the same information as a simple linear term. Replacing it
+    with `x / upper` gives the model a clean linear signal while keeping the total dimensionality
+    unchanged so that checkpoints remain compatible.
+
+    Attributes:
+        lower (float): Lower wavelength.
+        upper (float): Upper wavelength.
+        assert_range (bool): Assert that the encoded tensor is within the specified wavelength
+            range.
+    """
+
+    def forward(self, x: torch.Tensor, d: int) -> torch.Tensor:
+        """Perform the expansion, replacing the last sin channel with a linear feature.
+
+        Args:
+            x (:class:`torch.Tensor`): Input to expand of shape `(..., n)`.
+            d (int): Dimensionality.  Must be a multiple of two.
+
+        Returns:
+            torch.Tensor: Expansion of `x` of shape `(..., n, d)` where the channel at index
+                `d // 2 - 1` (sin of the largest wavelength) is replaced by
+                `x / self.upper`.
+        """
+        encoding = super().forward(x, d)
+        # Replace the last sin channel (index d//2 - 1) with a normalised linear feature.
+        linear = (x / self.upper).float().unsqueeze(-1)  # (..., n, 1)
+        encoding = torch.cat([encoding[..., : d // 2 - 1], linear, encoding[..., d // 2 :]], dim=-1)
+        return encoding
+
+
 # Determine a reasonable smallest value for the scale embedding by assuming a smallest delta in
 # latitudes and longitudes.
 _delta = 0.01  # Reasonable smallest delta in latitude and longitude
@@ -121,12 +155,12 @@ kilometers."""
 lead_time_expansion = FourierExpansion(1 / 60, 24 * 7 * 3)
 """:class:`.FourierExpansion`: Fourier expansion for the lead time encoding in hours."""
 
-lead_time_expansion_v2 = FourierExpansion(2, 24 * 7 * 3, assert_range=False)
-""":class:`.FourierExpansion`: Updated Fourier expansion for the lead time encoding in hours.
-
-This uses a minimum lead time of 2 hours to ensure hourly steps are not larger than the minimum
-wavelength. Disables range assertion since lead times can be smaller than the set minimum.
-"""
+# Better version of the lead time expansion with smoother high-frequency end.
+# Opt for the naming scheme `v3` to avoid confusion with prerelease versions.
+lead_time_expansion_v3 = FourierExpansionWithLinear(6, 24 * 7 * 3, assert_range=False)
+""":class:`.FourierExpansionWithLinear`: Updated Fourier expansion for the lead time encoding in
+hours. Uses a minimum lead time of 6 hours to avoid highly-varying waves at short lead times and
+replaces the sin of the largest wavelength with a normalised linear feature `x / upper`."""
 
 levels_expansion = FourierExpansion(0.01, 1e5)
 """:class:`.FourierExpansion`: Fourier expansion for the pressure level encoding in hPa."""
