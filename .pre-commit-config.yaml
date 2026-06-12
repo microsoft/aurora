@@ -8,12 +8,12 @@ repos:
       - id: check-useless-excludes
 
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.16
+    rev: 34b52d9cda7b4e309aabd8c1edd82f33b06061eb  # v0.16
     hooks:
       - id: validate-pyproject
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: "v4.6.0"
+    rev: 2c9f875913ee60ca25ce70243dc24d5b6415598c  # v4.6.0
     hooks:
       - id: check-added-large-files
         args: ["--maxkb=2000"]
@@ -26,7 +26,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.4.1"
+    rev: 21d9bff1d62aaf03230baa6b804b9074255fa9b8  # v0.4.1
     hooks:
       # Run the linter.
       - id: ruff
@@ -37,7 +37,7 @@ repos:
         types_or: [python, pyi, jupyter]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v1.11.0"
+    rev: 81dd99696c1d642c69c3158fd53b2d6c73245425  # v1.11.0
     hooks:
     - id: mypy
       additional_dependencies:
