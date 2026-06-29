@@ -16,10 +16,10 @@ jobs:
   build-docs:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
 
     - name: "Set up Python 3.10"
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@3542bca2639a428e1796aaa6a2ffef0c0f575566 # v3
       with:
         python-version: "3.10"
 
@@ -36,7 +36,7 @@ jobs:
           cp -r docs/_extras/* docs/_build/html/
 
     - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v4
+      uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: docs/_build/html
