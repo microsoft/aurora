@@ -14,6 +14,7 @@ from typing import Optional
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from chunkcheck import chunk_and_checkpoint
 from einops import rearrange
 from timm.layers import DropPath, to_3tuple
 

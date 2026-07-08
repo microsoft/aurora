@@ -29,6 +29,7 @@ htmlcov
 .DS_Store
 *.swp
 .envrc
+uv.lock
 
 checkpoints/
 mlflow_tmp/
