@@ -195,12 +195,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../example_cams.html">Predictions for Air Pollution</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../example_wave.html">Predictions for Ocean Waves</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example_v1p5.html">Predictions with Aurora 1.5</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../../foundry/intro.html">Aurora on Azure AI Foundry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../foundry/submission.html">Submitting Predictions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../foundry/demo_hres_t0.html">Demo: HRES T0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../foundry/demo_v1p5.html">Demo: Aurora 1.5 on Foundry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../foundry/server.html">Creating an Endpoint</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../foundry/api.html">Application Programming Interface</a></li>
 </ul>
@@ -356,8 +358,10 @@ document.write(`
 <span></span><span class="sd">&quot;&quot;&quot;Copyright (c) Microsoft Corporation. Licensed under the MIT license.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">abc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -414,6 +418,19 @@ document.write(`
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="s2">&quot;File was not marked within the timeout.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_receive</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the URL for the file `name` without downloading it.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            uuid (str): UUID of the task.</span>
+<span class="sd">            name (str): Name of the file.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: URL of the file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">uuid</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_url</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Write `data` to `name`.</span>
@@ -532,11 +549,25 @@ document.write(`
 <span class="sd">            dict[str, str]: Specification.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the URL for the file `name`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): File name.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: URL of the file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
 
 <div class="viewcode-block" id="BlobStorageChannel">
 <a class="viewcode-back" href="../../../../foundry/api.html#aurora.foundry.common.channel.BlobStorageChannel">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BlobStorageChannel</span><span class="p">(</span><span class="n">CommunicationChannel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A communication channel via a folder in an Azure Blob Storage container.&quot;&quot;&quot;</span>
+
+    <span class="c1"># Minimum free space (bytes) required on /dev/shm before using it.</span>
+    <span class="n">_SHM_MIN_FREE</span> <span class="o">=</span> <span class="mi">512</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>  <span class="c1"># 512 MiB</span>
 
 <div class="viewcode-block" id="BlobStorageChannel.__init__">
 <a class="viewcode-back" href="../../../../foundry/api.html#aurora.foundry.common.channel.BlobStorageChannel.__init__">[docs]</a>
@@ -552,8 +583,52 @@ document.write(`
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Given URL does not appear to contain a SAS token.&quot;</span><span class="p">)</span></div>
 
 
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_tmpdir</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a RAM-backed temp directory if available, else `None`.</span>
+
+<span class="sd">        Uses `/dev/shm` (Linux tmpfs) when it exists and has at least :attr:`_SHM_MIN_FREE` bytes</span>
+<span class="sd">        free. This avoids disk I/O for the temporary netCDF files used during send/receive. Falls</span>
+<span class="sd">        back to the system default temp directory otherwise (e.g. on macOS or when Docker constrains</span>
+<span class="sd">        `/dev/shm` to 64 MB).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">shm</span> <span class="o">=</span> <span class="s2">&quot;/dev/shm&quot;</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">shm</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">shutil</span><span class="o">.</span><span class="n">disk_usage</span><span class="p">(</span><span class="n">shm</span><span class="p">)</span><span class="o">.</span><span class="n">free</span> <span class="o">&gt;=</span> <span class="n">BlobStorageChannel</span><span class="o">.</span><span class="n">_SHM_MIN_FREE</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">shm</span>
+            <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Unable to stat </span><span class="si">%s</span><span class="s2">; falling back to default temp directory.&quot;</span><span class="p">,</span> <span class="n">shm</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_tempfile</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Yield the path of a temporary file, preferring `/dev/shm`.</span>
+
+<span class="sd">        If creating or writing the file on `/dev/shm` fails with `OSError` (e.g. because it</span>
+<span class="sd">        ran out of space), the operation is transparently retried using the default system temp</span>
+<span class="sd">        directory.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tmp_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tmpdir</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">tmp_dir</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">tf</span><span class="p">:</span>
+                <span class="n">tmp_path</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">yield</span> <span class="n">tmp_path</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">tmp_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span>  <span class="c1"># Already using the default temp dir; nothing to fall back to.</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;OSError on </span><span class="si">%s</span><span class="s2">; falling back to default temp directory.&quot;</span><span class="p">,</span> <span class="n">tmp_dir</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">tf</span><span class="p">:</span>
+                <span class="n">tmp_path</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">yield</span> <span class="n">tmp_path</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">Path</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">missing_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">to_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">blob_folder</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blob_path</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">Spec</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
         <span class="n">class_name</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;BlobStorageChannel&quot;</span><span class="p">]</span>
@@ -588,29 +663,25 @@ document.write(`
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">()</span> <span class="k">as</span> <span class="n">tf</span><span class="p">:</span>
-            <span class="n">tf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  <span class="c1"># We will only use the name.</span>
-            <span class="n">batch</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_upload_blob</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tempfile</span><span class="p">()</span> <span class="k">as</span> <span class="n">path</span><span class="p">:</span>
+            <span class="n">batch</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_upload_blob</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_receive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
-        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">()</span> <span class="k">as</span> <span class="n">tf</span><span class="p">:</span>
-            <span class="n">tf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  <span class="c1"># We will only use the name.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_download_blob</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">Batch</span><span class="o">.</span><span class="n">from_netcdf</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tempfile</span><span class="p">()</span> <span class="k">as</span> <span class="n">path</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_download_blob</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">Batch</span><span class="o">.</span><span class="n">from_netcdf</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">()</span> <span class="k">as</span> <span class="n">tf</span><span class="p">:</span>
-            <span class="n">tf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  <span class="c1"># We will only use the name.</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tempfile</span><span class="p">()</span> <span class="k">as</span> <span class="n">path</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_upload_blob</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_upload_blob</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
-        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">()</span> <span class="k">as</span> <span class="n">tf</span><span class="p">:</span>
-            <span class="n">tf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  <span class="c1"># We will only use the name.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_download_blob</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tempfile</span><span class="p">()</span> <span class="k">as</span> <span class="n">path</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_download_blob</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_mark</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>

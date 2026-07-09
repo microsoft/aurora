@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Creating an Endpoint &#8212; Aurora: A Foundation Model of the Atmosphere</title>
+    <title>&lt;no title&gt; &#8212; Aurora: A Foundation Model of the Atmosphere</title>
   
   
   
@@ -57,11 +57,9 @@
     <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'foundry/server';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'foundry/description';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Application Programming Interface" href="api.html" />
-    <link rel="prev" title="Demo: Aurora 1.5 on Foundry" href="demo_v1p5.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -123,6 +121,8 @@
     <div class="bd-container__inner bd-page-width">
       
       
+      
+        
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -199,12 +199,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../example_v1p5.html">Predictions with Aurora 1.5</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
-<ul class="current nav bd-sidenav">
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Aurora on Azure AI Foundry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="submission.html">Submitting Predictions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="demo_hres_t0.html">Demo: HRES T0</a></li>
 <li class="toctree-l1"><a class="reference internal" href="demo_v1p5.html">Demo: Aurora 1.5 on Foundry</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Creating an Endpoint</a></li>
+<li class="toctree-l1"><a class="reference internal" href="server.html">Creating an Endpoint</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">Application Programming Interface</a></li>
 </ul>
 
@@ -277,7 +277,7 @@
       
       
       
-      <li><a href="https://github.com/microsoft/aurora/issues/new?title=Issue%20on%20page%20%2Ffoundry/server.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/microsoft/aurora/issues/new?title=Issue%20on%20page%20%2Ffoundry/description.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -307,7 +307,7 @@
       
       
       
-      <li><a href="../_sources/foundry/server.md" target="_blank"
+      <li><a href="../_sources/foundry/description.md" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -378,7 +378,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -389,11 +391,19 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Creating an Endpoint</h1>
+    <h1><no title></h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="simple visible nav section-nav flex-column">
+</ul>
+
+            </nav>
         </div>
     </div>
 </div>
@@ -403,31 +413,23 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="creating-an-endpoint">
-<h1>Creating an Endpoint<a class="headerlink" href="#creating-an-endpoint" title="Link to this heading">#</a></h1>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Azure AI Foundry has deprecated model deployments based on MLflow. New deployments, including that of
-Aurora 1.5, package the server-side code into a custom model and container image. Aurora remains
-available on Foundry for all previous checkpoints, while the new model <strong>Aurora-1.5</strong> is
-available with a custom model. This repository contains the necessary client-side code to call
-and endpoint deployed with Foundry but does not currently support building your own endpoint, and
-as such this page is deprecated.</p>
-</div>
-<p>Likely you don’t need to create an endpoint yourself,
-because Aurora is already available in the <a class="reference external" href="https://ai.azure.com/explore/models">Azure AI model catalog</a>.</p>
-<p>Nevertheless, should you want to create an endpoint,
-then you can follow these instructions.
-The model is served via <a class="reference external" href="https://mlflow.org/">MLflow</a>.
-First, make sure that <code class="docutils literal notranslate"><span class="pre">mlflow</span></code> is installed:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>mlflow
-</pre></div>
-</div>
-<p>Then build the MLflow model as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>package_mlflow.py
-</pre></div>
-</div>
-</section>
+  <p>Aurora is a machine learning foundation model designed to predict atmospheric and environmental variables
+such as temperature and wind speed.
+It is pretrained on diverse weather and climate data and subsequently fine-tuned for specialised
+environmental forecasting tasks including weather prediction, air pollution modelling, and ocean
+wave forecasting (see <a class="reference external" href="https://www.nature.com/articles/s41586-025-09005-y">our Nature paper</a>).
+Aurora 1.5 extends the original Aurora architecture with 22 new single-level output variables
+(including radiation fluxes, precipitation, and 100-m winds) and variable lead-time embeddings
+enabling predictions at any lead time as fine as one hour. An ensemble version is also provided and
+adds stochastic noise injection for generating physically plausible ensemble members for
+probabilistic forecasting. For more details, please see the
+<a class="reference external" href="https://microsoft.github.io/aurora/intro.html">Aurora documentation</a>
+and <a class="reference external" href="https://microsoft.github.io/aurora/example_v1p5.html">Aurora 1.5 example</a>.</p>
+<p>Please email <a class="reference external" href="mailto:AIWeatherClimate&#37;&#52;&#48;microsoft&#46;com">AIWeatherClimate<span>&#64;</span>microsoft<span>&#46;</span>com</a>
+if you are interested in using Aurora for commercial applications.
+For research-related questions or technical support with the open-source version of the model,
+please <a class="reference external" href="https://github.com/microsoft/aurora/issues/new/choose">open an issue in the GitHub repository</a>
+or reach out to the authors of the paper.</p>
 
     <script type="text/x-thebe-config">
     {
@@ -459,30 +461,27 @@ First, make sure that <code class="docutils literal notranslate"><span class="pr
                 <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
-    <a class="left-prev"
-       href="demo_v1p5.html"
-       title="previous page">
-      <i class="fa-solid fa-angle-left"></i>
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Demo: Aurora 1.5 on Foundry</p>
-      </div>
-    </a>
-    <a class="right-next"
-       href="api.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Application Programming Interface</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
-    </a>
 </div>
                 </footer>
               
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="simple visible nav section-nav flex-column">
+</ul>
+
+  </nav></div>
+
+</div></div>
               
             
           </div>

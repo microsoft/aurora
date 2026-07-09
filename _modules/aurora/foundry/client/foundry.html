@@ -195,12 +195,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../example_cams.html">Predictions for Air Pollution</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../example_wave.html">Predictions for Ocean Waves</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example_v1p5.html">Predictions with Aurora 1.5</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../../foundry/intro.html">Aurora on Azure AI Foundry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../foundry/submission.html">Submitting Predictions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../foundry/demo_hres_t0.html">Demo: HRES T0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../foundry/demo_v1p5.html">Demo: Aurora 1.5 on Foundry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../foundry/server.html">Creating an Endpoint</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../foundry/api.html">Application Programming Interface</a></li>
 </ul>
@@ -400,7 +402,7 @@ document.write(`
     <span class="k">def</span><span class="w"> </span><span class="nf">_unwrap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Endpoint returned HTTP </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">response_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">response_json</span>
 

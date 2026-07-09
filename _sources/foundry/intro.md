@@ -3,6 +3,25 @@
 Aurora [is available as a model on Azure AI Foundry](https://ai.azure.com/explore/models)!
 This part of the documentation describes how you can produce predictions with Aurora running on a Foundry endpoint.
 
+## Available versions
+
+Two versions of Aurora models are available on Foundry. The original model "Aurora" contains the original
+published checkpoints and retains compatibility with existing Aurora workflows, while "Aurora-1.5"
+includes only the new Aurora 1.5 checkpoints. Additionally, Aurora 1.5 supports a few other
+server-side features intended to improve quality of life when using the Foundry model. These arguments
+may be passed to the client API interface `aurora.foundry.submit`:
+- `fine_lead_times`: Sub-step lead times in hours within each main step. This feature enables the
+higher temporal resolution up to 1 hour.
+- `saved_surf_vars`, `saved_atmos_vars`, `saved_atmos_levels`, and `saved_static_vars`: These options
+reduce the number of output variables and/or levels saved in the final predictions. If only some variables are
+desired rather than the complete set, this can linearly reduce the total data volume and speed up
+server-side data generation and client-side data downloading.
+- `async_upload_workers`: Setting this to a value > 0 is strongly recommended as it will enable
+the server to write the data output asynchronously alongside the compute inference loop. Adding more
+workers can allow the data loop to keep up with inference, but too many may result in out-of-memory,
+hangs, or other stability issues, depending on task configuration. Values up to 8 should work on an
+A100 GPU instance and may reduce job time by 5x or more.
+
 ## Managing Secrets
 
 In order to access the endpoint on Azure AI Foundry,

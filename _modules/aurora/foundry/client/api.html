@@ -195,12 +195,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../example_cams.html">Predictions for Air Pollution</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../example_wave.html">Predictions for Ocean Waves</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example_v1p5.html">Predictions with Aurora 1.5</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../../foundry/intro.html">Aurora on Azure AI Foundry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../foundry/submission.html">Submitting Predictions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../foundry/demo_hres_t0.html">Demo: HRES T0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../foundry/demo_v1p5.html">Demo: Aurora 1.5 on Foundry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../foundry/server.html">Creating an Endpoint</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../foundry/api.html">Application Programming Interface</a></li>
 </ul>
@@ -359,7 +361,8 @@ document.write(`
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generator</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
 
@@ -398,7 +401,14 @@ document.write(`
     <span class="n">num_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">channel</span><span class="p">:</span> <span class="n">CommunicationChannel</span><span class="p">,</span>
     <span class="n">foundry_client</span><span class="p">:</span> <span class="n">FoundryClient</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Batch</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="n">fine_lead_times</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">saved_surf_vars</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">saved_atmos_vars</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">saved_atmos_levels</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">saved_static_vars</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">async_upload_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">return_urls</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Batch</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Submit a request to Azure AI Foundry and retrieve the predictions.</span>
 
 <span class="sd">    Args:</span>
@@ -406,11 +416,33 @@ document.write(`
 <span class="sd">        model_name (str): Name of the model. This name must be available in</span>
 <span class="sd">            :mod:`aurora.foundry.common.model`. See the Aurora Foundry Python API documentation for</span>
 <span class="sd">            which models are available.</span>
-<span class="sd">        num_steps (int): Number of prediction steps.</span>
+<span class="sd">        num_steps (int): Number of main prediction steps.</span>
 <span class="sd">        channel (:class:`aurora.foundry.common.channel.CommunicationChannel`): Channel to use for</span>
 <span class="sd">            sending and receiving data.</span>
 <span class="sd">        foundry_client (:class:`aurora.foundry.client.foundry.FoundryClient`): Client to</span>
 <span class="sd">            communicate with Azure Foundry AI.</span>
+<span class="sd">        fine_lead_times (sequence of float, optional): Sub-step lead times in hours within each main</span>
+<span class="sd">            step.  When provided, the total number of predictions returned is</span>
+<span class="sd">            `num_steps * len(fine_lead_times)`. See :func:`aurora.rollout` for details.</span>
+<span class="sd">            Aurora-1.5 only.</span>
+<span class="sd">        saved_surf_vars (tuple[str, ...], optional): Surface variables to keep in the saved</span>
+<span class="sd">            predictions. `None` (default) keeps all variables. An empty tuple removes all surface</span>
+<span class="sd">            variables from the output. Aurora-1.5 only.</span>
+<span class="sd">        saved_atmos_vars (tuple[str, ...], optional): Atmospheric variables to keep in the saved</span>
+<span class="sd">            predictions. `None` keeps all. An empty tuple removes all. Aurora-1.5 only.</span>
+<span class="sd">        saved_atmos_levels (tuple[int | float, ...], optional): Pressure levels (hPa) to keep in</span>
+<span class="sd">            the saved predictions. `None` keeps all levels. An empty tuple removes all levels.</span>
+<span class="sd">            Aurora-1.5 only.</span>
+<span class="sd">        saved_static_vars (tuple[str, ...], optional): Static variables to keep in the saved</span>
+<span class="sd">            predictions. `None` keeps all. An empty tuple removes all. Aurora-1.5 only.</span>
+<span class="sd">        async_upload_workers (int, optional): If &gt; 0, the server will serialize and upload</span>
+<span class="sd">            predictions in parallel worker processes so that GPU inference can proceed concurrently.</span>
+<span class="sd">            The value controls the number of worker processes. This can speed up end-to-end</span>
+<span class="sd">            prediction time significantly. Values &gt; 0 are only valid for the Aurora-1.5 Foundry</span>
+<span class="sd">            model.</span>
+<span class="sd">        return_urls (bool, optional): If `True`, yield the blob storage URLs of the predictions</span>
+<span class="sd">            instead of downloading them. This is useful to avoid downloading and opening large files</span>
+<span class="sd">            on the local client, instead providing the URLs for later download. Defaults to `False`.</span>
 
 <span class="sd">    Yields:</span>
 <span class="sd">        :class:`aurora.Batch`: Predictions.</span>
@@ -418,17 +450,49 @@ document.write(`
     <span class="k">if</span> <span class="n">model_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model `</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">` is not a valid model.&quot;</span><span class="p">)</span>
 
+    <span class="c1"># Warn about features that require the new Aurora-1.5 Foundry model deployment.</span>
+    <span class="n">is_aurora_1p5</span> <span class="o">=</span> <span class="n">model_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;aurora-0.25-v1.5&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-v1.5-ensemble&quot;</span><span class="p">]</span>
+    <span class="n">aurora_1p5_features</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">fine_lead_times</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">aurora_1p5_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fine_lead_times&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">saved_surf_vars</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">aurora_1p5_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;saved_surf_vars&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">saved_atmos_vars</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">aurora_1p5_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;saved_atmos_vars&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">saved_atmos_levels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">aurora_1p5_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;saved_atmos_levels&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">saved_static_vars</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">aurora_1p5_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;saved_static_vars&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">aurora_1p5_features</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_aurora_1p5</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;You are using a model (&#39;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&#39;) which is not an Aurora-1.5 model. The &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;following parameters only work on a deployment of Aurora-1.5 and will therefore be &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;silently ignored by the Aurora endpoint: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">aurora_1p5_features</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+
     <span class="c1"># Create a task at the endpoint.</span>
-    <span class="n">task</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">task</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="n">model_name</span><span class="p">,</span>
         <span class="s2">&quot;num_steps&quot;</span><span class="p">:</span> <span class="n">num_steps</span><span class="p">,</span>
         <span class="s2">&quot;data_folder_uri&quot;</span><span class="p">:</span> <span class="n">channel</span><span class="o">.</span><span class="n">to_spec</span><span class="p">(),</span>
     <span class="p">}</span>
+    <span class="k">if</span> <span class="n">fine_lead_times</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">task</span><span class="p">[</span><span class="s2">&quot;fine_lead_times&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">fine_lead_times</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">saved_surf_vars</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">task</span><span class="p">[</span><span class="s2">&quot;saved_surf_vars&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">saved_surf_vars</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">saved_atmos_vars</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">task</span><span class="p">[</span><span class="s2">&quot;saved_atmos_vars&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">saved_atmos_vars</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">saved_atmos_levels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">task</span><span class="p">[</span><span class="s2">&quot;saved_atmos_levels&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">saved_atmos_levels</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">saved_static_vars</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">task</span><span class="p">[</span><span class="s2">&quot;saved_static_vars&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">saved_static_vars</span><span class="p">)</span>
+    <span class="n">task</span><span class="p">[</span><span class="s2">&quot;async_upload_workers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">async_upload_workers</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">foundry_client</span><span class="o">.</span><span class="n">submit_task</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">submission_info</span> <span class="o">=</span> <span class="n">CreationInfo</span><span class="p">(</span><span class="o">**</span><span class="n">response</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SubmissionError</span><span class="p">(</span><span class="s2">&quot;Failed to create task.&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+        <span class="k">raise</span> <span class="n">SubmissionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to create task. Endpoint response: </span><span class="si">{</span><span class="n">response</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
     <span class="n">task_id</span> <span class="o">=</span> <span class="n">submission_info</span><span class="o">.</span><span class="n">task_id</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Created task `</span><span class="si">{</span><span class="n">task_id</span><span class="si">}</span><span class="s2">` at endpoint.&quot;</span><span class="p">)</span>
 
@@ -477,10 +541,20 @@ document.write(`
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">SubmissionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Task failed: </span><span class="si">{</span><span class="n">task_info</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Retrieving predictions.&quot;</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">prediction_name</span> <span class="ow">in</span> <span class="n">iterate_prediction_files</span><span class="p">(</span><span class="s2">&quot;prediction.nc&quot;</span><span class="p">,</span> <span class="n">num_steps</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="n">channel</span><span class="o">.</span><span class="n">receive</span><span class="p">(</span><span class="n">task_id</span><span class="p">,</span> <span class="n">prediction_name</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;All predictions have been retrieved.&quot;</span><span class="p">)</span></div>
+    <span class="n">n_fine</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">fine_lead_times</span><span class="p">)</span> <span class="k">if</span> <span class="n">fine_lead_times</span> <span class="k">else</span> <span class="mi">1</span>
+    <span class="n">total_predictions</span> <span class="o">=</span> <span class="n">num_steps</span> <span class="o">*</span> <span class="n">n_fine</span>
+
+    <span class="n">pred_file</span> <span class="o">=</span> <span class="s2">&quot;prediction.nc&quot;</span>
+    <span class="k">if</span> <span class="n">return_urls</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Retrieving prediction URLs.&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">prediction_name</span> <span class="ow">in</span> <span class="n">iterate_prediction_files</span><span class="p">(</span><span class="n">pred_file</span><span class="p">,</span> <span class="n">total_predictions</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">channel</span><span class="o">.</span><span class="n">get_url</span><span class="p">(</span><span class="n">task_id</span><span class="p">,</span> <span class="n">prediction_name</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;All prediction URLs have been retrieved.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Retrieving predictions.&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">prediction_name</span> <span class="ow">in</span> <span class="n">iterate_prediction_files</span><span class="p">(</span><span class="n">pred_file</span><span class="p">,</span> <span class="n">total_predictions</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">channel</span><span class="o">.</span><span class="n">receive</span><span class="p">(</span><span class="n">task_id</span><span class="p">,</span> <span class="n">prediction_name</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;All predictions have been retrieved.&quot;</span><span class="p">)</span></div>
 
 </pre></div>
 

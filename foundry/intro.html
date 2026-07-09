@@ -61,7 +61,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Submitting Predictions" href="submission.html" />
-    <link rel="prev" title="Track Predictions for Typhoon Nanmadol" href="../example_tc_tracking.html" />
+    <link rel="prev" title="Predictions with Aurora 1.5" href="../example_v1p5.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -196,12 +196,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../example_cams.html">Predictions for Air Pollution</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../example_wave.html">Predictions for Ocean Waves</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example_v1p5.html">Predictions with Aurora 1.5</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Aurora on Azure AI Foundry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="submission.html">Submitting Predictions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="demo_hres_t0.html">Demo: HRES T0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo_v1p5.html">Demo: Aurora 1.5 on Foundry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="server.html">Creating an Endpoint</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">Application Programming Interface</a></li>
 </ul>
@@ -399,6 +401,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-versions">Available versions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#managing-secrets">Managing Secrets</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#accessing-environment-variables-in-a-jupyter-notebook">Accessing Environment Variables in a Jupyter Notebook</a></li>
 </ul>
@@ -418,6 +421,27 @@ document.write(`
 <h1>Aurora on Azure AI Foundry<a class="headerlink" href="#aurora-on-azure-ai-foundry" title="Link to this heading">#</a></h1>
 <p>Aurora <a class="reference external" href="https://ai.azure.com/explore/models">is available as a model on Azure AI Foundry</a>!
 This part of the documentation describes how you can produce predictions with Aurora running on a Foundry endpoint.</p>
+<section id="available-versions">
+<h2>Available versions<a class="headerlink" href="#available-versions" title="Link to this heading">#</a></h2>
+<p>Two versions of Aurora models are available on Foundry. The original model “Aurora” contains the original
+published checkpoints and retains compatibility with existing Aurora workflows, while “Aurora-1.5”
+includes only the new Aurora 1.5 checkpoints. Additionally, Aurora 1.5 supports a few other
+server-side features intended to improve quality of life when using the Foundry model. These arguments
+may be passed to the client API interface <code class="docutils literal notranslate"><span class="pre">aurora.foundry.submit</span></code>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fine_lead_times</span></code>: Sub-step lead times in hours within each main step. This feature enables the
+higher temporal resolution up to 1 hour.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">saved_surf_vars</span></code>, <code class="docutils literal notranslate"><span class="pre">saved_atmos_vars</span></code>, <code class="docutils literal notranslate"><span class="pre">saved_atmos_levels</span></code>, and <code class="docutils literal notranslate"><span class="pre">saved_static_vars</span></code>: These options
+reduce the number of output variables and/or levels saved in the final predictions. If only some variables are
+desired rather than the complete set, this can linearly reduce the total data volume and speed up
+server-side data generation and client-side data downloading.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">async_upload_workers</span></code>: Setting this to a value &gt; 0 is strongly recommended as it will enable
+the server to write the data output asynchronously alongside the compute inference loop. Adding more
+workers can allow the data loop to keep up with inference, but too many may result in out-of-memory,
+hangs, or other stability issues, depending on task configuration. Values up to 8 should work on an
+A100 GPU instance and may reduce job time by 5x or more.</p></li>
+</ul>
+</section>
 <section id="managing-secrets">
 <h2>Managing Secrets<a class="headerlink" href="#managing-secrets" title="Link to this heading">#</a></h2>
 <p>In order to access the endpoint on Azure AI Foundry,
@@ -483,12 +507,12 @@ The layout of the <code class="docutils literal notranslate"><span class="pre">.
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../example_tc_tracking.html"
+       href="../example_v1p5.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Track Predictions for Typhoon Nanmadol</p>
+        <p class="prev-next-title">Predictions with Aurora 1.5</p>
       </div>
     </a>
     <a class="right-next"
@@ -516,6 +540,7 @@ The layout of the <code class="docutils literal notranslate"><span class="pre">.
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-versions">Available versions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#managing-secrets">Managing Secrets</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#accessing-environment-variables-in-a-jupyter-notebook">Accessing Environment Variables in a Jupyter Notebook</a></li>
 </ul>

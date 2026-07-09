@@ -195,12 +195,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../../example_cams.html">Predictions for Air Pollution</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../example_wave.html">Predictions for Ocean Waves</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example_v1p5.html">Predictions with Aurora 1.5</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../foundry/intro.html">Aurora on Azure AI Foundry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../foundry/submission.html">Submitting Predictions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../foundry/demo_hres_t0.html">Demo: HRES T0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../foundry/demo_v1p5.html">Demo: Aurora 1.5 on Foundry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../foundry/server.html">Creating an Endpoint</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../foundry/api.html">Application Programming Interface</a></li>
 </ul>
@@ -356,7 +358,8 @@ document.write(`
 <span></span><span class="sd">&quot;&quot;&quot;Copyright (c) Microsoft Corporation. Licensed under the MIT license.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generator</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 
@@ -366,18 +369,89 @@ document.write(`
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;rollout&quot;</span><span class="p">]</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_make_lead_time_tensor</span><span class="p">(</span><span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">lead_time_hours</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct a per-sample lead-time tensor matching `batch`.&quot;&quot;&quot;</span>
+    <span class="n">_example_variable</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">_example_variable</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],),</span>
+        <span class="n">lead_time_hours</span><span class="p">,</span>
+        <span class="n">device</span><span class="o">=</span><span class="n">_example_variable</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">_example_variable</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_advance_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct the next autoregressive input by sliding the history window.</span>
+
+<span class="sd">    Removes the oldest time step and concatenating the new prediction. Only variables that are</span>
+<span class="sd">    present in both the input batch and the prediction are concatenated, discarding output-only</span>
+<span class="sd">    variables.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">new_surf</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">:</span>
+            <span class="n">new_surf</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">k</span><span class="p">][:,</span> <span class="mi">1</span><span class="p">:],</span> <span class="n">v</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">new_atmos</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">atmos_vars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">atmos_vars</span><span class="p">:</span>
+            <span class="n">new_atmos</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">batch</span><span class="o">.</span><span class="n">atmos_vars</span><span class="p">[</span><span class="n">k</span><span class="p">][:,</span> <span class="mi">1</span><span class="p">:],</span> <span class="n">v</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">surf_vars</span><span class="o">=</span><span class="n">new_surf</span><span class="p">,</span> <span class="n">atmos_vars</span><span class="o">=</span><span class="n">new_atmos</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="rollout">
 <a class="viewcode-back" href="../../api.html#aurora.rollout">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">Aurora</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Batch</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">rollout</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">Aurora</span><span class="p">,</span>
+    <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span>
+    <span class="n">steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">fine_lead_times</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">use_noise_accumulation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">apply_rollout_input_clipping</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Batch</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform a roll-out to make long-term predictions.</span>
+
+<span class="sd">    For Aurora models prior to Aurora 1.5, the rollout is straightforward: iteratively make a</span>
+<span class="sd">    prediction based on inputs, then feed that prediction back as the new input for the next step.</span>
+<span class="sd">    Aurora 1.5 introduces support for variable lead times, which enables sub-stepping within each</span>
+<span class="sd">    main step. When `fine_lead_times` is provided, the model will produce predictions at each of the</span>
+<span class="sd">    specified lead times within each main step, all of which are initialised from the same previous</span>
+<span class="sd">    step and thus do not autoregress onto each other. We do require that the last `fine_lead_time`</span>
+<span class="sd">    be the same as the model time step so we can construct proper next inputs. For instance, if</span>
+<span class="sd">    specifying `fine_lead_times = [3, 6]` for a model with a 6-hour time step, the model will</span>
+<span class="sd">    produce predictions at +3 and +6 hours, but only the +6 hour prediction will be fed back as</span>
+<span class="sd">    input to continue the rollout.</span>
+
+<span class="sd">    Aurora 1.5 Ensemble also introduces stochasticity. When `use_noise_accumulation` is `True`,</span>
+<span class="sd">    noise will be continuously accumulated across both fine and major steps, introducing an auto-</span>
+<span class="sd">    correlation between noise samples for more continuous predictions. Conveniently, setting the</span>
+<span class="sd">    number of accumulation steps to the same length as `fine_lead_times` ensures the noise is</span>
+<span class="sd">    effectively new between each major step, which matches the training regimen.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model (:class:`aurora.Aurora`): The model to roll out.</span>
 <span class="sd">        batch (:class:`aurora.Batch`): The batch to start the roll-out from.</span>
-<span class="sd">        steps (int): The number of roll-out steps.</span>
+<span class="sd">        steps (int): The number of main roll-out steps.  Each step advances the</span>
+<span class="sd">            forecast by the model&#39;s base time-step (typically 6 hours).</span>
+<span class="sd">        fine_lead_times (sequence of float, optional): Sub-step lead times in hours to iterate</span>
+<span class="sd">            within each main step. These sub-steps are all initialised from the previous main step</span>
+<span class="sd">            and thus do not autoregress onto each other. For example, `[1, 2, 3, 4, 5, 6]` produces</span>
+<span class="sd">            predictions at every hour. The *last* entry should equal the model&#39;s base time-step</span>
+<span class="sd">            and is the one that advances the autoregressive state. Requires</span>
+<span class="sd">            `model.variable_lead_time == True`. When `None` (default), no sub-stepping is performed</span>
+<span class="sd">            and behaviour is unchanged from the original `rollout`.</span>
+<span class="sd">        use_noise_accumulation (bool): Whether to enable noise accumulation when the model is</span>
+<span class="sd">            stochastic and sub-stepping. This enables smoother transitions between `fine_lead_time`</span>
+<span class="sd">            intermediate steps. It is intended to continue caching across fine and major steps to</span>
+<span class="sd">            optimise smoothness across all lead times in the forecast. Has no effect when</span>
+<span class="sd">            `fine_lead_times` is `None`. Default: `True`.</span>
+<span class="sd">        apply_rollout_input_clipping (bool): Whether to apply the model&#39;s input clipping during</span>
+<span class="sd">            roll-out. This is typically desirable to prevent unrealistic predictions from being fed</span>
+<span class="sd">            back into the model during roll-out, but may be undesirable if the model was not trained</span>
+<span class="sd">            with clipping and the user wants to preserve the raw model predictions for analysis.</span>
+<span class="sd">            Default: `True`.</span>
 
 <span class="sd">    Yields:</span>
-<span class="sd">        :class:`aurora.Batch`: The prediction after every step.</span>
+<span class="sd">        :class:`aurora.Batch`: The prediction after every (sub-)step.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># We will need to concatenate data, so ensure that everything is already of the right form.</span>
     <span class="n">batch</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">batch_transform_hook</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>  <span class="c1"># This might modify the available variables.</span>
@@ -387,23 +461,52 @@ document.write(`
     <span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">patch_size</span><span class="p">)</span>
     <span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
+    <span class="k">if</span> <span class="n">fine_lead_times</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">model</span><span class="o">.</span><span class="n">variable_lead_time</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`fine_lead_times` requires `model.variable_lead_time=True`.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Assert that the model&#39;s expected timestep is included at the end of `fine_lead_times`.</span>
+    <span class="k">if</span> <span class="n">fine_lead_times</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">base_timestep_hours</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">timestep</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="mf">3600.0</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">fine_lead_times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">base_timestep_hours</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The last entry in `fine_lead_times` must equal the model&#39;s base time-step &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;of </span><span class="si">{</span><span class="n">base_timestep_hours</span><span class="si">}</span><span class="s2"> hours. Found </span><span class="si">{</span><span class="n">fine_lead_times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> hours.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="c1"># Enable noise accumulation when the model is stochastic and sub-stepping.</span>
+    <span class="k">if</span> <span class="n">use_noise_accumulation</span> <span class="ow">and</span> <span class="n">fine_lead_times</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">set_noise_accumulation</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">fine_lead_times</span><span class="p">))</span>
+
+    <span class="c1"># Pre-compute the base lead-time tensor for models with variable lead time support.</span>
+    <span class="n">base_lead_times</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">variable_lead_time</span><span class="p">:</span>
+        <span class="n">base_lead_times</span> <span class="o">=</span> <span class="n">_make_lead_time_tensor</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">timestep</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="mf">3600.0</span><span class="p">)</span>
+
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">steps</span><span class="p">):</span>
-        <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fine_lead_times</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Inner loop: iterate over sub-step lead times.</span>
+            <span class="k">for</span> <span class="n">lt_hours</span> <span class="ow">in</span> <span class="n">fine_lead_times</span><span class="p">:</span>
+                <span class="n">sub_lead_times</span> <span class="o">=</span> <span class="n">_make_lead_time_tensor</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">lt_hours</span><span class="p">)</span>
+                <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">lead_times</span><span class="o">=</span><span class="n">sub_lead_times</span><span class="p">)</span>
 
-        <span class="k">yield</span> <span class="n">pred</span>
+                <span class="k">yield</span> <span class="n">pred</span>
 
-        <span class="c1"># Add the appropriate history so the model can be run on the prediction.</span>
-        <span class="n">batch</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
-            <span class="n">pred</span><span class="p">,</span>
-            <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span>
-                <span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">k</span><span class="p">][:,</span> <span class="mi">1</span><span class="p">:],</span> <span class="n">v</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-            <span class="p">},</span>
-            <span class="n">atmos_vars</span><span class="o">=</span><span class="p">{</span>
-                <span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">batch</span><span class="o">.</span><span class="n">atmos_vars</span><span class="p">[</span><span class="n">k</span><span class="p">][:,</span> <span class="mi">1</span><span class="p">:],</span> <span class="n">v</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">atmos_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-            <span class="p">},</span>
-        <span class="p">)</span></div>
+            <span class="c1"># If desired, apply clipping before feeding predictions back as inputs.</span>
+            <span class="k">if</span> <span class="n">apply_rollout_input_clipping</span><span class="p">:</span>
+                <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">apply_rollout_input_clipping</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
+            <span class="n">batch</span> <span class="o">=</span> <span class="n">_advance_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">lead_times</span><span class="o">=</span><span class="n">base_lead_times</span><span class="p">)</span>
+
+            <span class="k">yield</span> <span class="n">pred</span>
+
+            <span class="k">if</span> <span class="n">apply_rollout_input_clipping</span><span class="p">:</span>
+                <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">apply_rollout_input_clipping</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
+            <span class="n">batch</span> <span class="o">=</span> <span class="n">_advance_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
+
+    <span class="c1"># Disable noise accumulation after roll-out is complete, in case the model will be used for</span>
+    <span class="c1"># normal inference or training afterwards.</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">set_noise_accumulation</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
 
 </pre></div>
 

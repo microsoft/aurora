@@ -121,6 +121,8 @@ Predictions are also of the form of `aurora.Batch`.
 For example, `pred.surf_vars["2t"]` gives the predictions for two-meter temperature.
 
 You will need approximately 40 GB of GPU memory for running the regular model on global 0.25 degree data.
+Due to some memory optimizations including more use of `float16` dtype, Aurora 1.5 should run on
+a GPU with 32 GB of memory.
 
 
 ## Autoregressive Roll-Outs
@@ -140,3 +142,29 @@ with torch.inference_mode():
 In the list comprehension, we move the prediction after every step immediately
 to the CPU to prevent GPU memory buildup.
 Every element of `preds` is again of the form of `aurora.Batch`.
+
+Aurora 1.5 models support a `fine_lead_times` argument to `rollout`, which produces
+predictions at sub-step lead times (as fine as one hour) within each main 6-hour step.
+For example, to produce hourly predictions:
+
+```python
+from aurora import AuroraV1p5, rollout
+
+model = AuroraV1p5()
+model.load_checkpoint("microsoft/aurora", "aurora-0.25-v1.5.ckpt")
+model.eval()
+model = model.to("cuda")
+
+steps = 40                                        # 40 × 6 h = 240 h (10 days)
+fine_lead_times = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]  # hourly output within each 6-h step
+
+with torch.inference_mode():
+    preds = [
+        pred.to("cpu")
+        for pred in rollout(model, batch, steps=steps, fine_lead_times=fine_lead_times)
+    ]
+```
+
+This produces `steps * len(fine_lead_times)` predictions.
+The last entry of `fine_lead_times` must equal the model's base timestep (6 hours for Aurora 1.5);
+only that prediction is fed back autoregressively to advance the forecast state.

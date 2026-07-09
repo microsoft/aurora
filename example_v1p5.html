@@ -1,0 +1,861 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Predictions with Aurora 1.5 &#8212; Aurora: A Foundation Model of the Atmosphere</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=b8b12719"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'example_v1p5';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Aurora on Azure AI Foundry" href="foundry/intro.html" />
+    <link rel="prev" title="Track Predictions for Typhoon Nanmadol" href="example_tc_tracking.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="light">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="intro.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="_static/aurora.jpg" class="logo__image only-light" alt="Aurora: A Foundation Model of the Atmosphere - Home"/>
+    <script>document.write(`<img src="_static/aurora.jpg" class="logo__image only-dark" alt="Aurora: A Foundation Model of the Atmosphere - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    Aurora: A Foundation Model for the Earth System
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Main Usage</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="batch.html">Form of a Batch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Available Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tracking.html">Tropical Cyclone Tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="beware.html">Beware!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="finetuning.html">Fine-Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai_models_plugin.html">Plugin for ECMWF’s <code class="docutils literal notranslate"><span class="pre">ai-models</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Application Programming Interface</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="example_era5.html">Predictions for ERA5</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_hres_t0.html">Predictions for HRES T0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_hres_0.1.html">Predictions for HRES at 0.1 Degrees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_cams.html">Predictions for Air Pollution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_wave.html">Predictions for Ocean Waves</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Predictions with Aurora 1.5</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="foundry/intro.html">Aurora on Azure AI Foundry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="foundry/submission.html">Submitting Predictions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="foundry/demo_hres_t0.html">Demo: HRES T0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="foundry/demo_v1p5.html">Demo: Aurora 1.5 on Foundry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="foundry/server.html">Creating an Endpoint</a></li>
+<li class="toctree-l1"><a class="reference internal" href="foundry/api.html">Application Programming Interface</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/microsoft/aurora" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/microsoft/aurora/issues/new?title=Issue%20on%20page%20%2Fexample_v1p5.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/example_v1p5.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Predictions with Aurora 1.5</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-the-data">Downloading the Data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-the-static-variables">Downloading the Static Variables</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preparing-a-batch">Preparing a Batch</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-and-running-the-model">Loading and Running the Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualising-the-results">Visualising the Results</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="predictions-with-aurora-1-5">
+<h1>Predictions with Aurora 1.5<a class="headerlink" href="#predictions-with-aurora-1-5" title="Link to this heading">#</a></h1>
+<p>In this example, we download ERA5 data for 1 Jan 2023 at 0.25° resolution and run <strong>Aurora 1.5</strong> to produce hourly forecasts out to 10 days (240 hours).</p>
+<p>Aurora 1.5 extends Aurora with:</p>
+<ul class="simple">
+<li><p><strong>26 surface-level variables</strong> (including insolation), up from 4</p></li>
+<li><p><strong>36 static variables</strong> (land-surface and vegetation fields)</p></li>
+<li><p><strong>Variable lead-time embeddings</strong>, enabling sub-6-hour output</p></li>
+<li><p><strong>7 output-only surface variables</strong> (e.g. precipitation, wind gusts) that the model predicts but are not present in the input</p></li>
+</ul>
+<p>Running this notebook requires additional Python packages:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">cdsapi</span> <span class="n">matplotlib</span>
+</pre></div>
+</div>
+<section id="downloading-the-data">
+<h2>Downloading the Data<a class="headerlink" href="#downloading-the-data" title="Link to this heading">#</a></h2>
+<p>Register an account with the <a class="reference external" href="https://cds.climate.copernicus.eu/">Climate Data Store</a> and create <code class="docutils literal notranslate"><span class="pre">$HOME/.cdsapirc</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">url</span><span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">cds</span><span class="o">.</span><span class="n">climate</span><span class="o">.</span><span class="n">copernicus</span><span class="o">.</span><span class="n">eu</span><span class="o">/</span><span class="n">api</span>
+<span class="n">key</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">API</span> <span class="n">key</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>Accept the terms of use on the <a class="reference external" href="https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels?tab=download">ERA5 single-levels</a> and <a class="reference external" href="https://cds.climate.copernicus.eu/datasets/reanalysis-era5-pressure-levels?tab=download">ERA5 pressure-levels</a> dataset pages.</p>
+<p>We now download surface-level variables, atmospheric variables, and the additional surface fields used by V1.5.</p>
+<p>Please note thate ERA5 data are used here for illustrative example purposes only. The model is fine-tuned on IFS data and is therefore not guaranteed to have the same accuracy when using ERA5.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cdsapi</span>
+
+<span class="c1"># Data will be downloaded here.</span>
+<span class="n">download_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;~/downloads/era5_v1p5&quot;</span><span class="p">)</span>
+
+<span class="n">download_path</span> <span class="o">=</span> <span class="n">download_path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
+<span class="n">download_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># ----- Surface-level variables (extended set for Aurora 1.5) -----</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-surface-level.nc&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">cdsapi</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span>
+        <span class="s2">&quot;reanalysis-era5-single-levels&quot;</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;product_type&quot;</span><span class="p">:</span> <span class="s2">&quot;reanalysis&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;2m_temperature&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;10m_u_component_of_wind&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;10m_v_component_of_wind&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;mean_sea_level_pressure&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;2m_dewpoint_temperature&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;total_column_water_vapour&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;total_cloud_cover&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;100m_u_component_of_wind&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;100m_v_component_of_wind&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;surface_pressure&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;low_cloud_cover&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;medium_cloud_cover&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;high_cloud_cover&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;skin_temperature&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;soil_temperature_level_1&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;volumetric_soil_water_layer_1&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sea_ice_cover&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;snow_depth&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;year&quot;</span><span class="p">:</span> <span class="s2">&quot;2023&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;month&quot;</span><span class="p">:</span> <span class="s2">&quot;01&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;day&quot;</span><span class="p">:</span> <span class="s2">&quot;01&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;00:00&quot;</span><span class="p">,</span> <span class="s2">&quot;06:00&quot;</span><span class="p">,</span> <span class="s2">&quot;12:00&quot;</span><span class="p">,</span> <span class="s2">&quot;18:00&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;data_format&quot;</span><span class="p">:</span> <span class="s2">&quot;netcdf&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-surface-level.nc&quot;</span><span class="p">),</span>
+    <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Surface-level variables downloaded!&quot;</span><span class="p">)</span>
+
+<span class="c1"># ----- Atmospheric variables -----</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-atmospheric.nc&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">cdsapi</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span>
+        <span class="s2">&quot;reanalysis-era5-pressure-levels&quot;</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;product_type&quot;</span><span class="p">:</span> <span class="s2">&quot;reanalysis&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;temperature&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;u_component_of_wind&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;v_component_of_wind&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;specific_humidity&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;geopotential&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;pressure_level&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;50&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;100&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;150&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;200&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;250&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;300&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;400&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;500&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;600&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;700&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;850&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;925&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;1000&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;year&quot;</span><span class="p">:</span> <span class="s2">&quot;2023&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;month&quot;</span><span class="p">:</span> <span class="s2">&quot;01&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;day&quot;</span><span class="p">:</span> <span class="s2">&quot;01&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;00:00&quot;</span><span class="p">,</span> <span class="s2">&quot;06:00&quot;</span><span class="p">,</span> <span class="s2">&quot;12:00&quot;</span><span class="p">,</span> <span class="s2">&quot;18:00&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;data_format&quot;</span><span class="p">:</span> <span class="s2">&quot;netcdf&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-atmospheric.nc&quot;</span><span class="p">),</span>
+    <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Atmospheric variables downloaded!&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="downloading-the-static-variables">
+<h2>Downloading the Static Variables<a class="headerlink" href="#downloading-the-static-variables" title="Link to this heading">#</a></h2>
+<p>Aurora 1.5 uses an extended set of 36 static variables (land-sea mask, orography, vegetation fields, soil types, etc.). These are provided in a pickle file. We assume it has been saved as <code class="docutils literal notranslate"><span class="pre">static_aurora_v1p5.pkl</span></code> alongside the checkpoint.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Path to the static variables pickle and model checkpoint.</span>
+<span class="c1"># Adjust these to match your local paths.</span>
+<span class="n">static_path</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-v1.5-static.pickle&quot;</span>
+<span class="n">checkpoint_path</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-v1.5.ckpt&quot;</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="preparing-a-batch">
+<h2>Preparing a Batch<a class="headerlink" href="#preparing-a-batch" title="Link to this heading">#</a></h2>
+<p>We convert the downloaded data to an <code class="docutils literal notranslate"><span class="pre">aurora.Batch</span></code>. Aurora 1.5 requires:</p>
+<ul class="simple">
+<li><p><strong>18 input surface variables</strong> (+ insolation, computed below)</p></li>
+<li><p><strong>36 static variables</strong> (from the pickle file)</p></li>
+<li><p><strong>5 atmospheric variables</strong> at 13 pressure levels</p></li>
+</ul>
+<p>The CDS variable names differ from the canonical short names used by Aurora. The mapping is applied below.</p>
+<p>Note that the 7 “output-only” surface variables (wind gusts, boundary layer height, radiation fluxes, precipitation, snowfall) are <strong>not</strong> needed in the input — the model and rollout handle zero-padding automatically.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">Metadata</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">aurora.insolation</span><span class="w"> </span><span class="kn">import</span> <span class="n">insolation</span>
+
+<span class="n">surf_vars_ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-surface-level.nc&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;netcdf4&quot;</span><span class="p">)</span>
+<span class="n">atmos_vars_ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-atmospheric.nc&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;netcdf4&quot;</span><span class="p">)</span>
+
+<span class="c1"># CDS NetCDF variable name -&gt; Aurora canonical short name.</span>
+<span class="c1"># The CDS API returns variables under short GRIB names.</span>
+<span class="n">surf_name_map</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;t2m&quot;</span><span class="p">:</span> <span class="s2">&quot;2t&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;u10&quot;</span><span class="p">:</span> <span class="s2">&quot;10u&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;v10&quot;</span><span class="p">:</span> <span class="s2">&quot;10v&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;msl&quot;</span><span class="p">:</span> <span class="s2">&quot;msl&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;d2m&quot;</span><span class="p">:</span> <span class="s2">&quot;2d&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tcwv&quot;</span><span class="p">:</span> <span class="s2">&quot;tcwv&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tcc&quot;</span><span class="p">:</span> <span class="s2">&quot;tcc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;u100&quot;</span><span class="p">:</span> <span class="s2">&quot;100u&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;v100&quot;</span><span class="p">:</span> <span class="s2">&quot;100v&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sp&quot;</span><span class="p">:</span> <span class="s2">&quot;sp&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;lcc&quot;</span><span class="p">:</span> <span class="s2">&quot;lcc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mcc&quot;</span><span class="p">:</span> <span class="s2">&quot;mcc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hcc&quot;</span><span class="p">:</span> <span class="s2">&quot;hcc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;skt&quot;</span><span class="p">:</span> <span class="s2">&quot;skt&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;stl1&quot;</span><span class="p">:</span> <span class="s2">&quot;stl1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;swvl1&quot;</span><span class="p">:</span> <span class="s2">&quot;swvl1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;siconc&quot;</span><span class="p">:</span> <span class="s2">&quot;ci&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sd&quot;</span><span class="p">:</span> <span class="s2">&quot;scaled_sd&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1"># Build surface variable tensors: select hours 00:00 and 06:00, insert batch dim.</span>
+<span class="n">surf_vars</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">nc_name</span><span class="p">,</span> <span class="n">aurora_name</span> <span class="ow">in</span> <span class="n">surf_name_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">surf_vars_ds</span><span class="p">[</span><span class="n">nc_name</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">]</span>  <span class="c1"># (1, 2, H, W)</span>
+    <span class="n">surf_vars</span><span class="p">[</span><span class="n">aurora_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">nan</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+
+<span class="c1"># Compute and add insolation for the two input time steps.</span>
+<span class="n">lat</span> <span class="o">=</span> <span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">lon</span> <span class="o">=</span> <span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+<span class="n">input_times</span> <span class="o">=</span> <span class="p">[</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2023</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2023</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">)]</span>
+<span class="n">sol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">insolation</span><span class="p">([</span><span class="n">t</span><span class="p">],</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">enforce_2d</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">input_times</span><span class="p">],</span>
+    <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;insolation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">sol</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+
+<span class="c1"># Build atmospheric variable tensors: (1, 2, 13, H, W).</span>
+<span class="n">levels</span> <span class="o">=</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">250</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">700</span><span class="p">,</span> <span class="mi">850</span><span class="p">,</span> <span class="mi">925</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">atmos_vars</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">nc_name</span><span class="p">,</span> <span class="n">aurora_name</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;q&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">)]:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">atmos_vars_ds</span><span class="p">[</span><span class="n">nc_name</span><span class="p">]</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">pressure_level</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">levels</span><span class="p">))</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">]</span>
+    <span class="n">atmos_vars</span><span class="p">[</span><span class="n">aurora_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">nan</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+
+<span class="c1"># Load static variables from the pickle file.</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">static_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">static_raw</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<span class="n">static_vars</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">static_raw</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+<span class="c1"># Longitude: CDS provides values in [0, 360) already for 0.25° global grids.</span>
+<span class="n">lon_vals</span> <span class="o">=</span> <span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">lon_vals</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">lon_vals</span> <span class="o">=</span> <span class="n">lon_vals</span> <span class="o">%</span> <span class="mi">360</span>
+
+<span class="n">batch</span> <span class="o">=</span> <span class="n">Batch</span><span class="p">(</span>
+    <span class="n">surf_vars</span><span class="o">=</span><span class="n">surf_vars</span><span class="p">,</span>
+    <span class="n">static_vars</span><span class="o">=</span><span class="n">static_vars</span><span class="p">,</span>
+    <span class="n">atmos_vars</span><span class="o">=</span><span class="n">atmos_vars</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="o">=</span><span class="n">Metadata</span><span class="p">(</span>
+        <span class="n">lat</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="n">lon</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">lon_vals</span><span class="p">),</span>
+        <span class="c1"># Select element 1 (06:00) as the &quot;current&quot; time.</span>
+        <span class="n">time</span><span class="o">=</span><span class="p">(</span><span class="n">input_times</span><span class="p">[</span><span class="mi">1</span><span class="p">],),</span>
+        <span class="n">atmos_levels</span><span class="o">=</span><span class="n">levels</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;Batch ready: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">)</span><span class="si">}</span><span class="s2"> surf vars, &quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">static_vars</span><span class="p">)</span><span class="si">}</span><span class="s2"> static vars, &quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">atmos_vars</span><span class="p">)</span><span class="si">}</span><span class="s2"> atmos vars, &quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;shape </span><span class="si">{</span><span class="n">batch</span><span class="o">.</span><span class="n">spatial_shape</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="loading-and-running-the-model">
+<h2>Loading and Running the Model<a class="headerlink" href="#loading-and-running-the-model" title="Link to this heading">#</a></h2>
+<p>Aurora 1.5 uses a different set of normalisation statistics for the extended surface and static variables. These are built into the model and applied automatically.</p>
+<p>We perform a roll-out for <strong>4 main steps</strong> (24 hours) with <strong>hourly sub-steps</strong> (<code class="docutils literal notranslate"><span class="pre">fine_lead_times=[1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">4,</span> <span class="pre">5,</span> <span class="pre">6]</span></code>), producing <strong>24 hourly predictions</strong>.</p>
+<p>For a full 10-day (240 h) forecast, set <code class="docutils literal notranslate"><span class="pre">steps=40</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraV1p5</span><span class="p">,</span> <span class="n">rollout</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraV1p5</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-v1.5.ckpt&quot;</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 4 main AR steps × 6 hourly sub-steps = 24 hourly predictions.</span>
+<span class="c1"># For a full 240 h forecast, use steps=40.</span>
+<span class="n">steps</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">fine_lead_times</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">]</span>
+
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">fine_lead_times</span><span class="o">=</span><span class="n">fine_lead_times</span><span class="p">)</span>
+    <span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generated </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">preds</span><span class="p">)</span><span class="si">}</span><span class="s2"> hourly predictions.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="visualising-the-results">
+<h2>Visualising the Results<a class="headerlink" href="#visualising-the-results" title="Link to this heading">#</a></h2>
+<p>We plot the 2-metre temperature at selected lead times alongside ERA5 for comparison. Since we produced hourly output, we can inspect predictions at T+6 h, T+12 h, T+18 h, and T+24 h.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="c1"># Show predictions at T+6h, T+12h, T+18h, T+24h.</span>
+<span class="c1"># fine_lead_times has 6 entries per main step, so indices 5, 11, 17, 23 correspond</span>
+<span class="c1"># to the 6th, 12th, 18th, and 24th hour.</span>
+<span class="n">show_indices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">23</span><span class="p">]</span>
+<span class="c1"># ERA5 truth at 12:00, 18:00 on Jan 1 and 00:00, 06:00 on Jan 2.</span>
+<span class="c1"># The downloaded data has 00:00, 06:00, 12:00, 18:00 on Jan 1.</span>
+<span class="c1"># Index 2 = 12:00 (T+6h from init 06:00), Index 3 = 18:00 (T+12h).</span>
+<span class="c1"># For T+18h and T+24h we would need Jan 2 data; we only plot what we have.</span>
+<span class="n">era5_indices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>  <span class="c1"># 12:00, 18:00</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mf">6.5</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">row</span><span class="p">,</span> <span class="p">(</span><span class="n">pred_idx</span><span class="p">,</span> <span class="n">era5_idx</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">show_indices</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span> <span class="n">era5_indices</span><span class="p">)):</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">preds</span><span class="p">[</span><span class="n">pred_idx</span><span class="p">]</span>
+    <span class="n">lead_hours</span> <span class="o">=</span> <span class="n">pred_idx</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># 1-indexed hours</span>
+
+    <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;2t&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">-</span> <span class="mf">273.15</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;T+</span><span class="si">{</span><span class="n">lead_hours</span><span class="si">}</span><span class="s2">h</span><span class="se">\n</span><span class="si">{</span><span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">row</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Aurora 1.5 Prediction&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+
+    <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;t2m&quot;</span><span class="p">][</span><span class="n">era5_idx</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">-</span> <span class="mf">273.15</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">row</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;ERA5&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="example_tc_tracking.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Track Predictions for Typhoon Nanmadol</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="foundry/intro.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Aurora on Azure AI Foundry</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-the-data">Downloading the Data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-the-static-variables">Downloading the Static Variables</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preparing-a-batch">Preparing a Batch</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-and-running-the-model">Loading and Running the Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualising-the-results">Visualising the Results</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Microsoft Corporation
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

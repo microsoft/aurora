@@ -195,12 +195,14 @@
 <li class="toctree-l1"><a class="reference internal" href="example_cams.html">Predictions for Air Pollution</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_wave.html">Predictions for Ocean Waves</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_v1p5.html">Predictions with Aurora 1.5</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="foundry/intro.html">Aurora on Azure AI Foundry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="foundry/submission.html">Submitting Predictions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="foundry/demo_hres_t0.html">Demo: HRES T0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="foundry/demo_v1p5.html">Demo: Aurora 1.5 on Foundry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="foundry/server.html">Creating an Endpoint</a></li>
 <li class="toctree-l1"><a class="reference internal" href="foundry/api.html">Application Programming Interface</a></li>
 </ul>
@@ -390,6 +392,8 @@ document.write(`
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#aurora.Aurora.adapt_checkpoint_max_history_size">adapt_checkpoint_max_history_size() (aurora.Aurora method)</a>
 </li>
+      <li><a href="api.html#aurora.Aurora.apply_rollout_input_clipping">apply_rollout_input_clipping() (aurora.Aurora method)</a>
+</li>
       <li><a href="api.html#aurora.Aurora">Aurora (class in aurora)</a>
 </li>
       <li><a href="api.html#aurora.Aurora12hPretrained">Aurora12hPretrained (class in aurora)</a>
@@ -406,14 +410,14 @@ document.write(`
       </ul></li>
       <li><a href="foundry/api.html#aurora.foundry.common.model.AuroraFineTuned">AuroraFineTuned (class in aurora.foundry.common.model)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#aurora.AuroraHighRes">AuroraHighRes (class in aurora)</a>
 
       <ul>
         <li><a href="foundry/api.html#aurora.foundry.common.model.AuroraHighRes">(class in aurora.foundry.common.model)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="foundry/api.html#aurora.foundry.server.mlflow_wrapper.AuroraModelWrapper">AuroraModelWrapper() (in module aurora.foundry.server.mlflow_wrapper)</a>
 </li>
       <li><a href="api.html#aurora.AuroraPretrained">AuroraPretrained (class in aurora)</a>
@@ -574,6 +578,8 @@ document.write(`
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#aurora.Batch.regrid">regrid() (aurora.Batch method)</a>
 </li>
+      <li><a href="api.html#aurora.Aurora.reset_noise">reset_noise() (aurora.Aurora method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#aurora.Tracker.results">results() (aurora.Tracker method)</a>
@@ -586,6 +592,8 @@ document.write(`
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#aurora.Aurora.set_noise_accumulation">set_noise_accumulation() (aurora.Aurora method)</a>
+</li>
       <li><a href="api.html#aurora.Batch.spatial_shape">spatial_shape (aurora.Batch property)</a>
 </li>
   </ul></td>

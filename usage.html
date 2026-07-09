@@ -196,12 +196,14 @@
 <li class="toctree-l1"><a class="reference internal" href="example_cams.html">Predictions for Air Pollution</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_wave.html">Predictions for Ocean Waves</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_v1p5.html">Predictions with Aurora 1.5</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="foundry/intro.html">Aurora on Azure AI Foundry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="foundry/submission.html">Submitting Predictions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="foundry/demo_hres_t0.html">Demo: HRES T0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="foundry/demo_v1p5.html">Demo: Aurora 1.5 on Foundry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="foundry/server.html">Creating an Endpoint</a></li>
 <li class="toctree-l1"><a class="reference internal" href="foundry/api.html">Application Programming Interface</a></li>
 </ul>
@@ -510,7 +512,9 @@ For example, we could use <code class="docutils literal notranslate"><span class
 </div>
 <p>Predictions are also of the form of <code class="docutils literal notranslate"><span class="pre">aurora.Batch</span></code>.
 For example, <code class="docutils literal notranslate"><span class="pre">pred.surf_vars[&quot;2t&quot;]</span></code> gives the predictions for two-meter temperature.</p>
-<p>You will need approximately 40 GB of GPU memory for running the regular model on global 0.25 degree data.</p>
+<p>You will need approximately 40 GB of GPU memory for running the regular model on global 0.25 degree data.
+Due to some memory optimizations including more use of <code class="docutils literal notranslate"><span class="pre">float16</span></code> dtype, Aurora 1.5 should run on
+a GPU with 32 GB of memory.</p>
 </section>
 <section id="autoregressive-roll-outs">
 <h2>Autoregressive Roll-Outs<a class="headerlink" href="#autoregressive-roll-outs" title="Link to this heading">#</a></h2>
@@ -527,6 +531,29 @@ This can be done with <code class="docutils literal notranslate"><span class="pr
 <p>In the list comprehension, we move the prediction after every step immediately
 to the CPU to prevent GPU memory buildup.
 Every element of <code class="docutils literal notranslate"><span class="pre">preds</span></code> is again of the form of <code class="docutils literal notranslate"><span class="pre">aurora.Batch</span></code>.</p>
+<p>Aurora 1.5 models support a <code class="docutils literal notranslate"><span class="pre">fine_lead_times</span></code> argument to <code class="docutils literal notranslate"><span class="pre">rollout</span></code>, which produces
+predictions at sub-step lead times (as fine as one hour) within each main 6-hour step.
+For example, to produce hourly predictions:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraV1p5</span><span class="p">,</span> <span class="n">rollout</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">AuroraV1p5</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-v1.5.ckpt&quot;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+
+<span class="n">steps</span> <span class="o">=</span> <span class="mi">40</span>                                        <span class="c1"># 40 × 6 h = 240 h (10 days)</span>
+<span class="n">fine_lead_times</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">]</span>  <span class="c1"># hourly output within each 6-h step</span>
+
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">fine_lead_times</span><span class="o">=</span><span class="n">fine_lead_times</span><span class="p">)</span>
+    <span class="p">]</span>
+</pre></div>
+</div>
+<p>This produces <code class="docutils literal notranslate"><span class="pre">steps</span> <span class="pre">*</span> <span class="pre">len(fine_lead_times)</span></code> predictions.
+The last entry of <code class="docutils literal notranslate"><span class="pre">fine_lead_times</span></code> must equal the model’s base timestep (6 hours for Aurora 1.5);
+only that prediction is fed back autoregressively to advance the forecast state.</p>
 </section>
 </section>
 

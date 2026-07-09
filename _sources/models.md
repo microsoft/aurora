@@ -319,3 +319,134 @@ For optimal performance, the model requires the following variables and pressure
 
 Aurora 0.25° Wave requires
 [static variables from the HuggingFace repository](https://huggingface.co/microsoft/aurora/resolve/main/aurora-0.25-wave-static.pickle).
+
+(aurora-025-v15)=
+## Aurora 1.5 (0.25°)
+
+Aurora 1.5 is a new fine-tuned version of Aurora with substantially expanded surface variables,
+variable lead-time support, and prescribed solar insolation.
+
+### Usage
+
+```python
+from aurora import AuroraV1p5
+
+model = AuroraV1p5()
+model.load_checkpoint()
+```
+
+### Recommended Use
+
+We recommend using Aurora 1.5 over Aurora 0.25° Fine-Tuned since its accuracy is improved and
+it provides access to the expanded variable set and hourly lead time.
+This 1.5-family model makes deterministic forecasts with IFS HRES T0 data at 0.25° resolution.
+It was built starting with Aurora 0.25° Pretrained but extensively fine-tuned with ERA5 data for the
+new variables and subsequently on IFS analysis data for real-time use.
+
+Aurora 1.5 extends Aurora with:
+
+- **26 surface-level variables** (including solar insolation), up from 4 in Aurora 0.25°;
+- **36 static variables** covering land-surface properties, vegetation, soil type, and orography;
+- **variable lead-time embeddings**, enabling predictions at any lead time as fine as one hour
+  rather than being restricted to the fixed 6-hour base timestep;
+- **7 output-only surface variables** that the model predicts but that are not required in the
+  input (wind gusts, boundary layer height, radiation fluxes, precipitation, and snowfall).
+  These are automatically zero-padded by the model during rollout.
+
+For optimal performance, the model requires the following variables and pressure levels:
+
+| Name | Required |
+| - | - |
+| Surface-level input variables | `2t`, `10u`, `10v`, `msl`, `2d`, `tcwv`, `tcc`, `100u`, `100v`, `sp`, `lcc`, `mcc`, `hcc`, `skt`, `stl1`, `swvl1`, `ci`, `scaled_sd`, `insolation` |
+| Surface-level output-only variables | `i10fg`, `blh`, `uvb_1h`, `ssrd_1h`, `ttr_1h`, `scaled_tp_1h`, `scaled_sf_1h` |
+| Static variables | `lsm`, `z`, `anor`, `isor`, `cvh`, `cl`, `dl`, `cvl`, `slor`, `slt_0`–`slt_7`, `sdfor`, `sdor`, `tvh_0`, `tvh_3`–`tvh_6`, `tvh_18`, `tvh_19`, `tvl_0`–`tvl_2`, `tvl_7`, `tvl_9`–`tvl_11`, `tvl_13`, `tvl_16`, `tvl_17` |
+| Atmospheric variables | `z`, `u`, `v`, `t`, `q` |
+| Pressure levels (hPa) | 50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000 |
+
+The `scaled_sd` (snow depth) and the output-only variables beginning with `scaled_` use a
+log-transform; the model handles this internally as it does for certain atmospheric chemistry
+parameters. Despite the variable name, the user should provide un-scaled snow depth as input.
+The `insolation` variable is a prescribed solar insolation value computed automatically from
+the batch's valid time and does not need to be provided by the user.
+
+### Static Variables
+
+Aurora 1.5 requires an extended set of 36 static variables available from the
+[HuggingFace repository](https://huggingface.co/ikwessel/aurora-1.5/resolve/main/aurora-0.25-v1.5-static.pickle)
+(temporary repository).
+
+### Hourly Sub-Steps
+
+Aurora 1.5 supports variable lead-time embeddings, enabling predictions at lead times
+finer than the 6-hour base timestep. To produce hourly predictions during rollout, pass
+`fine_lead_times` to `rollout`:
+
+```python
+from aurora import rollout
+
+steps = 4  # 4 main 6-hour steps.
+# Within every main step, also predict the following hours. Combined with the four main steps,
+# this leads to hourly predictions up to 24 hours.
+fine_lead_times = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+
+with torch.inference_mode():
+    preds = [
+        pred.to("cpu")
+        for pred in rollout(model, batch, steps=steps, fine_lead_times=fine_lead_times)
+    ]
+```
+
+The last entry in `fine_lead_times` must equal the model's base timestep (6 hours).
+Only the prediction at the final sub-step is fed back autoregressively; intermediate sub-step
+predictions are produced from the same previous-step input and do not update the autoregressive
+state.
+
+### Rollout Input Clipping
+
+To help guard against a continuous rollout of Aurora 1.5 eventually drifting to unrealistic physical
+states, the model `rollout` includes an option `apply_rollout_input_clipping` (default: `True`)
+which clips certain surface variables to known minimum and/or maximum bounds (e.g., preventing
+cloud cover from going outside of `[0, 1]`). This clipping is *only* applied to the data in a
+Batch being fed back into the model to match the training regimen - it is possible that the
+model's forward pass will generate predictions outside of the clipped bounds.
+`AuroraV1p5` defines the default clipping used in training; it can be overridden with the
+`rollout_input_clipping` keyword argument.
+
+## Aurora 1.5 Ensemble (0.25°)
+
+Aurora 1.5 Ensemble is the stochastic ensemble version of Aurora 1.5.
+
+### Usage
+
+```python
+from aurora import AuroraV1p5Ensemble
+
+model = AuroraV1p5Ensemble()
+model.load_checkpoint()
+```
+
+### Recommended Use
+
+Use Aurora 1.5 Ensemble when you need probabilistic forecasts or an ensemble of
+plausible future states. It has the same variable set and capabilities as Aurora 1.5,
+with the addition of stochastic noise injection for ensemble variability.
+
+Ensemble members are generated by running the model multiple times.
+Because the noise conditioning is stochastic, each forward pass produces a
+distinct, physically plausible trajectory. The noise is injected via the backbone and
+accumulates continuously across both sub-steps and main autoregressive steps, giving
+smooth and temporally coherent ensemble members.
+The model may be run on perturbed initial conditions from the ECMWF ENS model or on the same
+initial conditions, with the former option providing more spread at early lead times.
+
+The `AuroraV1p5Ensemble` class is identical to `AuroraV1p5` in terms of variables,
+pressure levels, and rollout behaviour (including `fine_lead_times` support).
+See [Aurora 1.5](aurora-025-v15) for the full variable table and sub-step guidance.
+
+### Noise Accumulation
+
+When using `rollout` with `fine_lead_times`, noise accumulation is enabled by default
+(`use_noise_accumulation=True`). This keeps the noise correlated across sub-steps for
+smoother intra-step transitions while using independent effective noise between main steps,
+matching the training regimen. Set `use_noise_accumulation=False` to draw independent
+noise at each sub-step instead, though this is not recommended.

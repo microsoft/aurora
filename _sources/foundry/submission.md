@@ -4,6 +4,12 @@ To produce Aurora predictions on Azure AI Foundry,
 you need an endpoint that hosts Aurora.
 To create such an endpoint, find Aurora in the [Azure AI Foundry model catalog](https://ai.azure.com/explore/models),
 click "Deploy", and follow the instructions.
+Two models are available on Foundry:
+- **Aurora** contains the original checkpoints from the Nature paper.
+- **Aurora-1.5** contains the new checkpoints for Aurora 1.5 and the Aurora 1.5 ensemble. It also supports
+a larger client-side submission feature set for the hourly resolution and selection of saved
+variables.
+
 Once the endpoint has been deployed,
 it will have an endpoint URL and access token.
 Then create a `FoundryClient` using this URL and token:
@@ -77,3 +83,4 @@ for pred in submit(
 The above uses the small model and a random initial conditions.
 In practice, you want to use the fine-tuned model, `aurora-0.25-finetuned`, and an initial condition from HRES T0.
 See the [HRES T0 example](/example_hres_t0).
+For a demo running Aurora 1.5, see the [Aurora 1.5 example](/foundry/demo_v1p5.ipynb).

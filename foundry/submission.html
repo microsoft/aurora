@@ -196,12 +196,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../example_cams.html">Predictions for Air Pollution</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../example_wave.html">Predictions for Ocean Waves</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../example_tc_tracking.html">Track Predictions for Typhoon Nanmadol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example_v1p5.html">Predictions with Aurora 1.5</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Foundry</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Aurora on Azure AI Foundry</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Submitting Predictions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="demo_hres_t0.html">Demo: HRES T0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo_v1p5.html">Demo: Aurora 1.5 on Foundry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="server.html">Creating an Endpoint</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">Application Programming Interface</a></li>
 </ul>
@@ -407,7 +409,14 @@ document.write(`
 you need an endpoint that hosts Aurora.
 To create such an endpoint, find Aurora in the <a class="reference external" href="https://ai.azure.com/explore/models">Azure AI Foundry model catalog</a>,
 click “Deploy”, and follow the instructions.
-Once the endpoint has been deployed,
+Two models are available on Foundry:</p>
+<ul class="simple">
+<li><p><strong>Aurora</strong> contains the original checkpoints from the Nature paper.</p></li>
+<li><p><strong>Aurora-1.5</strong> contains the new checkpoints for Aurora 1.5 and the Aurora 1.5 ensemble. It also supports
+a larger client-side submission feature set for the hourly resolution and selection of saved
+variables.</p></li>
+</ul>
+<p>Once the endpoint has been deployed,
 it will have an endpoint URL and access token.
 Then create a <code class="docutils literal notranslate"><span class="pre">FoundryClient</span></code> using this URL and token:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora.foundry</span><span class="w"> </span><span class="kn">import</span> <span class="n">FoundryClient</span>
@@ -471,7 +480,8 @@ You can submit requests for predictions in the following way:</p>
 </div>
 <p>The above uses the small model and a random initial conditions.
 In practice, you want to use the fine-tuned model, <code class="docutils literal notranslate"><span class="pre">aurora-0.25-finetuned</span></code>, and an initial condition from HRES T0.
-See the <a class="reference internal" href="../example_hres_t0.html"><span class="doc std std-doc">HRES T0 example</span></a>.</p>
+See the <a class="reference internal" href="../example_hres_t0.html"><span class="doc std std-doc">HRES T0 example</span></a>.
+For a demo running Aurora 1.5, see the <a class="reference internal" href="demo_v1p5.html"><span class="std std-doc">Aurora 1.5 example</span></a>.</p>
 </section>
 
     <script type="text/x-thebe-config">
