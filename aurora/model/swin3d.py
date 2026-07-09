@@ -7,7 +7,7 @@ Code adapted from
 """
 
 import itertools
-from datetime import timedelta
+import warnings
 from functools import lru_cache
 from typing import Optional
 
@@ -18,9 +18,13 @@ from einops import rearrange
 from timm.layers import DropPath, to_3tuple
 
 from aurora.model.film import AdaptiveLayerNorm
-from aurora.model.fourier import lead_time_expansion
+from aurora.model.fourier import lead_time_expansion, lead_time_expansion_v3
 from aurora.model.lora import LoRAMode, LoRARollout
-from aurora.model.util import init_weights, maybe_adjust_windows
+from aurora.model.util import (
+    fp16_safe_scaled_dot_product_attention,
+    init_weights,
+    maybe_adjust_windows,
+)
 
 __all__ = ["Swin3DTransformerBackbone"]
 
@@ -121,6 +125,7 @@ class WindowAttention(nn.Module):
         self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
         self.proj = nn.Linear(dim, dim)
         self.proj_drop = nn.Dropout(proj_drop)
+        self.use_fp16_safe_attention = False
 
         if use_lora:
             self.lora_proj = LoRARollout(
@@ -162,9 +167,16 @@ class WindowAttention(nn.Module):
             # dimension.
             B = q.shape[0] // mask.shape[1]
             mask = mask.repeat(B, 1, 1, 1, 1).reshape(-1, *mask.shape[2:])
-            x = F.scaled_dot_product_attention(q, k, v, attn_mask=mask, dropout_p=attn_dropout)
+
+        sdpa = (
+            fp16_safe_scaled_dot_product_attention
+            if self.use_fp16_safe_attention
+            else F.scaled_dot_product_attention
+        )
+        if mask is not None:
+            x = sdpa(q, k, v, attn_mask=mask, dropout_p=attn_dropout)
         else:
-            x = F.scaled_dot_product_attention(q, k, v, dropout_p=attn_dropout)
+            x = sdpa(q, k, v, dropout_p=attn_dropout)
 
         x = rearrange(x, "B H N D -> B N (H D)")
         x = self.proj(x) + self.lora_proj(x, rollout_step)
@@ -514,16 +526,24 @@ class Swin3DTransformerBlock(nn.Module):
 class PatchMerging3D(nn.Module):
     """Patch merging layer."""
 
-    def __init__(self, dim: int) -> None:
+    def __init__(self, dim: int, out_dim: int | None = None, norm: bool = True) -> None:
         """Initialise.
 
         Args:
             dim (int): Number of input channels.
+            out_dim (int, optional): Number of output channels. Defaults to `2 * dim`.
+
+            norm (bool, optional): If `True`, apply LayerNorm before channel reduction. Defaults
+                to `True`.
         """
         super().__init__()
         self.dim = dim
-        self.reduction = nn.Linear(4 * dim, 2 * dim, bias=False)
-        self.norm = nn.LayerNorm(4 * dim)
+        out_dim = out_dim or 2 * dim
+        self.reduction = nn.Linear(4 * dim, out_dim, bias=False)
+        if norm:
+            self.norm = nn.LayerNorm(4 * dim)
+        else:
+            self.norm = nn.Identity()
 
     def _merge(self, x: torch.Tensor, res: tuple[int, int, int]) -> torch.Tensor:
         C, H, W = res
@@ -560,18 +580,23 @@ class PatchMerging3D(nn.Module):
 class PatchSplitting3D(nn.Module):
     """Patch splitting layer."""
 
-    def __init__(self, dim: int) -> None:
+    def __init__(self, dim: int, out_dim: int | None = None) -> None:
         """Initialise.
 
         Args:
             dim (int): Number of input channels.
+            out_dim (int, optional): Number of output channels. Defaults to `dim // 2`.
+
         """
         super().__init__()
         self.dim = dim
-        assert dim % 2 == 0, f"dim ({dim}) should be divisible by 2."
-        self.lin1 = nn.Linear(dim, dim * 2, bias=False)
-        self.lin2 = nn.Linear(dim // 2, dim // 2, bias=False)
-        self.norm = nn.LayerNorm(dim // 2)
+        assert dim % 2 == 0, f"`dim` ({dim}) should be divisible by 2."
+
+        out_dim = out_dim or dim // 2
+
+        self.lin1 = nn.Linear(dim, out_dim * 4, bias=False)
+        self.lin2 = nn.Linear(out_dim, out_dim, bias=False)
+        self.norm = nn.LayerNorm(out_dim)
 
     def _split(
         self,
@@ -769,6 +794,8 @@ class Swin3DTransformerBackbone(nn.Module):
         lora_steps: int = 40,
         lora_mode: LoRAMode = "single",
         use_lora: bool = False,
+        stochastic: bool = False,
+        use_updated_lead_time_embedding: bool = False,
     ) -> None:
         """Initialise.
 
@@ -795,6 +822,10 @@ class Swin3DTransformerBackbone(nn.Module):
                 steps, `"from_second"` uses the same LoRA from the second roll-out step on,
                 and `"all"` uses a different LoRA for every roll-out step. Defaults to `"single"`.
             use_lora (bool, optional): Enable LoRA. By default, LoRA is disabled.
+            stochastic (bool, optional): If `True`, enable stochastic mode with noise injection.
+                Defaults to `False`.
+            use_updated_lead_time_embedding (bool, optional): Whether to use the updated lead time
+                embedding with a minimum wavelength of 6 hours. Defaults to `False`.
         """
         super().__init__()
 
@@ -810,6 +841,19 @@ class Swin3DTransformerBackbone(nn.Module):
             nn.SiLU(),
             nn.Linear(embed_dim, embed_dim, bias=True),
         )
+        self.use_updated_lead_time_embedding = use_updated_lead_time_embedding
+
+        # Noise embedding MLP
+        self.stochastic = stochastic
+        if stochastic:
+            self.noise_mlp = nn.Sequential(
+                nn.Linear(embed_dim, embed_dim, bias=True),
+                nn.SiLU(),
+                nn.Linear(embed_dim, embed_dim, bias=True),
+            )
+            self._noise_cache: list[torch.Tensor] = []
+            self._noise_cache_size: int = 0
+            self._accumulate_noise: bool = False
 
         assert sum(encoder_depths) == sum(decoder_depths)
         dpr: list[float] = [
@@ -818,7 +862,10 @@ class Swin3DTransformerBackbone(nn.Module):
 
         # Build encoder layers.
         self.encoder_layers = nn.ModuleList()
+        if self.stochastic:
+            self.context_down_layers = nn.ModuleList()
         for i_layer in range(self.num_encoder_layers):
+            downsample = PatchMerging3D if (i_layer < self.num_encoder_layers - 1) else None
             layer = Basic3DEncoderLayer(
                 dim=int(embed_dim * 2**i_layer),
                 depth=encoder_depths[i_layer],
@@ -830,12 +877,14 @@ class Swin3DTransformerBackbone(nn.Module):
                 drop=drop_rate,
                 attn_drop=attn_drop_rate,
                 drop_path=dpr[sum(encoder_depths[:i_layer]) : sum(encoder_depths[: i_layer + 1])],
-                downsample=(PatchMerging3D if (i_layer < self.num_encoder_layers - 1) else None),
+                downsample=downsample,
                 use_lora=use_lora,
                 lora_steps=lora_steps,
                 lora_mode=lora_mode,
             )
             self.encoder_layers.append(layer)
+            if self.stochastic and downsample is not None:
+                self.context_down_layers.append(downsample(embed_dim, embed_dim, norm=False))
 
         # Build decoder layers.
         self.decoder_layers = nn.ModuleList()
@@ -868,6 +917,35 @@ class Swin3DTransformerBackbone(nn.Module):
         for bly in self.decoder_layers:
             bly.init_respostnorm()
 
+    def reset_noise(self) -> None:
+        """Flush the noise cache.
+
+        Call this to clear all cached noise tensors, e.g. at the beginning of a new forecast issue
+        time. After reset, the next forward call starts building the cache afresh.
+        """
+
+        if self.stochastic:
+            self._noise_cache.clear()
+
+    def set_noise_accumulation(self, n: int = 0) -> None:
+        """Enable or disable noise caching across forward calls.
+
+        When enabled with cache size `n > 0`, the backbone maintains a FIFO cache of the last `n`
+        noise tensors.  On each forward call a new noise tensor is generated and appended to the
+        cache; if the cache already contains `n` entries the oldest one is evicted. The effective
+        noise is `sum(cache) / sqrt(len(cache))`.
+
+        When disabled (the default) or when `n == 0`, each forward call uses a fresh independent
+        noise sample without any caching.
+
+        Calling this method also flushes any previously cached noise so that caching always starts
+        clean.
+        """
+        if self.stochastic:
+            self._noise_cache.clear()
+            self._noise_cache_size = max(n, 0)
+            self._accumulate_noise = self._noise_cache_size > 0
+
     def get_encoder_specs(
         self, patch_res: tuple[int, int, int]
     ) -> tuple[list[tuple[int, int, int]], list[tuple[int, int, int]]]:
@@ -887,7 +965,7 @@ class Swin3DTransformerBackbone(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        lead_time: timedelta,
+        lead_times: torch.Tensor,
         rollout_step: int,
         patch_res: tuple[int, int, int],
     ) -> torch.Tensor:
@@ -895,7 +973,7 @@ class Swin3DTransformerBackbone(nn.Module):
 
         Args:
             x (torch.Tensor): Input tokens of shape `(B, L, D)`.
-            lead_time (datetime.timedelta): Lead time.
+            lead_times (torch.Tensor): Lead times of shape `(batch,)` in hours.
             rollout_step (int): Roll-out step.
             patch_res (tuple[int, int, int]): Patch resolution of the form `(C, H, W)`.
 
@@ -912,13 +990,48 @@ class Swin3DTransformerBackbone(nn.Module):
 
         all_enc_res, padded_outs = self.get_encoder_specs(patch_res)
 
-        lead_hours = lead_time / timedelta(hours=1)
-        lead_times = lead_hours * torch.ones(x.shape[0], dtype=torch.float32, device=x.device)
-        c = self.time_mlp(lead_time_expansion(lead_times, self.embed_dim).to(dtype=x.dtype))
+        expansion = (
+            lead_time_expansion_v3 if self.use_updated_lead_time_embedding else lead_time_expansion
+        )
+        c = self.time_mlp(expansion(lead_times, self.embed_dim).to(dtype=x.dtype))
+
+        if self.stochastic:
+            noise_shape = x.shape[:-1] + (self.embed_dim,)
+            noise = torch.randn(noise_shape, device=x.device, dtype=x.dtype)
+            if self._accumulate_noise:
+                # Shape change (e.g. different batch size) invalidates the cache.
+                if self._noise_cache and self._noise_cache[0].shape != noise.shape:
+                    warnings.warn(
+                        f"Noise shape changed from {self._noise_cache[0].shape} to "
+                        f"{noise.shape}; clearing noise cache.",
+                        stacklevel=2,
+                    )
+                    self._noise_cache.clear()
+                # Evict the oldest entry if the cache is already full.
+                if len(self._noise_cache) >= self._noise_cache_size:
+                    self._noise_cache.pop(0)
+                self._noise_cache.append(noise)
+                # Fill any remaining slots so the cache is always exactly N entries.
+                while len(self._noise_cache) < self._noise_cache_size:
+                    self._noise_cache.append(
+                        torch.randn(noise_shape, device=x.device, dtype=x.dtype)
+                    )
+                effective_noise = torch.stack(self._noise_cache).sum(dim=0) / (
+                    self._noise_cache_size**0.5
+                )
+            else:
+                effective_noise = noise
+            c = c.unsqueeze(1) + self.noise_mlp(effective_noise)
 
         skips = []
+        # Saved contexts at higher resolutions to be reused in the backbone U-Net decoder
+        saved_cs = []
         for i, layer in enumerate(self.encoder_layers):
+            saved_cs.append(c)
             x, x_unscaled = layer(x, c, all_enc_res[i], rollout_step=rollout_step)
+            # There should be a `context_down_layer` for every encoder layer except the last.
+            if self.stochastic and i < self.num_encoder_layers - 1:
+                c = self.context_down_layers[i](c, all_enc_res[i])
             skips.append(x_unscaled)
         for i, layer in enumerate(self.decoder_layers):
             index = self.num_decoder_layers - i - 1
@@ -936,4 +1049,7 @@ class Swin3DTransformerBackbone(nn.Module):
             elif i == self.num_decoder_layers - 1:
                 # For the last stage, we perform concatentation like in Pangu.
                 x = torch.cat([x, skips[0]], dim=-1)
+
+            if self.stochastic:
+                c = saved_cs[index - 1]
         return x

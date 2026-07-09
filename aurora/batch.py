@@ -91,7 +91,10 @@ class Batch:
         """Get the spatial shape from an arbitrary surface-level variable."""
         return next(iter(self.surf_vars.values())).shape[-2:]
 
-    def normalise(self, surf_stats: dict[str, tuple[float, float]]) -> "Batch":
+    def normalise(
+        self,
+        surf_stats: dict[str, tuple[float, float]],
+    ) -> "Batch":
         """Normalise all variables in the batch.
 
         Args:
@@ -115,7 +118,10 @@ class Batch:
             metadata=self.metadata,
         )
 
-    def unnormalise(self, surf_stats: dict[str, tuple[float, float]]) -> "Batch":
+    def unnormalise(
+        self,
+        surf_stats: dict[str, tuple[float, float]],
+    ) -> "Batch":
         """Unnormalise all variables in the batch.
 
         Args:
@@ -254,7 +260,20 @@ class Batch:
                 "rollout_step": self.metadata.rollout_step,
             },
         )
-        ds.to_netcdf(path)
+        # Enable compression and chunking to reduce file size.
+        encoding = {}
+        for name, var in ds.data_vars.items():
+            enc: dict = {"zlib": True, "complevel": 4}
+            dims = var.dims
+            chunks: dict = {}
+            if "history" in dims:
+                chunks["history"] = 1
+            if "level" in dims:
+                chunks["level"] = 1
+            if chunks:
+                enc["chunksizes"] = tuple(chunks.get(d, s) for d, s in zip(dims, var.shape))
+            encoding[name] = enc
+        ds.to_netcdf(path, encoding=encoding)
 
     @classmethod
     def from_netcdf(cls, path: str | Path) -> "Batch":

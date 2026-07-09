@@ -1,5 +1,6 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
+import math
 from typing import TypeVar
 
 import torch
@@ -12,6 +13,7 @@ __all__ = [
     "check_lat_lon_dtype",
     "maybe_adjust_windows",
     "init_weights",
+    "fp16_safe_scaled_dot_product_attention",
 ]
 
 
@@ -70,6 +72,35 @@ def maybe_adjust_windows(window_size: T, shift_size: T, res: T) -> tuple[T, T]:
     assert min(new_shift_size) >= 0, f"Shift size must be non-negative. Found {new_shift_size}."
 
     return new_window_size, new_shift_size
+
+
+def fp16_safe_scaled_dot_product_attention(
+    query: torch.Tensor,
+    key: torch.Tensor,
+    value: torch.Tensor,
+    attn_mask: torch.Tensor | None = None,
+    dropout_p: float = 0.0,
+    scale: float | None = None,
+) -> torch.Tensor:
+    """Scaled dot-product attention with float16 overflow protection.
+
+    Equivalent to :func:`torch.nn.functional.scaled_dot_product_attention`, but clamps intermediate
+    attention weights when running in float16 to prevent overflow or inf values that can appear with
+    large sequence lengths.
+    """
+    scale_factor = 1 / math.sqrt(query.size(-1)) if scale is None else scale
+    # Multiply scale into the key (instead of the result) to keep magnitudes lower.
+    attn_weight = query @ (key.transpose(-2, -1) * scale_factor)
+    if attn_weight.dtype == torch.float16:
+        max_val = torch.finfo(attn_weight.dtype).max
+        clamp_value = torch.where(torch.isinf(attn_weight).any(), max_val - 1000, max_val)
+        attn_weight = torch.clamp(attn_weight, min=-clamp_value, max=clamp_value)
+    if attn_mask is not None:
+        attn_weight = attn_weight + attn_mask
+    attn_weight = torch.softmax(attn_weight, dim=-1)
+    if dropout_p > 0.0:
+        attn_weight = torch.dropout(attn_weight, dropout_p, train=True)
+    return attn_weight @ value
 
 
 def init_weights(m: nn.Module):

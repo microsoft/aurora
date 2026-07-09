@@ -1,8 +1,10 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
 import abc
+import contextlib
 import logging
 import os
+import shutil
 import tempfile
 import time
 from pathlib import Path
@@ -59,6 +61,19 @@ class CommunicationChannel:
             else:
                 raise TimeoutError("File was not marked within the timeout.")
         return self._receive(name)
+
+    def get_url(self, uuid: str, name: str) -> str:
+        """Get the URL for the file `name` without downloading it.
+
+        Args:
+            uuid (str): UUID of the task.
+            name (str): Name of the file.
+
+        Returns:
+            str: URL of the file.
+        """
+        name = f"{uuid}/{name}"
+        return self._url(name)
 
     def write(self, data: bytes, uuid: str, name: str) -> None:
         """Write `data` to `name`.
@@ -177,9 +192,23 @@ class CommunicationChannel:
             dict[str, str]: Specification.
         """
 
+    @abc.abstractmethod
+    def _url(self, name: str) -> str:
+        """Get the URL for the file `name`.
+
+        Args:
+            name (str): File name.
+
+        Returns:
+            str: URL of the file.
+        """
+
 
 class BlobStorageChannel(CommunicationChannel):
     """A communication channel via a folder in an Azure Blob Storage container."""
+
+    # Minimum free space (bytes) required on /dev/shm before using it.
+    _SHM_MIN_FREE = 512 * 1024 * 1024  # 512 MiB
 
     def __init__(self, blob_folder: str) -> None:
         """Instantiate.
@@ -192,8 +221,52 @@ class BlobStorageChannel(CommunicationChannel):
         if "?" not in blob_folder:
             raise ValueError("Given URL does not appear to contain a SAS token.")
 
+    @staticmethod
+    def _tmpdir() -> str | None:
+        """Return a RAM-backed temp directory if available, else `None`.
+
+        Uses `/dev/shm` (Linux tmpfs) when it exists and has at least :attr:`_SHM_MIN_FREE` bytes
+        free. This avoids disk I/O for the temporary netCDF files used during send/receive. Falls
+        back to the system default temp directory otherwise (e.g. on macOS or when Docker constrains
+        `/dev/shm` to 64 MB).
+        """
+        shm = "/dev/shm"
+        if os.path.isdir(shm):
+            try:
+                if shutil.disk_usage(shm).free >= BlobStorageChannel._SHM_MIN_FREE:
+                    return shm
+            except OSError:
+                logger.debug("Unable to stat %s; falling back to default temp directory.", shm)
+        return None
+
+    @contextlib.contextmanager
+    def _tempfile(self) -> Generator[str, None, None]:
+        """Yield the path of a temporary file, preferring `/dev/shm`.
+
+        If creating or writing the file on `/dev/shm` fails with `OSError` (e.g. because it
+        ran out of space), the operation is transparently retried using the default system temp
+        directory.
+        """
+        tmp_dir = self._tmpdir()
+        try:
+            with tempfile.NamedTemporaryFile(dir=tmp_dir, delete=False) as tf:
+                tmp_path = tf.name
+            yield tmp_path
+        except OSError:
+            if tmp_dir is None:
+                raise  # Already using the default temp dir; nothing to fall back to.
+            logger.warning("OSError on %s; falling back to default temp directory.", tmp_dir)
+            with tempfile.NamedTemporaryFile(delete=False) as tf:
+                tmp_path = tf.name
+            yield tmp_path
+        finally:
+            Path(tmp_path).unlink(missing_ok=True)
+
     def to_spec(self) -> str:
         return self.blob_folder
+
+    def _url(self, name: str) -> str:
+        return self._blob_path(name)
 
     class Spec(BaseModel):
         class_name: Literal["BlobStorageChannel"]
@@ -228,29 +301,25 @@ class BlobStorageChannel(CommunicationChannel):
             f.write(data)
 
     def _send(self, batch: Batch, name: str) -> None:
-        with tempfile.NamedTemporaryFile() as tf:
-            tf.close()  # We will only use the name.
-            batch.to_netcdf(tf.name)
-            self._upload_blob(tf.name, name)
+        with self._tempfile() as path:
+            batch.to_netcdf(path)
+            self._upload_blob(path, name)
 
     def _receive(self, name: str) -> Batch:
-        with tempfile.NamedTemporaryFile() as tf:
-            tf.close()  # We will only use the name.
-            self._download_blob(name, tf.name)
-            return Batch.from_netcdf(tf.name)
+        with self._tempfile() as path:
+            self._download_blob(name, path)
+            return Batch.from_netcdf(path)
 
     def _write(self, data: bytes, name: str) -> None:
-        with tempfile.NamedTemporaryFile() as tf:
-            tf.close()  # We will only use the name.
-            with open(tf.name, "wb") as f:
+        with self._tempfile() as path:
+            with open(path, "wb") as f:
                 f.write(data)
-            self._upload_blob(tf.name, name)
+            self._upload_blob(path, name)
 
     def _read(self, name: str) -> bytes:
-        with tempfile.NamedTemporaryFile() as tf:
-            tf.close()  # We will only use the name.
-            self._download_blob(name, tf.name)
-            with open(tf.name, "rb") as f:
+        with self._tempfile() as path:
+            self._download_blob(name, path)
+            with open(path, "rb") as f:
                 return f.read()
 
     def _mark(self, name: str) -> None:

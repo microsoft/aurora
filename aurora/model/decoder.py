@@ -170,7 +170,7 @@ class Perceiver3DDecoder(nn.Module):
         x: torch.Tensor,
         batch: Batch,
         patch_res: tuple[int, int, int],
-        lead_time: timedelta,
+        lead_times: torch.Tensor,
     ) -> Batch:
         """Forward pass.
 
@@ -178,7 +178,7 @@ class Perceiver3DDecoder(nn.Module):
             x (torch.Tensor): Backbone output of shape `(B, L, D)`.
             batch (:class:`aurora.Batch`): Batch to make predictions for.
             patch_res (tuple[int, int, int]): Patch resolution
-            lead_time (timedelta): Lead time.
+            lead_times (torch.Tensor): Lead times of shape `(batch,)` in hours.
 
         Returns:
             :class:`aurora.batch.Batch`: Prediction for `batch`.
@@ -262,6 +262,11 @@ class Perceiver3DDecoder(nn.Module):
         x_atmos = x_atmos.reshape(*x_atmos.shape[:3], -1)  # (B, L, C_A, V_A*p*p)
         atmos_preds = unpatchify(x_atmos, len(atmos_vars), H, W, self.patch_size)
 
+        # Compute output times from per-sample lead times.
+        pred_time = tuple(
+            t + timedelta(hours=float(lead_times[i])) for i, t in enumerate(batch.metadata.time)
+        )
+
         return Batch(
             {v: surf_preds[:, i] for i, v in enumerate(surf_vars)},
             batch.static_vars,
@@ -269,7 +274,7 @@ class Perceiver3DDecoder(nn.Module):
             Metadata(
                 lat=lat,
                 lon=lon,
-                time=tuple(t + lead_time for t in batch.metadata.time),
+                time=pred_time,
                 atmos_levels=atmos_levels,
                 rollout_step=batch.metadata.rollout_step + 1,
             ),

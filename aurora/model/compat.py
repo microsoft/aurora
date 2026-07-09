@@ -12,6 +12,7 @@ __all__ = [
     "_adapt_checkpoint_pretrained",
     "_adapt_checkpoint_air_pollution",
     "_adapt_checkpoint_wave",
+    "_adapt_checkpoint_v1p5",
 ]
 
 
@@ -280,5 +281,73 @@ def _adapt_checkpoint_wave(
             if n1 in k:
                 d[k.replace(n1, n2)] = d[k]
                 del d[k]
+
+    return d
+
+
+def _adapt_checkpoint_v1p5(
+    patch_size: int,
+    surf_vars: tuple[str, ...],
+    static_vars: tuple[str, ...],
+    atmos_vars: tuple[str, ...],
+    d: dict[str, torch.Tensor],
+) -> dict[str, torch.Tensor]:
+    # Remove possible prefix from the keys.
+    for k, v in list(d.items()):
+        if k.startswith("net."):
+            del d[k]
+            d[k[4:]] = v
+
+    # The encoder combines surf_vars and static_vars into one embedding.
+    encoder_surf_names = surf_vars + static_vars
+
+    # Convert the ID-based parametrization to a name-based parametrization.
+    if "encoder.surf_token_embeds.weight" in d:
+        weight = d["encoder.surf_token_embeds.weight"]
+        del d["encoder.surf_token_embeds.weight"]
+
+        assert weight.shape[1] == len(encoder_surf_names)
+        for i, name in enumerate(encoder_surf_names):
+            d[f"encoder.surf_token_embeds.weights.{name}"] = weight[:, [i]]
+
+    if "encoder.atmos_token_embeds.weight" in d:
+        weight = d["encoder.atmos_token_embeds.weight"]
+        del d["encoder.atmos_token_embeds.weight"]
+
+        assert weight.shape[1] == len(atmos_vars)
+        for i, name in enumerate(atmos_vars):
+            d[f"encoder.atmos_token_embeds.weights.{name}"] = weight[:, [i]]
+
+    if "decoder.surf_head.weight" in d:
+        weight = d["decoder.surf_head.weight"]
+        bias = d["decoder.surf_head.bias"]
+        del d["decoder.surf_head.weight"]
+        del d["decoder.surf_head.bias"]
+
+        n = len(surf_vars)
+        assert weight.shape[0] == n * patch_size**2
+        assert bias.shape[0] == n * patch_size**2
+        weight = weight.reshape(patch_size**2, n, -1)
+        bias = bias.reshape(patch_size**2, n)
+
+        for i, name in enumerate(surf_vars):
+            d[f"decoder.surf_heads.{name}.weight"] = weight[:, i]
+            d[f"decoder.surf_heads.{name}.bias"] = bias[:, i]
+
+    if "decoder.atmos_head.weight" in d:
+        weight = d["decoder.atmos_head.weight"]
+        bias = d["decoder.atmos_head.bias"]
+        del d["decoder.atmos_head.weight"]
+        del d["decoder.atmos_head.bias"]
+
+        n = len(atmos_vars)
+        assert weight.shape[0] == n * patch_size**2
+        assert bias.shape[0] == n * patch_size**2
+        weight = weight.reshape(patch_size**2, n, -1)
+        bias = bias.reshape(patch_size**2, n)
+
+        for i, name in enumerate(atmos_vars):
+            d[f"decoder.atmos_heads.{name}.weight"] = weight[:, i]
+            d[f"decoder.atmos_heads.{name}.bias"] = bias[:, i]
 
     return d

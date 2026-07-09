@@ -40,10 +40,13 @@ class AdaptiveLayerNorm(nn.Module):
 
         Args:
             x (torch.Tensor): Input tensor of shape `(B, L, D)`.
-            c (torch.Tensor): Conditioning tensor of shape `(B, D)`.
+            c (torch.Tensor): Conditioning tensor of shape `(B, D)` or `(B, L, D)`.
 
         Returns:
             torch.Tensor: Output tensor of shape `(B, L, D)`.
         """
-        shift, scale = self.ln_modulation(c).unsqueeze(1).chunk(2, dim=-1)
+        c = self.ln_modulation(c)
+        if c.ndim == 2:
+            c = c.unsqueeze(1)
+        shift, scale = c.chunk(2, dim=-1)
         return self.ln(x) * (self.scale_bias + scale) + shift

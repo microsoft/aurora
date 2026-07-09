@@ -141,6 +141,26 @@ class AuroraWave(Model):
         return model
 
 
+class AuroraV1p5(Model):
+    name = "aurora-0.25-v1.5"
+    """str: Name of the model."""
+
+    def create_model(self) -> aurora.Aurora:
+        model = aurora.AuroraV1p5()
+        model.load_checkpoint_local(MLFLOW_ARTIFACTS[self.name])
+        return model
+
+
+class AuroraV1p5Ensemble(Model):
+    name = "aurora-0.25-v1.5-ensemble"
+    """str: Name of the model."""
+
+    def create_model(self) -> aurora.Aurora:
+        model = aurora.AuroraV1p5Ensemble()
+        model.load_checkpoint_local(MLFLOW_ARTIFACTS[self.name])
+        return model
+
+
 models: dict[str, type[Model]] = {}
 """dict[str, type[Model]]: A dictionary that lists all available models by their name."""
 
