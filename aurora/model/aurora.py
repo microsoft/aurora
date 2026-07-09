@@ -690,8 +690,8 @@ class Aurora(torch.nn.Module):
 
         if found != set(module_names):
             raise RuntimeError(
-                f'Could not checkpoint on the following modules: '
-                f'{", ".join(sorted(set(module_names) - found))}.'
+                f"Could not checkpoint on the following modules: "
+                f"{', '.join(sorted(set(module_names) - found))}."
             )
 
 
@@ -1089,14 +1089,9 @@ class AuroraV1p5(Aurora):
     present in the real input data) and are zero-padded during autoregressive rollout.
     """
 
-    default_checkpoint_repo = ""
-    """str: Name of the HuggingFace repository to load the default checkpoint from."""
-
+    default_checkpoint_repo = "ikwessel/aurora-1.5"
     default_checkpoint_name = "aurora-0.25-v1.5.ckpt"
-    """str: Name of the default checkpoint."""
-
-    default_checkpoint_revision = ""
-    """str: Commit hash of the default checkpoint."""
+    default_checkpoint_revision = "9751bb56e8e4a0f0a780e3cbe978f4c721e12bc7"
 
     def __init__(
         self,
@@ -1246,7 +1241,7 @@ class AuroraV1p5Ensemble(AuroraV1p5):
     """Aurora 1.5 ensemble version with stochastic noise injection."""
 
     default_checkpoint_name = "aurora-0.25-v1.5-ensemble.ckpt"
-    default_checkpoint_revision = ""
+    default_checkpoint_revision = "9751bb56e8e4a0f0a780e3cbe978f4c721e12bc7"
 
     def __init__(
         self,
