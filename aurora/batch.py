@@ -260,7 +260,20 @@ class Batch:
                 "rollout_step": self.metadata.rollout_step,
             },
         )
-        ds.to_netcdf(path)
+        # Enable compression and chunking to reduce file size.
+        encoding = {}
+        for name, var in ds.data_vars.items():
+            enc: dict = {"zlib": True, "complevel": 4}
+            dims = var.dims
+            chunks: dict = {}
+            if "history" in dims:
+                chunks["history"] = 1
+            if "level" in dims:
+                chunks["level"] = 1
+            if chunks:
+                enc["chunksizes"] = tuple(chunks.get(d, s) for d, s in zip(dims, var.shape))
+            encoding[name] = enc
+        ds.to_netcdf(path, encoding=encoding)
 
     @classmethod
     def from_netcdf(cls, path: str | Path) -> "Batch":

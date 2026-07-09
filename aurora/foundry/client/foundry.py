@@ -40,7 +40,7 @@ class FoundryClient:
     def _unwrap(self, response: requests.Response) -> dict:
         if not response.ok:
             logger.error(response.text)
-        response.raise_for_status()
+            raise RuntimeError(f"Endpoint returned HTTP {response.status_code}: {response.text}")
         response_json = response.json()
         return response_json
 

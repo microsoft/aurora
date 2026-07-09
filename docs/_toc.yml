@@ -25,5 +25,6 @@ parts:
    - file: foundry/intro
    - file: foundry/submission
    - file: foundry/demo_hres_t0
+   - file: foundry/demo_v1p5
    - file: foundry/server
    - file: foundry/api

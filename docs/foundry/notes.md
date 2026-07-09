@@ -65,7 +65,8 @@ applications requiring guaranteed forecast accuracy, or non-environmental predic
 Use in safety-critical planning or automated decision pipelines should be accompanied by
 appropriate domain validation. Developers should assess the suitability of the model for their
 specific downstream use case, and evaluate and mitigate for accuracy and reliability before
-deployment, particularly for high-risk scenarios.
+deployment, particularly for high-risk scenarios. We do not recommend using Aurora in commercial
+or real‑world applications without further testing and development.
 
 ## Responsible AI Considerations
 
