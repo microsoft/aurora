@@ -332,7 +332,7 @@ variable lead-time support, and prescribed solar insolation.
 from aurora import AuroraV1p5
 
 model = AuroraV1p5()
-model.load_checkpoint("microsoft/aurora", "aurora-0.25-v1.5.ckpt")
+model.load_checkpoint()
 ```
 
 ### Recommended Use
@@ -372,7 +372,8 @@ the batch's valid time and does not need to be provided by the user.
 ### Static Variables
 
 Aurora 1.5 requires an extended set of 36 static variables available from the
-[HuggingFace repository](https://huggingface.co/microsoft/aurora/resolve/main/aurora-0.25-v1.5-static.pickle).
+[HuggingFace repository](https://huggingface.co/ikwessel/aurora-1.5/resolve/main/aurora-0.25-v1.5-static.pickle)
+(temporary repository).
 
 ### Hourly Sub-Steps
 
@@ -421,7 +422,7 @@ Aurora 1.5 Ensemble is the stochastic ensemble version of Aurora 1.5.
 from aurora import AuroraV1p5Ensemble
 
 model = AuroraV1p5Ensemble()
-model.load_checkpoint("microsoft/aurora", "aurora-0.25-v1.5-ensemble.ckpt")
+model.load_checkpoint()
 ```
 
 ### Recommended Use
