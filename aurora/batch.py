@@ -310,6 +310,21 @@ class Batch:
             ),
         )
 
+    def __post_init__(self):
+        b = next(iter(self.surf_vars.values())).shape[0]  # first dim of (b, t, h, w)
+        c = next(iter(self.atmos_vars.values())).shape[-3]  # pressure-level dim of (b, t, c, h, w)
+
+        if len(self.metadata.time) != b:
+            raise ValueError(
+                f"`Metadata.time` has length {len(self.metadata.time)}, but the batch size "
+                f"is {b}. `time` must contain exactly one entry per batch element."
+            )
+        if len(self.metadata.atmos_levels) != c:
+            raise ValueError(
+                f"`Metadata.atmos_levels` has length {len(self.metadata.atmos_levels)}, but the "
+                f"atmospheric variables have {c} pressure levels. These must be equal."
+            )
+
 
 def _np(x: torch.Tensor) -> np.ndarray:
     return x.detach().cpu().numpy()

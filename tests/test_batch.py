@@ -1,8 +1,10 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
+import dataclasses
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from tests.conftest import SavedBatch
 
@@ -57,3 +59,21 @@ def test_save_load(test_input_output: tuple[Batch, SavedBatch], tmp_path: Path) 
     assert batch.metadata.time == batch_loaded.metadata.time
     assert batch.metadata.atmos_levels == batch_loaded.metadata.atmos_levels
     assert batch.metadata.rollout_step == batch_loaded.metadata.rollout_step
+
+
+def test_batch_rejects_metadata_time_length_mismatch(
+    test_input_output: tuple[Batch, SavedBatch],
+) -> None:
+    batch, _ = test_input_output
+    bad_metadata = dataclasses.replace(batch.metadata, time=batch.metadata.time * 2)
+    with pytest.raises(ValueError, match=r"`Metadata\.time`"):
+        dataclasses.replace(batch, metadata=bad_metadata)
+
+
+def test_batch_rejects_atmos_levels_mismatch(test_input_output: tuple[Batch, SavedBatch]) -> None:
+    batch, _ = test_input_output
+    bad_metadata = dataclasses.replace(
+        batch.metadata, atmos_levels=batch.metadata.atmos_levels[:-1]
+    )
+    with pytest.raises(ValueError, match=r"`Metadata\.atmos_levels`"):
+        dataclasses.replace(batch, metadata=bad_metadata)
