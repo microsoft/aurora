@@ -372,8 +372,7 @@ the batch's valid time and does not need to be provided by the user.
 ### Static Variables
 
 Aurora 1.5 requires an extended set of 36 static variables available from the
-[HuggingFace repository](https://huggingface.co/ikwessel/aurora-1.5/resolve/main/aurora-0.25-v1.5-static.pickle)
-(temporary repository).
+[HuggingFace repository](https://huggingface.co/microsoft/aurora/blob/main/aurora-0.25-v1.5-static.pickle).
 
 ### Hourly Sub-Steps
 

@@ -535,13 +535,18 @@ document.write(`
 </section>
 <section id="downloading-the-static-variables">
 <h2>Downloading the Static Variables<a class="headerlink" href="#downloading-the-static-variables" title="Link to this heading">#</a></h2>
-<p>Aurora 1.5 uses an extended set of 36 static variables (land-sea mask, orography, vegetation fields, soil types, etc.). These are provided in a pickle file. We assume it has been saved as <code class="docutils literal notranslate"><span class="pre">static_aurora_v1p5.pkl</span></code> alongside the checkpoint.</p>
+<p>Aurora 1.5 uses an extended set of 36 static variables (land-sea mask, orography, vegetation fields, soil types, etc.). These are provided in a pickle file
+alongside the checkpoints on <a class="reference external" href="https://huggingface.co/microsoft/aurora/blob/main/aurora-0.25-v1.5-static.pickle">HuggingFace</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Path to the static variables pickle and model checkpoint.</span>
-<span class="c1"># Adjust these to match your local paths.</span>
-<span class="n">static_path</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-v1.5-static.pickle&quot;</span>
-<span class="n">checkpoint_path</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-v1.5.ckpt&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">huggingface_hub</span><span class="w"> </span><span class="kn">import</span> <span class="n">hf_hub_download</span>
+
+<span class="c1"># Download the static variables from HuggingFace.</span>
+<span class="n">static_path</span> <span class="o">=</span> <span class="n">hf_hub_download</span><span class="p">(</span>
+    <span class="n">repo_id</span><span class="o">=</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span>
+    <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;aurora-0.25-v1.5-static.pickle&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Static variables downloaded!&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
