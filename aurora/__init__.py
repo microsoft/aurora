@@ -14,7 +14,7 @@ from aurora.model.aurora import (
     AuroraV1p5Ensemble,
     AuroraWave,
 )
-from aurora.rollout import rollout
+from aurora.rollout import rollout, rollout_ensemble
 from aurora.tracker import Tracker
 
 __all__ = [
@@ -32,5 +32,6 @@ __all__ = [
     "Metadata",
     "insolation",
     "rollout",
+    "rollout_ensemble",
     "Tracker",
 ]

@@ -202,14 +202,16 @@ class Aurora(torch.nn.Module):
             stochastic (bool, optional): If `True`, enable stochastic mode with noise injection.
                 Defaults to `False`.
             num_ensemble_members (int, optional): Number of ensemble members to produce
-                *internally* on every call to :meth:`forward`, as an alternative to looping over
-                separate calls and combining the results externally yourself (which remains
-                perfectly valid, e.g. if you need more control over how members are seeded or
-                combined). When set to a value greater than `1`, the batch is tiled
-                `num_ensemble_members` times internally and run through the model in a single,
-                fully-batched pass, which is far more efficient on a GPU than looping. This is
-                most useful in combination with `stochastic=True`, since every tiled copy then
-                receives independent noise. Defaults to `1`, i.e. no internal ensembling.
+                *internally* on every call to :meth:`forward_ensemble`, as an alternative to
+                looping over separate :meth:`forward` calls and combining the results externally
+                yourself (which remains perfectly valid, e.g. if you need more control over how
+                members are seeded or combined). When set to a value greater than `1`, the batch
+                is tiled `num_ensemble_members` times internally and run through the model in a
+                single, fully-batched pass, which is far more efficient on a GPU than looping.
+                This is most useful in combination with `stochastic=True`, since every tiled copy
+                then receives independent noise. When greater than `1`, plain :meth:`forward`
+                raises, since it can only ever return a single `Batch`; use
+                :meth:`forward_ensemble` instead. Defaults to `1`, i.e. no internal ensembling.
             use_updated_lead_time_embedding (bool, optional): Whether to use the updated lead time
                 embedding with a minimum wavelength of 2 hours. Defaults to `False`.
             variable_lead_time (bool, optional): If `True`, use per-sample lead times passed
@@ -361,9 +363,7 @@ class Aurora(torch.nn.Module):
         """
         self.backbone.set_noise_accumulation(n)
 
-    def forward(
-        self, batch: Batch, lead_times: Optional[torch.Tensor] = None
-    ) -> Batch | list[Batch]:
+    def forward(self, batch: Batch, lead_times: Optional[torch.Tensor] = None) -> Batch:
         """Forward pass.
 
         Args:
@@ -373,12 +373,47 @@ class Aurora(torch.nn.Module):
                 `variable_lead_time=True`. Ignored otherwise.
 
         Returns:
-            :class:`Batch` | list[:class:`Batch`]: Prediction for `batch`. If
-                `self.num_ensemble_members == 1` (the default, i.e. no internal ensembling), this
-                is a single `Batch`, exactly as `batch`. If `self.num_ensemble_members > 1`, all
-                members are computed internally as a single fused pass, but the result is a list
-                of `num_ensemble_members` standard-shaped `Batch`\\ s, one per ensemble member,
-                each with the same batch dimension as `batch`.
+            :class:`Batch`: Prediction for `batch`.
+        """
+        if self.num_ensemble_members > 1:
+            raise RuntimeError(
+                f"This model was constructed with `num_ensemble_members="
+                f"{self.num_ensemble_members}`. Use `forward_ensemble` instead of `forward` to "
+                f"obtain all ensemble members."
+            )
+        return self._forward_impl(batch, lead_times)
+
+    def forward_ensemble(
+        self, batch: Batch, lead_times: Optional[torch.Tensor] = None
+    ) -> list[Batch]:
+        """Forward pass producing all `self.num_ensemble_members` ensemble members internally.
+
+        All members are computed internally as a single fused pass through the
+        encoder/backbone/decoder, rather than looping over separate `forward` calls and combining
+        the results externally yourself (which remains equally valid and unaffected). This is most
+        useful in combination with `stochastic=True`, since every internally-tiled copy then
+        receives independent noise.
+
+        Args:
+            batch (:class:`aurora.Batch`): Batch to run the model on.
+            lead_times (:class:`torch.Tensor`, optional): Per-sample lead times of shape
+                `(batch,)` in hours. Required when the model was configured with
+                `variable_lead_time=True`. Ignored otherwise.
+
+        Returns:
+            list[:class:`Batch`]: A list of `self.num_ensemble_members` standard-shaped `Batch`\\
+                s, one per ensemble member, each with the same batch dimension as `batch`.
+        """
+        pred = self._forward_impl(batch, lead_times)
+        return _split_batch(pred, self.num_ensemble_members)
+
+    def _forward_impl(self, batch: Batch, lead_times: Optional[torch.Tensor] = None) -> Batch:
+        """Shared implementation for `forward` and `forward_ensemble`.
+
+        Internally tiles `batch` by `self.num_ensemble_members` before running it through the
+        encoder/backbone/decoder as a single fused batch, when greater than `1`. The tiled batch
+        dimension is a private implementation detail: `forward` forbids it (see above) and
+        `forward_ensemble` splits it back apart before returning.
         """
         batch = self.batch_transform_hook(batch)
 
@@ -393,12 +428,6 @@ class Aurora(torch.nn.Module):
         if self.num_ensemble_members > 1:
             if lead_times is not None:
                 lead_times = lead_times.repeat(self.num_ensemble_members)
-            # This tiling implements *internal* ensembling only, as a private implementation
-            # detail: it lets every ensemble member run through the encoder/backbone/decoder as a
-            # single fused batch instead of `num_ensemble_members` separate calls. Ensembling by
-            # externally looping over `forward` yourself remains equally valid and is unaffected.
-            # The tiled batch is split back apart into standard-shaped batches below, right before
-            # `forward` returns.
             batch = _tile_batch(batch, self.num_ensemble_members)
 
         H, W = batch.spatial_shape
@@ -526,8 +555,6 @@ class Aurora(torch.nn.Module):
 
         pred = self._post_unnorm_hook(batch, pred)
 
-        if self.num_ensemble_members > 1:
-            return _split_batch(pred, self.num_ensemble_members)
         return pred
 
     def batch_transform_hook(self, batch: Batch) -> Batch:

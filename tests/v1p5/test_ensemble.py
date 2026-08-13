@@ -10,7 +10,7 @@ import pytest
 import torch
 
 from ._helpers import _OUTPUT_ONLY_SURF, _SURF_VARS, _make_batch, _make_small_v1p5
-from aurora import Aurora, Batch, Metadata, rollout
+from aurora import Aurora, Batch, Metadata, rollout, rollout_ensemble
 from aurora.batch import _split_batch, _tile_batch
 from aurora.model.film import AdaptiveLayerNorm
 
@@ -96,7 +96,7 @@ def test_num_ensemble_members_no_warning_with_stochastic():
         _make_small_v1p5(num_ensemble_members=2, stochastic=True)
 
 
-def test_forward_returns_single_batch_when_num_ensemble_members_one():
+def test_forward_returns_batch_when_num_ensemble_members_one():
     model = _make_small_v1p5()
     model.eval()
     surf_vars = tuple(v for v in _SURF_VARS if v not in _OUTPUT_ONLY_SURF)
@@ -108,7 +108,17 @@ def test_forward_returns_single_batch_when_num_ensemble_members_one():
     assert isinstance(pred, Batch)
 
 
-def test_forward_returns_list_of_standard_shaped_batches():
+def test_forward_raises_when_num_ensemble_members_greater_than_one():
+    model = _make_small_v1p5(stochastic=True, num_ensemble_members=3)
+    model.eval()
+    surf_vars = tuple(v for v in _SURF_VARS if v not in _OUTPUT_ONLY_SURF)
+    batch = _make_batch(surf_vars=surf_vars)
+
+    with pytest.raises(RuntimeError, match="forward_ensemble"):
+        model.forward(batch, lead_times=torch.full((1,), 6.0))
+
+
+def test_forward_ensemble_returns_list_of_standard_shaped_batches():
     n = 3
     model = _make_small_v1p5(stochastic=True, num_ensemble_members=n)
     model.eval()
@@ -117,7 +127,7 @@ def test_forward_returns_list_of_standard_shaped_batches():
     b = next(iter(batch.surf_vars.values())).shape[0]
 
     with torch.inference_mode():
-        pred = model.forward(batch, lead_times=torch.full((b,), 6.0))
+        pred = model.forward_ensemble(batch, lead_times=torch.full((b,), 6.0))
 
     assert isinstance(pred, list)
     assert len(pred) == n
@@ -136,7 +146,8 @@ def test_forward_ensemble_members_differ_when_stochastic():
     model = _make_small_v1p5(stochastic=True, num_ensemble_members=n)
     # Un-zero the modulation so noise has a real, appreciable effect (see helper docstring);
     # otherwise this test cannot distinguish genuine noise sensitivity from incidental
-    # floating-point batching noise (see `test_forward_ensemble_members_identical_without_stochastic`).
+    # floating-point batching noise
+    # (see `test_forward_ensemble_members_identical_without_stochastic`).
     _unzero_adaptive_layer_norms(model)
     model.eval()
     surf_vars = tuple(v for v in _SURF_VARS if v not in _OUTPUT_ONLY_SURF)
@@ -144,7 +155,7 @@ def test_forward_ensemble_members_differ_when_stochastic():
     b = next(iter(batch.surf_vars.values())).shape[0]
 
     with torch.inference_mode():
-        pred = model.forward(batch, lead_times=torch.full((b,), 6.0))
+        pred = model.forward_ensemble(batch, lead_times=torch.full((b,), 6.0))
 
     # Threshold well above the ~1e-3 floating-point batching floor established in
     # `test_forward_ensemble_members_identical_without_stochastic`, so a pass here can only be
@@ -166,7 +177,7 @@ def test_forward_ensemble_members_identical_without_stochastic():
     b = next(iter(batch.surf_vars.values())).shape[0]
 
     with torch.inference_mode():
-        pred = model.forward(batch, lead_times=torch.full((b,), 6.0))
+        pred = model.forward_ensemble(batch, lead_times=torch.full((b,), 6.0))
 
     for m in range(1, n):
         # Loose tolerance: floating-point ops (e.g. batched matmul/softmax reductions) are not
@@ -177,7 +188,7 @@ def test_forward_ensemble_members_identical_without_stochastic():
         )
 
 
-def test_rollout_yields_list_of_standard_shaped_batches_across_steps():
+def test_rollout_ensemble_yields_list_of_standard_shaped_batches_across_steps():
     n = 2
     model = _make_small_v1p5(stochastic=True, num_ensemble_members=n)
     model.eval()
@@ -186,11 +197,10 @@ def test_rollout_yields_list_of_standard_shaped_batches_across_steps():
     b = next(iter(batch.surf_vars.values())).shape[0]
 
     with torch.inference_mode():
-        preds = list(rollout(model, batch, steps=3))
+        preds = list(rollout_ensemble(model, batch, steps=3))
 
     assert len(preds) == 3
     for step_pred in preds:
-        assert isinstance(step_pred, list)
         assert len(step_pred) == n
         for member in step_pred:
             for v in member.surf_vars.values():
@@ -200,7 +210,17 @@ def test_rollout_yields_list_of_standard_shaped_batches_across_steps():
     assert model.num_ensemble_members == n
 
 
-def test_rollout_restores_num_ensemble_members_on_early_close():
+def test_rollout_raises_when_num_ensemble_members_greater_than_one():
+    model = _make_small_v1p5(stochastic=True, num_ensemble_members=2)
+    model.eval()
+    surf_vars = tuple(v for v in _SURF_VARS if v not in _OUTPUT_ONLY_SURF)
+    batch = _make_batch(surf_vars=surf_vars)
+
+    with torch.inference_mode(), pytest.raises(RuntimeError, match="forward_ensemble"):
+        next(rollout(model, batch, steps=1))
+
+
+def test_rollout_ensemble_restores_num_ensemble_members_on_early_close():
     n = 2
     model = _make_small_v1p5(stochastic=True, num_ensemble_members=n)
     model.eval()
@@ -208,14 +228,14 @@ def test_rollout_restores_num_ensemble_members_on_early_close():
     batch = _make_batch(surf_vars=surf_vars)
 
     with torch.inference_mode():
-        gen = rollout(model, batch, steps=5)
+        gen = rollout_ensemble(model, batch, steps=5)
         next(gen)
         gen.close()
 
     assert model.num_ensemble_members == n
 
 
-def test_rollout_num_ensemble_members_one_is_unaffected():
+def test_rollout_ensemble_num_ensemble_members_one_still_works():
     model = _make_small_v1p5()
     model.eval()
     surf_vars = tuple(v for v in _SURF_VARS if v not in _OUTPUT_ONLY_SURF)
@@ -223,10 +243,10 @@ def test_rollout_num_ensemble_members_one_is_unaffected():
     b = next(iter(batch.surf_vars.values())).shape[0]
 
     with torch.inference_mode():
-        preds = list(rollout(model, batch, steps=2))
+        preds = list(rollout_ensemble(model, batch, steps=2))
 
-    for pred in preds:
-        assert isinstance(pred, Batch)
-        for v in pred.surf_vars.values():
+    for step_pred in preds:
+        assert len(step_pred) == 1
+        for v in step_pred[0].surf_vars.values():
             assert v.shape[0] == b
     assert model.num_ensemble_members == 1
