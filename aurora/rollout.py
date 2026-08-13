@@ -136,9 +136,7 @@ def rollout(
         # Pre-compute the base lead-time tensor for models with variable lead time support.
         base_lead_times: Optional[torch.Tensor] = None
         if model.variable_lead_time:
-            base_lead_times = _make_lead_time_tensor(
-                batch, model.timestep.total_seconds() / 3600.0
-            )
+            base_lead_times = _make_lead_time_tensor(batch, model.timestep.total_seconds() / 3600.0)
 
         for _ in range(steps):
             if fine_lead_times is not None:
@@ -149,9 +147,11 @@ def rollout(
                     # `forward` always returns a plain `Batch` here, never a `list[Batch]`.
                     pred = cast(Batch, model.forward(batch, lead_times=sub_lead_times))
 
-                    yield _split_batch(pred, num_ensemble_members) if (
-                        num_ensemble_members > 1
-                    ) else pred
+                    yield (
+                        _split_batch(pred, num_ensemble_members)
+                        if num_ensemble_members > 1
+                        else pred
+                    )
 
                 # If desired, apply clipping before feeding predictions back as inputs.
                 if apply_rollout_input_clipping:
@@ -160,9 +160,9 @@ def rollout(
             else:
                 pred = cast(Batch, model.forward(batch, lead_times=base_lead_times))
 
-                yield _split_batch(pred, num_ensemble_members) if (
-                    num_ensemble_members > 1
-                ) else pred
+                yield (
+                    _split_batch(pred, num_ensemble_members) if num_ensemble_members > 1 else pred
+                )
 
                 if apply_rollout_input_clipping:
                     pred = model.apply_rollout_input_clipping(pred)
