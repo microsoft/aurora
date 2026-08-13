@@ -2,11 +2,11 @@
 
 import dataclasses
 import math
-from typing import Generator, Optional, Sequence
+from typing import Generator, Optional, Sequence, cast
 
 import torch
 
-from aurora.batch import Batch
+from aurora.batch import Batch, _split_batch, _tile_batch
 from aurora.model.aurora import Aurora
 
 __all__ = ["rollout"]
@@ -48,7 +48,7 @@ def rollout(
     fine_lead_times: Optional[Sequence[float]] = None,
     use_noise_accumulation: bool = True,
     apply_rollout_input_clipping: bool = True,
-) -> Generator[Batch, None, None]:
+) -> Generator[Batch | list[Batch], None, None]:
     """Perform a roll-out to make long-term predictions.
 
     For Aurora models prior to Aurora 1.5, the rollout is straightforward: iteratively make a
@@ -92,7 +92,12 @@ def rollout(
             Default: `True`.
 
     Yields:
-        :class:`aurora.Batch`: The prediction after every (sub-)step.
+        :class:`aurora.Batch` | list[:class:`aurora.Batch`]: The prediction after every (sub-)step.
+            If `model.num_ensemble_members == 1` (the default, i.e. no internal ensembling), this
+            is a single `Batch`. If `model.num_ensemble_members > 1`, all members are computed
+            internally as a single fused pass, but each yielded value is a list of
+            `num_ensemble_members` standard-shaped `Batch`\\ s, one per ensemble member; see
+            :meth:`aurora.Aurora.forward`.
     """
     # We will need to concatenate data, so ensure that everything is already of the right form.
     batch = model.batch_transform_hook(batch)  # This might modify the available variables.
@@ -114,37 +119,59 @@ def rollout(
                 f"of {base_timestep_hours} hours. Found {fine_lead_times[-1]} hours."
             )
 
-    # Enable noise accumulation when the model is stochastic and sub-stepping.
-    if use_noise_accumulation and fine_lead_times is not None:
-        model.set_noise_accumulation(n=len(fine_lead_times))
+    # If the model produces ensemble members internally, tile the batch once up front, then
+    # temporarily disable further expansion so it isn't repeated on every step's `forward` call.
+    # The tiled representation is kept purely internal to this loop: every `pred` yielded to the
+    # caller is split back into standard-shaped batches first.
+    num_ensemble_members = model.num_ensemble_members
+    if num_ensemble_members > 1:
+        batch = _tile_batch(batch, num_ensemble_members)
+        model.num_ensemble_members = 1
 
-    # Pre-compute the base lead-time tensor for models with variable lead time support.
-    base_lead_times: Optional[torch.Tensor] = None
-    if model.variable_lead_time:
-        base_lead_times = _make_lead_time_tensor(batch, model.timestep.total_seconds() / 3600.0)
+    try:
+        # Enable noise accumulation when the model is stochastic and sub-stepping.
+        if use_noise_accumulation and fine_lead_times is not None:
+            model.set_noise_accumulation(n=len(fine_lead_times))
 
-    for _ in range(steps):
-        if fine_lead_times is not None:
-            # Inner loop: iterate over sub-step lead times.
-            for lt_hours in fine_lead_times:
-                sub_lead_times = _make_lead_time_tensor(batch, lt_hours)
-                pred = model.forward(batch, lead_times=sub_lead_times)
+        # Pre-compute the base lead-time tensor for models with variable lead time support.
+        base_lead_times: Optional[torch.Tensor] = None
+        if model.variable_lead_time:
+            base_lead_times = _make_lead_time_tensor(
+                batch, model.timestep.total_seconds() / 3600.0
+            )
 
-                yield pred
+        for _ in range(steps):
+            if fine_lead_times is not None:
+                # Inner loop: iterate over sub-step lead times.
+                for lt_hours in fine_lead_times:
+                    sub_lead_times = _make_lead_time_tensor(batch, lt_hours)
+                    # `num_ensemble_members` is forced to `1` for the duration of this loop, so
+                    # `forward` always returns a plain `Batch` here, never a `list[Batch]`.
+                    pred = cast(Batch, model.forward(batch, lead_times=sub_lead_times))
 
-            # If desired, apply clipping before feeding predictions back as inputs.
-            if apply_rollout_input_clipping:
-                pred = model.apply_rollout_input_clipping(pred)
-            batch = _advance_batch(batch, pred)
-        else:
-            pred = model.forward(batch, lead_times=base_lead_times)
+                    yield _split_batch(pred, num_ensemble_members) if (
+                        num_ensemble_members > 1
+                    ) else pred
 
-            yield pred
+                # If desired, apply clipping before feeding predictions back as inputs.
+                if apply_rollout_input_clipping:
+                    pred = model.apply_rollout_input_clipping(pred)
+                batch = _advance_batch(batch, pred)
+            else:
+                pred = cast(Batch, model.forward(batch, lead_times=base_lead_times))
 
-            if apply_rollout_input_clipping:
-                pred = model.apply_rollout_input_clipping(pred)
-            batch = _advance_batch(batch, pred)
+                yield _split_batch(pred, num_ensemble_members) if (
+                    num_ensemble_members > 1
+                ) else pred
 
-    # Disable noise accumulation after roll-out is complete, in case the model will be used for
-    # normal inference or training afterwards.
-    model.set_noise_accumulation(n=0)
+                if apply_rollout_input_clipping:
+                    pred = model.apply_rollout_input_clipping(pred)
+                batch = _advance_batch(batch, pred)
+
+        # Disable noise accumulation after roll-out is complete, in case the model will be used for
+        # normal inference or training afterwards.
+        model.set_noise_accumulation(n=0)
+    finally:
+        # Restore the model's ensemble configuration, whether the roll-out ran to completion or
+        # was abandoned early.
+        model.num_ensemble_members = num_ensemble_members

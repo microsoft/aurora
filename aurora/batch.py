@@ -311,6 +311,37 @@ class Batch:
         )
 
 
+def _tile_batch(batch: Batch, n: int) -> Batch:
+    """Tile `batch` along the batch dimension `n` times.
+
+    Not part of the public `Batch` API. Used only by `aurora.Aurora.forward` and
+    `aurora.rollout.rollout` to run `n` ensemble members as a single fused computation. The
+    tiled batch dimension is an internal implementation detail and must be undone with
+    `_split_batch` before any result derived from it is returned to a caller.
+    """
+    return dataclasses.replace(
+        batch,
+        surf_vars={k: v.repeat(n, *([1] * (v.dim() - 1))) for k, v in batch.surf_vars.items()},
+        atmos_vars={k: v.repeat(n, *([1] * (v.dim() - 1))) for k, v in batch.atmos_vars.items()},
+        metadata=dataclasses.replace(batch.metadata, time=batch.metadata.time * n),
+    )
+
+
+def _split_batch(batch: Batch, n: int) -> list[Batch]:
+    """Undo `_tile_batch`, splitting a tiled batch back into `n` standard-shaped batches."""
+    b = next(iter(batch.surf_vars.values())).shape[0] // n
+    time = batch.metadata.time
+    return [
+        dataclasses.replace(
+            batch,
+            surf_vars={k: v[m * b : (m + 1) * b] for k, v in batch.surf_vars.items()},
+            atmos_vars={k: v[m * b : (m + 1) * b] for k, v in batch.atmos_vars.items()},
+            metadata=dataclasses.replace(batch.metadata, time=time[m * b : (m + 1) * b]),
+        )
+        for m in range(n)
+    ]
+
+
 def _np(x: torch.Tensor) -> np.ndarray:
     return x.detach().cpu().numpy()
 
