@@ -10,8 +10,25 @@ import pytest
 import torch
 
 from ._helpers import _OUTPUT_ONLY_SURF, _SURF_VARS, _make_batch, _make_small_v1p5
-from aurora import Batch, Metadata, rollout
+from aurora import Aurora, Batch, Metadata, rollout
 from aurora.batch import _split_batch, _tile_batch
+from aurora.model.film import AdaptiveLayerNorm
+
+
+def _unzero_adaptive_layer_norms(model: Aurora, std: float = 0.1) -> None:
+    """Nudge every `AdaptiveLayerNorm`'s modulation away from its zero initialisation.
+
+    At construction, `AdaptiveLayerNorm.ln_modulation` is exactly zero-initialised (the
+    `adaLN-Zero` trick), which makes a freshly-built, untrained model exactly insensitive to its
+    conditioning signal `c` -- which is what carries the ensemble noise. Without this, no output
+    difference a test observes between ensemble members can be attributed to noise, since noise
+    provably has zero effect on such a model.
+    """
+    for m in model.modules():
+        if isinstance(m, AdaptiveLayerNorm):
+            with torch.no_grad():
+                m.ln_modulation[-1].weight.normal_(std=std)
+                m.ln_modulation[-1].bias.normal_(std=std)
 
 
 def _make_ensemble_test_batch(b: int = 2) -> Batch:
@@ -115,7 +132,12 @@ def test_forward_returns_list_of_standard_shaped_batches():
 
 def test_forward_ensemble_members_differ_when_stochastic():
     n = 3
+    torch.manual_seed(0)
     model = _make_small_v1p5(stochastic=True, num_ensemble_members=n)
+    # Un-zero the modulation so noise has a real, appreciable effect (see helper docstring);
+    # otherwise this test cannot distinguish genuine noise sensitivity from incidental
+    # floating-point batching noise (see `test_forward_ensemble_members_identical_without_stochastic`).
+    _unzero_adaptive_layer_norms(model)
     model.eval()
     surf_vars = tuple(v for v in _SURF_VARS if v not in _OUTPUT_ONLY_SURF)
     batch = _make_batch(surf_vars=surf_vars)
@@ -124,11 +146,13 @@ def test_forward_ensemble_members_differ_when_stochastic():
     with torch.inference_mode():
         pred = model.forward(batch, lead_times=torch.full((b,), 6.0))
 
+    # Threshold well above the ~1e-3 floating-point batching floor established in
+    # `test_forward_ensemble_members_identical_without_stochastic`, so a pass here can only be
+    # explained by the injected noise actually differing per member, not incidental rounding.
     for i in range(n):
         for j in range(i + 1, n):
-            # Use exact equality: with a small, randomly-initialised model, the noise's effect on
-            # the output can be numerically tiny, so `allclose` may not reliably distinguish them.
-            assert not torch.equal(pred[i].surf_vars["2t"], pred[j].surf_vars["2t"])
+            diff = (pred[i].surf_vars["2t"] - pred[j].surf_vars["2t"]).abs().max()
+            assert diff > 1e-2
 
 
 def test_forward_ensemble_members_identical_without_stochastic():
