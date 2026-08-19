@@ -355,7 +355,7 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for aurora.foundry.common.model</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Copyright (c) Microsoft Corporation. Licensed under the MIT license.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Copyright (c) Microsoft Corporation. Licensed under the MIT license."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">abc</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -366,7 +366,7 @@ document.write(`
 <span class="kn">import</span><span class="w"> </span><span class="nn">aurora</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">rollout</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Model&quot;</span><span class="p">,</span> <span class="s2">&quot;models&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Model"</span><span class="p">,</span> <span class="s2">"models"</span><span class="p">]</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -376,37 +376,37 @@ document.write(`
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">Model</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A model that can run predictions.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A model that can run predictions."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise.</span>
+<span class="w">        </span><span class="sd">"""Initialise.</span>
 
 <span class="sd">        This creates and loads the model and determines the device the run the model on.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_model</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;GPU detected. Running on GPU.&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">target_device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"GPU detected. Running on GPU."</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">target_device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">torch</span><span class="o">.</span><span class="n">xpu</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;XPU detected. Running on XPU.&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">target_device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;xpu&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"XPU detected. Running on XPU."</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">target_device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"xpu"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No GPU available. Running on CPU.&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">target_device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"No GPU available. Running on CPU."</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">target_device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
 
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the model.</span>
+<span class="w">        </span><span class="sd">"""Create the model.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            :class:`aurora.Aurora`: Model.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
     <span class="nd">@torch</span><span class="o">.</span><span class="n">inference_mode</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">num_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Batch</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform predictions on the target device.</span>
+<span class="w">        </span><span class="sd">"""Perform predictions on the target device.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            batch (:class:`aurora.Batch`): Initial condition.</span>
@@ -414,25 +414,25 @@ document.write(`
 
 <span class="sd">        Returns:</span>
 <span class="sd">            :class:`aurora.Aurora`: Model.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Move batch and model to target device.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_device</span><span class="p">)</span>  <span class="c1"># Modifies in-place!</span>
         <span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_device</span><span class="p">)</span>
 
         <span class="c1"># Perform predictions, immediately moving the output to the CPU.</span>
         <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="n">num_steps</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
 
         <span class="c1"># Move batch and model back to the CPU.</span>
-        <span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>  <span class="c1"># Modifies in-place!</span>
 
 
 <div class="viewcode-block" id="AuroraFineTuned">
 <a class="viewcode-back" href="../../../../foundry/api.html#aurora.foundry.common.model.AuroraFineTuned">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AuroraFineTuned</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-finetuned&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Name of the model.&quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">"aurora-0.25-finetuned"</span>
+<span class="w">    </span><span class="sd">"""str: Name of the model."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora</span><span class="p">:</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora</span><span class="p">()</span>
@@ -444,8 +444,8 @@ document.write(`
 <div class="viewcode-block" id="AuroraPretrained">
 <a class="viewcode-back" href="../../../../foundry/api.html#aurora.foundry.common.model.AuroraPretrained">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AuroraPretrained</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-pretrained&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Name of the model.&quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">"aurora-0.25-pretrained"</span>
+<span class="w">    </span><span class="sd">"""str: Name of the model."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora</span><span class="p">:</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">aurora</span><span class="o">.</span><span class="n">AuroraPretrained</span><span class="p">()</span>
@@ -457,8 +457,8 @@ document.write(`
 <div class="viewcode-block" id="AuroraSmallPretrained">
 <a class="viewcode-back" href="../../../../foundry/api.html#aurora.foundry.common.model.AuroraSmallPretrained">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AuroraSmallPretrained</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-small-pretrained&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Name of the model.&quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">"aurora-0.25-small-pretrained"</span>
+<span class="w">    </span><span class="sd">"""str: Name of the model."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora</span><span class="p">:</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">aurora</span><span class="o">.</span><span class="n">AuroraSmallPretrained</span><span class="p">()</span>
@@ -470,8 +470,8 @@ document.write(`
 <div class="viewcode-block" id="Aurora12hPretrained">
 <a class="viewcode-back" href="../../../../foundry/api.html#aurora.foundry.common.model.Aurora12hPretrained">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Aurora12hPretrained</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-12h-pretrained&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Name of the model.&quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">"aurora-0.25-12h-pretrained"</span>
+<span class="w">    </span><span class="sd">"""str: Name of the model."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora</span><span class="p">:</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora12hPretrained</span><span class="p">()</span>
@@ -483,8 +483,8 @@ document.write(`
 <div class="viewcode-block" id="AuroraHighRes">
 <a class="viewcode-back" href="../../../../foundry/api.html#aurora.foundry.common.model.AuroraHighRes">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AuroraHighRes</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.1-finetuned&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Name of the model.&quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">"aurora-0.1-finetuned"</span>
+<span class="w">    </span><span class="sd">"""str: Name of the model."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora</span><span class="p">:</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">aurora</span><span class="o">.</span><span class="n">AuroraHighRes</span><span class="p">()</span>
@@ -496,8 +496,8 @@ document.write(`
 <div class="viewcode-block" id="AuroraAirPollution">
 <a class="viewcode-back" href="../../../../foundry/api.html#aurora.foundry.common.model.AuroraAirPollution">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AuroraAirPollution</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.4-air-pollution&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Name of the model.&quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">"aurora-0.4-air-pollution"</span>
+<span class="w">    </span><span class="sd">"""str: Name of the model."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora</span><span class="p">:</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">aurora</span><span class="o">.</span><span class="n">AuroraAirPollution</span><span class="p">()</span>
@@ -509,8 +509,8 @@ document.write(`
 <div class="viewcode-block" id="AuroraWave">
 <a class="viewcode-back" href="../../../../foundry/api.html#aurora.foundry.common.model.AuroraWave">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AuroraWave</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-wave&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Name of the model.&quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">"aurora-0.25-wave"</span>
+<span class="w">    </span><span class="sd">"""str: Name of the model."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora</span><span class="p">:</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">aurora</span><span class="o">.</span><span class="n">AuroraWave</span><span class="p">()</span>
@@ -520,8 +520,8 @@ document.write(`
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">AuroraV1p5</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-v1.5&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Name of the model.&quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">"aurora-0.25-v1.5"</span>
+<span class="w">    </span><span class="sd">"""str: Name of the model."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora</span><span class="p">:</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">aurora</span><span class="o">.</span><span class="n">AuroraV1p5</span><span class="p">()</span>
@@ -530,8 +530,8 @@ document.write(`
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">AuroraV1p5Ensemble</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-v1.5-ensemble&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Name of the model.&quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">"aurora-0.25-v1.5-ensemble"</span>
+<span class="w">    </span><span class="sd">"""str: Name of the model."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">aurora</span><span class="o">.</span><span class="n">Aurora</span><span class="p">:</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">aurora</span><span class="o">.</span><span class="n">AuroraV1p5Ensemble</span><span class="p">()</span>
@@ -540,10 +540,10 @@ document.write(`
 
 
 <span class="n">models</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">Model</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="sd">&quot;&quot;&quot;dict[str, type[Model]]: A dictionary that lists all available models by their name.&quot;&quot;&quot;</span>
+<span class="sd">"""dict[str, type[Model]]: A dictionary that lists all available models by their name."""</span>
 
 <span class="k">for</span> <span class="n">model_class</span> <span class="ow">in</span> <span class="n">Model</span><span class="o">.</span><span class="n">__subclasses__</span><span class="p">():</span>
-    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model_class</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;`</span><span class="si">{</span><span class="n">model_class</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` is missing `name`.&quot;</span>
+    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model_class</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">),</span> <span class="sa">f</span><span class="s2">"`</span><span class="si">{</span><span class="n">model_class</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` is missing `name`."</span>
     <span class="c1"># `mypy` will complain, because `Model` is abstract, so it cannot be passed to `type`.</span>
     <span class="n">models</span><span class="p">[</span><span class="n">model_class</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_class</span>  <span class="c1"># type: ignore[type-abstract]</span>
 </pre></div>

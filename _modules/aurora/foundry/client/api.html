@@ -355,10 +355,10 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for aurora.foundry.client.api</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Copyright (c) Microsoft Corporation. Licensed under the MIT license.</span>
+<span></span><span class="sd">"""Copyright (c) Microsoft Corporation. Licensed under the MIT license.</span>
 
 <span class="sd">This is the API that the end user uses to submit jobs to the model running on Azure AI Foundry.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
@@ -371,7 +371,7 @@ document.write(`
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.foundry.common.channel</span><span class="w"> </span><span class="kn">import</span> <span class="n">CommunicationChannel</span><span class="p">,</span> <span class="n">iterate_prediction_files</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.foundry.common.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">models</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SubmissionError&quot;</span><span class="p">,</span> <span class="s2">&quot;submit&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"SubmissionError"</span><span class="p">,</span> <span class="s2">"submit"</span><span class="p">]</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -390,7 +390,7 @@ document.write(`
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">SubmissionError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The submission could not be completed for some reason.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""The submission could not be completed for some reason."""</span>
 
 
 <div class="viewcode-block" id="submit">
@@ -409,7 +409,7 @@ document.write(`
     <span class="n">async_upload_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">return_urls</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Batch</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Submit a request to Azure AI Foundry and retrieve the predictions.</span>
+<span class="w">    </span><span class="sd">"""Submit a request to Azure AI Foundry and retrieve the predictions.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        batch (:class:`aurora.Batch`): Initial condition.</span>
@@ -446,61 +446,61 @@ document.write(`
 
 <span class="sd">    Yields:</span>
 <span class="sd">        :class:`aurora.Batch`: Predictions.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">model_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model `</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">` is not a valid model.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Model `</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">` is not a valid model."</span><span class="p">)</span>
 
     <span class="c1"># Warn about features that require the new Aurora-1.5 Foundry model deployment.</span>
-    <span class="n">is_aurora_1p5</span> <span class="o">=</span> <span class="n">model_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;aurora-0.25-v1.5&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-v1.5-ensemble&quot;</span><span class="p">]</span>
+    <span class="n">is_aurora_1p5</span> <span class="o">=</span> <span class="n">model_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"aurora-0.25-v1.5"</span><span class="p">,</span> <span class="s2">"aurora-0.25-v1.5-ensemble"</span><span class="p">]</span>
     <span class="n">aurora_1p5_features</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">if</span> <span class="n">fine_lead_times</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">aurora_1p5_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fine_lead_times&quot;</span><span class="p">)</span>
+        <span class="n">aurora_1p5_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"fine_lead_times"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">saved_surf_vars</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">aurora_1p5_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;saved_surf_vars&quot;</span><span class="p">)</span>
+        <span class="n">aurora_1p5_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"saved_surf_vars"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">saved_atmos_vars</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">aurora_1p5_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;saved_atmos_vars&quot;</span><span class="p">)</span>
+        <span class="n">aurora_1p5_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"saved_atmos_vars"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">saved_atmos_levels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">aurora_1p5_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;saved_atmos_levels&quot;</span><span class="p">)</span>
+        <span class="n">aurora_1p5_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"saved_atmos_levels"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">saved_static_vars</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">aurora_1p5_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;saved_static_vars&quot;</span><span class="p">)</span>
+        <span class="n">aurora_1p5_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"saved_static_vars"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">aurora_1p5_features</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_aurora_1p5</span><span class="p">:</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;You are using a model (&#39;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&#39;) which is not an Aurora-1.5 model. The &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;following parameters only work on a deployment of Aurora-1.5 and will therefore be &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;silently ignored by the Aurora endpoint: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">aurora_1p5_features</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"You are using a model ('</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">') which is not an Aurora-1.5 model. The "</span>
+            <span class="sa">f</span><span class="s2">"following parameters only work on a deployment of Aurora-1.5 and will therefore be "</span>
+            <span class="sa">f</span><span class="s2">"silently ignored by the Aurora endpoint: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">aurora_1p5_features</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">,</span>
             <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="c1"># Create a task at the endpoint.</span>
     <span class="n">task</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="n">model_name</span><span class="p">,</span>
-        <span class="s2">&quot;num_steps&quot;</span><span class="p">:</span> <span class="n">num_steps</span><span class="p">,</span>
-        <span class="s2">&quot;data_folder_uri&quot;</span><span class="p">:</span> <span class="n">channel</span><span class="o">.</span><span class="n">to_spec</span><span class="p">(),</span>
+        <span class="s2">"model_name"</span><span class="p">:</span> <span class="n">model_name</span><span class="p">,</span>
+        <span class="s2">"num_steps"</span><span class="p">:</span> <span class="n">num_steps</span><span class="p">,</span>
+        <span class="s2">"data_folder_uri"</span><span class="p">:</span> <span class="n">channel</span><span class="o">.</span><span class="n">to_spec</span><span class="p">(),</span>
     <span class="p">}</span>
     <span class="k">if</span> <span class="n">fine_lead_times</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">task</span><span class="p">[</span><span class="s2">&quot;fine_lead_times&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">fine_lead_times</span><span class="p">)</span>
+        <span class="n">task</span><span class="p">[</span><span class="s2">"fine_lead_times"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">fine_lead_times</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">saved_surf_vars</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">task</span><span class="p">[</span><span class="s2">&quot;saved_surf_vars&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">saved_surf_vars</span><span class="p">)</span>
+        <span class="n">task</span><span class="p">[</span><span class="s2">"saved_surf_vars"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">saved_surf_vars</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">saved_atmos_vars</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">task</span><span class="p">[</span><span class="s2">&quot;saved_atmos_vars&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">saved_atmos_vars</span><span class="p">)</span>
+        <span class="n">task</span><span class="p">[</span><span class="s2">"saved_atmos_vars"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">saved_atmos_vars</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">saved_atmos_levels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">task</span><span class="p">[</span><span class="s2">&quot;saved_atmos_levels&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">saved_atmos_levels</span><span class="p">)</span>
+        <span class="n">task</span><span class="p">[</span><span class="s2">"saved_atmos_levels"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">saved_atmos_levels</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">saved_static_vars</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">task</span><span class="p">[</span><span class="s2">&quot;saved_static_vars&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">saved_static_vars</span><span class="p">)</span>
-    <span class="n">task</span><span class="p">[</span><span class="s2">&quot;async_upload_workers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">async_upload_workers</span>
+        <span class="n">task</span><span class="p">[</span><span class="s2">"saved_static_vars"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">saved_static_vars</span><span class="p">)</span>
+    <span class="n">task</span><span class="p">[</span><span class="s2">"async_upload_workers"</span><span class="p">]</span> <span class="o">=</span> <span class="n">async_upload_workers</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">foundry_client</span><span class="o">.</span><span class="n">submit_task</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">submission_info</span> <span class="o">=</span> <span class="n">CreationInfo</span><span class="p">(</span><span class="o">**</span><span class="n">response</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SubmissionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to create task. Endpoint response: </span><span class="si">{</span><span class="n">response</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+        <span class="k">raise</span> <span class="n">SubmissionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to create task. Endpoint response: </span><span class="si">{</span><span class="n">response</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
     <span class="n">task_id</span> <span class="o">=</span> <span class="n">submission_info</span><span class="o">.</span><span class="n">task_id</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Created task `</span><span class="si">{</span><span class="n">task_id</span><span class="si">}</span><span class="s2">` at endpoint.&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Created task `</span><span class="si">{</span><span class="n">task_id</span><span class="si">}</span><span class="s2">` at endpoint."</span><span class="p">)</span>
 
     <span class="c1"># Send the initial condition over.</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Uploading initial condition.&quot;</span><span class="p">)</span>
-    <span class="n">channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">task_id</span><span class="p">,</span> <span class="s2">&quot;input.nc&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Uploading initial condition."</span><span class="p">)</span>
+    <span class="n">channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">task_id</span><span class="p">,</span> <span class="s2">"input.nc"</span><span class="p">)</span>
 
-    <span class="n">previous_status</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;No status&quot;</span>
+    <span class="n">previous_status</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"No status"</span>
     <span class="n">previous_progress</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">ack_read</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -514,47 +514,47 @@ document.write(`
             <span class="c1"># If the task has been submitted, we must be able to read the acknowledgement of the</span>
             <span class="c1"># initial condition.</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">channel</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">task_id</span><span class="p">,</span> <span class="s2">&quot;input.nc.ack&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">120</span><span class="p">)</span>
+                <span class="n">channel</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">task_id</span><span class="p">,</span> <span class="s2">"input.nc.ack"</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">120</span><span class="p">)</span>
                 <span class="n">ack_read</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Read the acknowledgement only once.</span>
             <span class="k">except</span> <span class="ne">TimeoutError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">SubmissionError</span><span class="p">(</span>
-                    <span class="s2">&quot;Could not read acknowledgement of initial condition. &quot;</span>
-                    <span class="s2">&quot;This acknowledgement should be availabe, &quot;</span>
-                    <span class="s2">&quot;since the task has been successfully submitted. &quot;</span>
-                    <span class="s2">&quot;Something might have gone wrong in the communication &quot;</span>
-                    <span class="s2">&quot;between the client and the server. &quot;</span>
-                    <span class="s2">&quot;Please check the logs and your SAS token should you be using one.&quot;</span>
+                    <span class="s2">"Could not read acknowledgement of initial condition. "</span>
+                    <span class="s2">"This acknowledgement should be availabe, "</span>
+                    <span class="s2">"since the task has been successfully submitted. "</span>
+                    <span class="s2">"Something might have gone wrong in the communication "</span>
+                    <span class="s2">"between the client and the server. "</span>
+                    <span class="s2">"Please check the logs and your SAS token should you be using one."</span>
                 <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
         <span class="k">if</span> <span class="n">task_info</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="n">previous_status</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Task status update: </span><span class="si">{</span><span class="n">task_info</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Task status update: </span><span class="si">{</span><span class="n">task_info</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="n">previous_status</span> <span class="o">=</span> <span class="n">task_info</span><span class="o">.</span><span class="n">status</span>
 
         <span class="k">if</span> <span class="n">task_info</span><span class="o">.</span><span class="n">progress_percentage</span> <span class="o">&gt;</span> <span class="n">previous_progress</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Task progress update: </span><span class="si">{</span><span class="n">task_info</span><span class="o">.</span><span class="n">progress_percentage</span><span class="si">}</span><span class="s2">%.&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Task progress update: </span><span class="si">{</span><span class="n">task_info</span><span class="o">.</span><span class="n">progress_percentage</span><span class="si">}</span><span class="s2">%."</span><span class="p">)</span>
             <span class="n">previous_progress</span> <span class="o">=</span> <span class="n">task_info</span><span class="o">.</span><span class="n">progress_percentage</span>
 
         <span class="k">if</span> <span class="n">task_info</span><span class="o">.</span><span class="n">completed</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">task_info</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Task has been successfully completed!&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Task has been successfully completed!"</span><span class="p">)</span>
                 <span class="k">break</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">SubmissionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Task failed: </span><span class="si">{</span><span class="n">task_info</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">SubmissionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Task failed: </span><span class="si">{</span><span class="n">task_info</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="n">n_fine</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">fine_lead_times</span><span class="p">)</span> <span class="k">if</span> <span class="n">fine_lead_times</span> <span class="k">else</span> <span class="mi">1</span>
     <span class="n">total_predictions</span> <span class="o">=</span> <span class="n">num_steps</span> <span class="o">*</span> <span class="n">n_fine</span>
 
-    <span class="n">pred_file</span> <span class="o">=</span> <span class="s2">&quot;prediction.nc&quot;</span>
+    <span class="n">pred_file</span> <span class="o">=</span> <span class="s2">"prediction.nc"</span>
     <span class="k">if</span> <span class="n">return_urls</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Retrieving prediction URLs.&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Retrieving prediction URLs."</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">prediction_name</span> <span class="ow">in</span> <span class="n">iterate_prediction_files</span><span class="p">(</span><span class="n">pred_file</span><span class="p">,</span> <span class="n">total_predictions</span><span class="p">):</span>
             <span class="k">yield</span> <span class="n">channel</span><span class="o">.</span><span class="n">get_url</span><span class="p">(</span><span class="n">task_id</span><span class="p">,</span> <span class="n">prediction_name</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;All prediction URLs have been retrieved.&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"All prediction URLs have been retrieved."</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Retrieving predictions.&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Retrieving predictions."</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">prediction_name</span> <span class="ow">in</span> <span class="n">iterate_prediction_files</span><span class="p">(</span><span class="n">pred_file</span><span class="p">,</span> <span class="n">total_predictions</span><span class="p">):</span>
             <span class="k">yield</span> <span class="n">channel</span><span class="o">.</span><span class="n">receive</span><span class="p">(</span><span class="n">task_id</span><span class="p">,</span> <span class="n">prediction_name</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;All predictions have been retrieved.&quot;</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"All predictions have been retrieved."</span><span class="p">)</span></div>
 
 </pre></div>
 

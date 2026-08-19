@@ -730,7 +730,7 @@ You can do that in the following way:</p>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">AuroraHighRes</span><span class="p">(</span>
     <span class="c1"># Use manually downloaded and regridded static variables.</span>
-    <span class="n">surf_stats</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">3.270407e03</span><span class="p">,</span> <span class="mf">6.540335e04</span><span class="p">)},</span>
+    <span class="n">surf_stats</span><span class="o">=</span><span class="p">{</span><span class="s2">"z"</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">3.270407e03</span><span class="p">,</span> <span class="mf">6.540335e04</span><span class="p">)},</span>
 <span class="p">)</span>
 
 <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">()</span>
@@ -943,7 +943,7 @@ finer than the 6-hour base timestep. To produce hourly predictions during rollou
 
 <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
     <span class="n">preds</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+        <span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">fine_lead_times</span><span class="o">=</span><span class="n">fine_lead_times</span><span class="p">)</span>
     <span class="p">]</span>
 </pre></div>

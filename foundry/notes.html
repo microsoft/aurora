@@ -454,18 +454,18 @@ document.write(`
 
 <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">submit</span><span class="p">(</span>
     <span class="n">initial_condition</span><span class="p">,</span>
-    <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;aurora-0.25-v1.5&quot;</span><span class="p">,</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s2">"aurora-0.25-v1.5"</span><span class="p">,</span>
     <span class="n">num_steps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>  <span class="c1"># Every major step predicts six hours ahead.</span>
     <span class="n">fine_lead_times</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span>  <span class="c1"># Specify sub-steps like this for hourly forecasts.</span>
     <span class="n">foundry_client</span><span class="o">=</span><span class="n">FoundryClient</span><span class="p">(</span>
-        <span class="n">endpoint</span><span class="o">=</span><span class="s2">&quot;https://endpoint/&quot;</span><span class="p">,</span>
-        <span class="n">token</span><span class="o">=</span><span class="s2">&quot;ENDPOINT_TOKEN&quot;</span><span class="p">,</span>
+        <span class="n">endpoint</span><span class="o">=</span><span class="s2">"https://endpoint/"</span><span class="p">,</span>
+        <span class="n">token</span><span class="o">=</span><span class="s2">"ENDPOINT_TOKEN"</span><span class="p">,</span>
     <span class="p">),</span>
     <span class="c1"># Communication with the endpoint happens via an intermediate blob storage container. You</span>
     <span class="c1"># will need to create one and generate an URL with a SAS token that has both read and write</span>
     <span class="c1"># rights.</span>
     <span class="n">channel</span><span class="o">=</span><span class="n">BlobStorageChannel</span><span class="p">(</span>
-        <span class="s2">&quot;https://storageaccount.blob.core.windows.net/container?&lt;READ_WRITE_SAS_TOKEN&gt;&quot;</span>
+        <span class="s2">"https://storageaccount.blob.core.windows.net/container?&lt;READ_WRITE_SAS_TOKEN&gt;"</span>
     <span class="p">),</span>
 <span class="p">):</span>
     <span class="k">pass</span>  <span class="c1"># Do something with `pred`, which is a `Batch`.</span>

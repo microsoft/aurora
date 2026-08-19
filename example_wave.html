@@ -431,9 +431,9 @@ document.write(`
 <h2>Downloading HRES-WAM From MARS<a class="headerlink" href="#downloading-hres-wam-from-mars" title="Link to this heading">#</a></h2>
 <p>To begin with, register an account with <a class="reference external" href="https://api.ecmwf.int/v1/key">ECMWF</a> and create <code class="docutils literal notranslate"><span class="pre">$HOME/.ecmwfapirc</span></code> with the following content:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;url&quot;</span>   <span class="p">:</span> <span class="s2">&quot;https://api.ecmwf.int/v1&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;key&quot;</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">API</span> <span class="n">key</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;email&quot;</span> <span class="p">:</span> <span class="o">&lt;</span><span class="n">email</span><span class="o">&gt;</span>
+    <span class="s2">"url"</span>   <span class="p">:</span> <span class="s2">"https://api.ecmwf.int/v1"</span><span class="p">,</span>
+    <span class="s2">"key"</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">API</span> <span class="n">key</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"email"</span> <span class="p">:</span> <span class="o">&lt;</span><span class="n">email</span><span class="o">&gt;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -446,59 +446,59 @@ document.write(`
 <span class="kn">import</span><span class="w"> </span><span class="nn">ecmwfapi</span>
 
 <span class="c1"># Data will be downloaded here.</span>
-<span class="n">download_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;~/downloads/wave&quot;</span><span class="p">)</span>
+<span class="n">download_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"~/downloads/wave"</span><span class="p">)</span>
 
 <span class="n">download_path</span> <span class="o">=</span> <span class="n">download_path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
 <span class="n">download_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="c1"># Day to download. This will download all times for that day.</span>
-<span class="n">day</span> <span class="o">=</span> <span class="s2">&quot;2022-09-16&quot;</span>
+<span class="n">day</span> <span class="o">=</span> <span class="s2">"2022-09-16"</span>
 
 <span class="c1"># Set up the variables we want to download</span>
 <span class="n">variables</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;swh&quot;</span><span class="p">:</span> <span class="s2">&quot;140229&quot;</span><span class="p">,</span>  <span class="c1"># Significant wave height</span>
-    <span class="s2">&quot;pp1d&quot;</span><span class="p">:</span> <span class="s2">&quot;140231&quot;</span><span class="p">,</span>  <span class="c1"># Peak wave period</span>
-    <span class="s2">&quot;mwp&quot;</span><span class="p">:</span> <span class="s2">&quot;140232&quot;</span><span class="p">,</span>  <span class="c1"># Mean wave period</span>
-    <span class="s2">&quot;mwd&quot;</span><span class="p">:</span> <span class="s2">&quot;140230&quot;</span><span class="p">,</span>  <span class="c1"># Mean wave direction</span>
-    <span class="s2">&quot;shww&quot;</span><span class="p">:</span> <span class="s2">&quot;140234&quot;</span><span class="p">,</span>  <span class="c1"># Significant height of wind waves</span>
-    <span class="s2">&quot;mdww&quot;</span><span class="p">:</span> <span class="s2">&quot;140235&quot;</span><span class="p">,</span>  <span class="c1"># Mean direction of wind waves</span>
-    <span class="s2">&quot;mpww&quot;</span><span class="p">:</span> <span class="s2">&quot;140236&quot;</span><span class="p">,</span>  <span class="c1"># Mean period of wind waves</span>
-    <span class="s2">&quot;shts&quot;</span><span class="p">:</span> <span class="s2">&quot;140237&quot;</span><span class="p">,</span>  <span class="c1"># Significant height of total swell</span>
-    <span class="s2">&quot;mdts&quot;</span><span class="p">:</span> <span class="s2">&quot;140238&quot;</span><span class="p">,</span>  <span class="c1"># Mean direction of total swell</span>
-    <span class="s2">&quot;mpts&quot;</span><span class="p">:</span> <span class="s2">&quot;140239&quot;</span><span class="p">,</span>  <span class="c1"># Mean period of total swell</span>
-    <span class="s2">&quot;swh1&quot;</span><span class="p">:</span> <span class="s2">&quot;140121&quot;</span><span class="p">,</span>  <span class="c1"># Significant wave height of first swell</span>
-    <span class="s2">&quot;mwd1&quot;</span><span class="p">:</span> <span class="s2">&quot;140122&quot;</span><span class="p">,</span>  <span class="c1"># Mean direction of first swell</span>
-    <span class="s2">&quot;mwp1&quot;</span><span class="p">:</span> <span class="s2">&quot;140123&quot;</span><span class="p">,</span>  <span class="c1"># Mean period of first swell</span>
-    <span class="s2">&quot;swh2&quot;</span><span class="p">:</span> <span class="s2">&quot;140124&quot;</span><span class="p">,</span>  <span class="c1"># Significant wave height of second swell</span>
-    <span class="s2">&quot;mwd2&quot;</span><span class="p">:</span> <span class="s2">&quot;140125&quot;</span><span class="p">,</span>  <span class="c1"># Mean wave direction of second swell</span>
-    <span class="s2">&quot;mwp2&quot;</span><span class="p">:</span> <span class="s2">&quot;140126&quot;</span><span class="p">,</span>  <span class="c1"># Mean wave period of second swell</span>
-    <span class="s2">&quot;dwi&quot;</span><span class="p">:</span> <span class="s2">&quot;140249&quot;</span><span class="p">,</span>  <span class="c1"># 10 m neutral wind direction</span>
-    <span class="s2">&quot;wind&quot;</span><span class="p">:</span> <span class="s2">&quot;140245&quot;</span><span class="p">,</span>  <span class="c1"># 10 m neutral wind speed</span>
+    <span class="s2">"swh"</span><span class="p">:</span> <span class="s2">"140229"</span><span class="p">,</span>  <span class="c1"># Significant wave height</span>
+    <span class="s2">"pp1d"</span><span class="p">:</span> <span class="s2">"140231"</span><span class="p">,</span>  <span class="c1"># Peak wave period</span>
+    <span class="s2">"mwp"</span><span class="p">:</span> <span class="s2">"140232"</span><span class="p">,</span>  <span class="c1"># Mean wave period</span>
+    <span class="s2">"mwd"</span><span class="p">:</span> <span class="s2">"140230"</span><span class="p">,</span>  <span class="c1"># Mean wave direction</span>
+    <span class="s2">"shww"</span><span class="p">:</span> <span class="s2">"140234"</span><span class="p">,</span>  <span class="c1"># Significant height of wind waves</span>
+    <span class="s2">"mdww"</span><span class="p">:</span> <span class="s2">"140235"</span><span class="p">,</span>  <span class="c1"># Mean direction of wind waves</span>
+    <span class="s2">"mpww"</span><span class="p">:</span> <span class="s2">"140236"</span><span class="p">,</span>  <span class="c1"># Mean period of wind waves</span>
+    <span class="s2">"shts"</span><span class="p">:</span> <span class="s2">"140237"</span><span class="p">,</span>  <span class="c1"># Significant height of total swell</span>
+    <span class="s2">"mdts"</span><span class="p">:</span> <span class="s2">"140238"</span><span class="p">,</span>  <span class="c1"># Mean direction of total swell</span>
+    <span class="s2">"mpts"</span><span class="p">:</span> <span class="s2">"140239"</span><span class="p">,</span>  <span class="c1"># Mean period of total swell</span>
+    <span class="s2">"swh1"</span><span class="p">:</span> <span class="s2">"140121"</span><span class="p">,</span>  <span class="c1"># Significant wave height of first swell</span>
+    <span class="s2">"mwd1"</span><span class="p">:</span> <span class="s2">"140122"</span><span class="p">,</span>  <span class="c1"># Mean direction of first swell</span>
+    <span class="s2">"mwp1"</span><span class="p">:</span> <span class="s2">"140123"</span><span class="p">,</span>  <span class="c1"># Mean period of first swell</span>
+    <span class="s2">"swh2"</span><span class="p">:</span> <span class="s2">"140124"</span><span class="p">,</span>  <span class="c1"># Significant wave height of second swell</span>
+    <span class="s2">"mwd2"</span><span class="p">:</span> <span class="s2">"140125"</span><span class="p">,</span>  <span class="c1"># Mean wave direction of second swell</span>
+    <span class="s2">"mwp2"</span><span class="p">:</span> <span class="s2">"140126"</span><span class="p">,</span>  <span class="c1"># Mean wave period of second swell</span>
+    <span class="s2">"dwi"</span><span class="p">:</span> <span class="s2">"140249"</span><span class="p">,</span>  <span class="c1"># 10 m neutral wind direction</span>
+    <span class="s2">"wind"</span><span class="p">:</span> <span class="s2">"140245"</span><span class="p">,</span>  <span class="c1"># 10 m neutral wind speed</span>
 <span class="p">}</span>
 <span class="c1"># Convert to form required by MARS.</span>
 <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">variables</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span>
-    <span class="n">variables</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">variables</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span> <span class="o">+</span> <span class="s2">"."</span> <span class="o">+</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
 
-<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-wave.grib&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-    <span class="n">c</span> <span class="o">=</span> <span class="n">ecmwfapi</span><span class="o">.</span><span class="n">ECMWFService</span><span class="p">(</span><span class="s2">&quot;mars&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-wave.grib"</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">ecmwfapi</span><span class="o">.</span><span class="n">ECMWFService</span><span class="p">(</span><span class="s2">"mars"</span><span class="p">)</span>
     <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">        request,</span>
 <span class="s2">            class=od,</span>
 <span class="s2">            date=</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">/to/</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">,</span>
 <span class="s2">            domain=g,</span>
 <span class="s2">            expver=1,</span>
-<span class="s2">            param=</span><span class="si">{</span><span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">variables</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">            param=</span><span class="si">{</span><span class="s2">"/"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">variables</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="si">}</span><span class="s2">,</span>
 <span class="s2">            stream=wave,</span>
 <span class="s2">            time=00:00:00/06:00:00/12:00:00/18:00:00,</span>
 <span class="s2">            grid=0.25/0.25,</span>
 <span class="s2">            type=an,</span>
-<span class="s2">            target=&quot;</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-wave.grib&quot;</span>
-<span class="s2">        &quot;&quot;&quot;</span><span class="p">,</span>
-        <span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-wave.grib&quot;</span><span class="p">),</span>
+<span class="s2">            target="</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-wave.grib"</span>
+<span class="s2">        """</span><span class="p">,</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-wave.grib"</span><span class="p">),</span>
     <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;HRES-WAM data downloaded!&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"HRES-WAM data downloaded!"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -518,33 +518,33 @@ document.write(`
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 
 <span class="c1"># We will download from Google Cloud.</span>
-<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;gs://weatherbench2/datasets/hres_t0/2016-2022-6h-1440x721.zarr&quot;</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">"gs://weatherbench2/datasets/hres_t0/2016-2022-6h-1440x721.zarr"</span>
 <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_zarr</span><span class="p">(</span><span class="n">fsspec</span><span class="o">.</span><span class="n">get_mapper</span><span class="p">(</span><span class="n">url</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
 <span class="c1"># Download the surface-level variables. We write the downloaded data to another file to cache.</span>
-<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-surface-level.nc&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-surface-level.nc"</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
     <span class="n">surface_vars</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="s2">&quot;10m_u_component_of_wind&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;10m_v_component_of_wind&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;2m_temperature&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;mean_sea_level_pressure&quot;</span><span class="p">,</span>
+        <span class="s2">"10m_u_component_of_wind"</span><span class="p">,</span>
+        <span class="s2">"10m_v_component_of_wind"</span><span class="p">,</span>
+        <span class="s2">"2m_temperature"</span><span class="p">,</span>
+        <span class="s2">"mean_sea_level_pressure"</span><span class="p">,</span>
     <span class="p">]</span>
     <span class="n">ds_surf</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">surface_vars</span><span class="p">]</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">day</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
-    <span class="n">ds_surf</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-surface-level.nc&quot;</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Surface-level variables downloaded!&quot;</span><span class="p">)</span>
+    <span class="n">ds_surf</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-surface-level.nc"</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Surface-level variables downloaded!"</span><span class="p">)</span>
 
 <span class="c1"># Download the atmospheric variables. We write the downloaded data to another file to cache.</span>
-<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-atmospheric.nc&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-atmospheric.nc"</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
     <span class="n">atmos_vars</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="s2">&quot;temperature&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;u_component_of_wind&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;v_component_of_wind&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;specific_humidity&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;geopotential&quot;</span><span class="p">,</span>
+        <span class="s2">"temperature"</span><span class="p">,</span>
+        <span class="s2">"u_component_of_wind"</span><span class="p">,</span>
+        <span class="s2">"v_component_of_wind"</span><span class="p">,</span>
+        <span class="s2">"specific_humidity"</span><span class="p">,</span>
+        <span class="s2">"geopotential"</span><span class="p">,</span>
     <span class="p">]</span>
     <span class="n">ds_atmos</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">atmos_vars</span><span class="p">]</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">day</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
-    <span class="n">ds_atmos</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-atmospheric.nc&quot;</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Atmospheric variables downloaded!&quot;</span><span class="p">)</span>
+    <span class="n">ds_atmos</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-atmospheric.nc"</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Atmospheric variables downloaded!"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -565,10 +565,10 @@ Atmospheric variables downloaded!
 
 <span class="c1"># Download the static variables from HuggingFace.</span>
 <span class="n">static_path</span> <span class="o">=</span> <span class="n">hf_hub_download</span><span class="p">(</span>
-    <span class="n">repo_id</span><span class="o">=</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span>
-    <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;aurora-0.25-wave-static.pickle&quot;</span><span class="p">,</span>
+    <span class="n">repo_id</span><span class="o">=</span><span class="s2">"microsoft/aurora"</span><span class="p">,</span>
+    <span class="n">filename</span><span class="o">=</span><span class="s2">"aurora-0.25-wave-static.pickle"</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Static variables downloaded!&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Static variables downloaded!"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -592,27 +592,27 @@ Atmospheric variables downloaded!
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">Metadata</span>
 
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">static_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">static_path</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">static_vars</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 <span class="n">surf_vars_ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span>
-    <span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-surface-level.nc&quot;</span><span class="p">,</span>
-    <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;netcdf4&quot;</span><span class="p">,</span>
+    <span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-surface-level.nc"</span><span class="p">,</span>
+    <span class="n">engine</span><span class="o">=</span><span class="s2">"netcdf4"</span><span class="p">,</span>
     <span class="n">decode_timedelta</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">wave_vars_ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span>
-    <span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-wave.grib&quot;</span><span class="p">,</span>
-    <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;cfgrib&quot;</span><span class="p">,</span>
-    <span class="n">backend_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;indexpath&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">},</span>
+    <span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-wave.grib"</span><span class="p">,</span>
+    <span class="n">engine</span><span class="o">=</span><span class="s2">"cfgrib"</span><span class="p">,</span>
+    <span class="n">backend_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">"indexpath"</span><span class="p">:</span> <span class="s2">""</span><span class="p">},</span>
 <span class="p">)</span>
 <span class="n">atmos_vars_ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span>
-    <span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-atmospheric.nc&quot;</span><span class="p">,</span>
-    <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;netcdf4&quot;</span><span class="p">,</span>
+    <span class="n">download_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">-atmospheric.nc"</span><span class="p">,</span>
+    <span class="n">engine</span><span class="o">=</span><span class="s2">"netcdf4"</span><span class="p">,</span>
     <span class="n">decode_timedelta</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_hres</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepare an HRES variable from WeatherBench2.</span>
+<span class="w">    </span><span class="sd">"""Prepare an HRES variable from WeatherBench2.</span>
 
 <span class="sd">    This does the following things:</span>
 <span class="sd">    * Select the first two time steps: 00:00 and 06:00.</span>
@@ -620,52 +620,52 @@ Atmospheric variables downloaded!
 <span class="sd">    * Flip along the latitude axis to ensure that the latitudes are decreasing.</span>
 <span class="sd">    * Copy the data, because the data must be contiguous when converting to PyTorch.</span>
 <span class="sd">    * Convert to PyTorch.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">x</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">][</span><span class="o">...</span><span class="p">,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_wave</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepare a wave variable.</span>
+<span class="w">    </span><span class="sd">"""Prepare a wave variable.</span>
 
 <span class="sd">    This does the following things:</span>
 <span class="sd">    * Select the first two time steps: 00:00 and 06:00.</span>
 <span class="sd">    * Insert an empty batch dimension with `[None]`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">x</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">])</span>
 
 
 <span class="n">batch</span> <span class="o">=</span> <span class="n">Batch</span><span class="p">(</span>
     <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;2t&quot;</span><span class="p">:</span> <span class="n">_prepare_hres</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;2m_temperature&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;10u&quot;</span><span class="p">:</span> <span class="n">_prepare_hres</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;10m_u_component_of_wind&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;10v&quot;</span><span class="p">:</span> <span class="n">_prepare_hres</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;10m_v_component_of_wind&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;msl&quot;</span><span class="p">:</span> <span class="n">_prepare_hres</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;mean_sea_level_pressure&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;swh&quot;</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">&quot;swh&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;mwd&quot;</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">&quot;mwd&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;mwp&quot;</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">&quot;mwp&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;pp1d&quot;</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">&quot;pp1d&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;shww&quot;</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">&quot;shww&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;mdww&quot;</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">&quot;mdww&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;mpww&quot;</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">&quot;mpww&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;shts&quot;</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">&quot;shts&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;mdts&quot;</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">&quot;mdts&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;mpts&quot;</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">&quot;mpts&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;swh1&quot;</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">&quot;swh1&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;mwd1&quot;</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">&quot;mwd1&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;mwp1&quot;</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">&quot;mwp1&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;swh2&quot;</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">&quot;swh2&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;mwd2&quot;</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">&quot;mwd2&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;mwp2&quot;</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">&quot;mwp2&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;wind&quot;</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">&quot;wind&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;dwi&quot;</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">&quot;dwi&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"2t"</span><span class="p">:</span> <span class="n">_prepare_hres</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">"2m_temperature"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"10u"</span><span class="p">:</span> <span class="n">_prepare_hres</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">"10m_u_component_of_wind"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"10v"</span><span class="p">:</span> <span class="n">_prepare_hres</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">"10m_v_component_of_wind"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"msl"</span><span class="p">:</span> <span class="n">_prepare_hres</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">"mean_sea_level_pressure"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"swh"</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">"swh"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"mwd"</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">"mwd"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"mwp"</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">"mwp"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"pp1d"</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">"pp1d"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"shww"</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">"shww"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"mdww"</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">"mdww"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"mpww"</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">"mpww"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"shts"</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">"shts"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"mdts"</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">"mdts"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"mpts"</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">"mpts"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"swh1"</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">"swh1"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"mwd1"</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">"mwd1"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"mwp1"</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">"mwp1"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"swh2"</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">"swh2"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"mwd2"</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">"mwd2"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"mwp2"</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">"mwp2"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"wind"</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">"wind"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"dwi"</span><span class="p">:</span> <span class="n">_prepare_wave</span><span class="p">(</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">"dwi"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
     <span class="p">},</span>
     <span class="n">static_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">static_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
     <span class="n">atmos_vars</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">_prepare_hres</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;temperature&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="n">_prepare_hres</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;u_component_of_wind&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;v&quot;</span><span class="p">:</span> <span class="n">_prepare_hres</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;v_component_of_wind&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;q&quot;</span><span class="p">:</span> <span class="n">_prepare_hres</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;specific_humidity&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">_prepare_hres</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">&quot;geopotential&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"t"</span><span class="p">:</span> <span class="n">_prepare_hres</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">"temperature"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"u"</span><span class="p">:</span> <span class="n">_prepare_hres</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">"u_component_of_wind"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"v"</span><span class="p">:</span> <span class="n">_prepare_hres</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">"v_component_of_wind"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"q"</span><span class="p">:</span> <span class="n">_prepare_hres</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">"specific_humidity"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">"z"</span><span class="p">:</span> <span class="n">_prepare_hres</span><span class="p">(</span><span class="n">atmos_vars_ds</span><span class="p">[</span><span class="s2">"geopotential"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
     <span class="p">},</span>
     <span class="n">metadata</span><span class="o">=</span><span class="n">Metadata</span><span class="p">(</span>
         <span class="c1"># Flip the latitudes from WeatherBench2! We need to copy because converting</span>
@@ -676,7 +676,7 @@ Atmospheric variables downloaded!
         <span class="c1"># `datetime.datetime`s. Note that this needs to be a tuple of length one:</span>
         <span class="c1"># one value for every batch element. Select element 1, corresponding to time</span>
         <span class="c1"># 06:00.</span>
-        <span class="n">time</span><span class="o">=</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;datetime64[s]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">1</span><span class="p">],),</span>
+        <span class="n">time</span><span class="o">=</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"datetime64[s]"</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">1</span><span class="p">],),</span>
         <span class="n">atmos_levels</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">level</span><span class="p">)</span> <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="n">atmos_vars_ds</span><span class="o">.</span><span class="n">level</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
     <span class="p">),</span>
 <span class="p">)</span>
@@ -684,7 +684,7 @@ Atmospheric variables downloaded!
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/meganstanley/miniconda3/envs/aurora-dev/lib/python3.10/site-packages/cfgrib/xarray_plugin.py:131: FutureWarning: In a future version, xarray will not decode timedelta values based on the presence of a timedelta-like units attribute by default. Instead it will rely on the presence of a timedelta64 dtype attribute, which is now xarray&#39;s default way of encoding timedelta64 values. To continue decoding timedeltas based on the presence of a timedelta-like units attribute, users will need to explicitly opt-in by passing True or CFTimedeltaCoder(decode_via_units=True) to decode_timedelta. To silence this warning, set decode_timedelta to True, False, or a &#39;CFTimedeltaCoder&#39; instance.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/meganstanley/miniconda3/envs/aurora-dev/lib/python3.10/site-packages/cfgrib/xarray_plugin.py:131: FutureWarning: In a future version, xarray will not decode timedelta values based on the presence of a timedelta-like units attribute by default. Instead it will rely on the presence of a timedelta64 dtype attribute, which is now xarray's default way of encoding timedelta64 values. To continue decoding timedeltas based on the presence of a timedelta-like units attribute, users will need to explicitly opt-in by passing True or CFTimedeltaCoder(decode_via_units=True) to decode_timedelta. To silence this warning, set decode_timedelta to True, False, or a 'CFTimedeltaCoder' instance.
   vars, attrs, coord_names = xr.conventions.decode_cf_variables(
 </pre></div>
 </div>
@@ -713,12 +713,12 @@ Atmospheric variables downloaded!
     <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">()</span>
 
     <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">)</span>
 
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
-        <span class="n">predictions</span> <span class="o">=</span> <span class="p">[</span><span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">2</span><span class="p">)]</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="p">[</span><span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">2</span><span class="p">)]</span>
 
-    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -733,22 +733,22 @@ Atmospheric variables downloaded!
     <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.foundry</span><span class="w"> </span><span class="kn">import</span> <span class="n">BlobStorageChannel</span><span class="p">,</span> <span class="n">FoundryClient</span><span class="p">,</span> <span class="n">submit</span>
 
     <span class="c1"># In this demo, we silence all warnings.</span>
-    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">)</span>
 
-    <span class="c1"># But we do want to show what&#39;s happening under the hood!</span>
-    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> [</span><span class="si">%(levelname)s</span><span class="s2">] </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;aurora&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="c1"># But we do want to show what's happening under the hood!</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"</span><span class="si">%(asctime)s</span><span class="s2"> [</span><span class="si">%(levelname)s</span><span class="s2">] </span><span class="si">%(message)s</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"aurora"</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
 
     <span class="n">foundry_client</span> <span class="o">=</span> <span class="n">FoundryClient</span><span class="p">(</span>
-        <span class="n">endpoint</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;FOUNDRY_ENDPOINT&quot;</span><span class="p">],</span>
-        <span class="n">token</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;FOUNDRY_TOKEN&quot;</span><span class="p">],</span>
+        <span class="n">endpoint</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"FOUNDRY_ENDPOINT"</span><span class="p">],</span>
+        <span class="n">token</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"FOUNDRY_TOKEN"</span><span class="p">],</span>
     <span class="p">)</span>
-    <span class="n">channel</span> <span class="o">=</span> <span class="n">BlobStorageChannel</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;BLOB_URL_WITH_SAS&quot;</span><span class="p">])</span>
+    <span class="n">channel</span> <span class="o">=</span> <span class="n">BlobStorageChannel</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"BLOB_URL_WITH_SAS"</span><span class="p">])</span>
 
     <span class="n">predictions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
         <span class="n">submit</span><span class="p">(</span>
             <span class="n">batch</span><span class="p">,</span>
-            <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;aurora-0.25-wave&quot;</span><span class="p">,</span>
+            <span class="n">model_name</span><span class="o">=</span><span class="s2">"aurora-0.25-wave"</span><span class="p">,</span>
             <span class="n">num_steps</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
             <span class="n">foundry_client</span><span class="o">=</span><span class="n">foundry_client</span><span class="p">,</span>
             <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">,</span>
@@ -770,21 +770,21 @@ Atmospheric variables downloaded!
     <span class="n">pred</span> <span class="o">=</span> <span class="n">predictions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
     <span class="n">ax</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;mwd&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">360</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;twilight&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">"mwd"</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">360</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"twilight"</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
     <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Aurora Prediction&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Aurora Prediction"</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
 
     <span class="n">ax</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-    <span class="n">ref</span> <span class="o">=</span> <span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">&quot;mwd&quot;</span><span class="p">][</span><span class="mi">2</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">ref</span> <span class="o">=</span> <span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">"mwd"</span><span class="p">][</span><span class="mi">2</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
     <span class="c1"># If the wave has practically zero magnitude, we say that the wave direction is missing.</span>
     <span class="c1"># See Section C.5 of the Supplementary Information.</span>
-    <span class="n">ref</span><span class="p">[</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">&quot;swh&quot;</span><span class="p">][</span><span class="mi">2</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">&lt;</span> <span class="mf">1e-4</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">360</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;twilight&quot;</span><span class="p">)</span>
+    <span class="n">ref</span><span class="p">[</span><span class="n">wave_vars_ds</span><span class="p">[</span><span class="s2">"swh"</span><span class="p">][</span><span class="mi">2</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">&lt;</span> <span class="mf">1e-4</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">360</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"twilight"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;HRES-WAM&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"HRES-WAM"</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
 

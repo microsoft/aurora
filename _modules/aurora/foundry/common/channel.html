@@ -355,7 +355,7 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for aurora.foundry.common.channel</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Copyright (c) Microsoft Corporation. Licensed under the MIT license.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Copyright (c) Microsoft Corporation. Licensed under the MIT license."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">abc</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
@@ -374,31 +374,31 @@ document.write(`
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Batch</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;CommunicationChannel&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;BlobStorageChannel&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;iterate_prediction_files&quot;</span><span class="p">,</span>
+    <span class="s2">"CommunicationChannel"</span><span class="p">,</span>
+    <span class="s2">"BlobStorageChannel"</span><span class="p">,</span>
+    <span class="s2">"iterate_prediction_files"</span><span class="p">,</span>
 <span class="p">]</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">CommunicationChannel</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A communication channel for sending very large files.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A communication channel for sending very large files."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Send `batch` under the file name `name` and mark the file as done.</span>
+<span class="w">        </span><span class="sd">"""Send `batch` under the file name `name` and mark the file as done.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            batch (:class:`aurora.Batch`): Batch to send.</span>
 <span class="sd">            uuid (str): UUID of the task.</span>
 <span class="sd">            name (str): Name of `batch`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">uuid</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="sd">        """</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">uuid</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_send</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mark</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">receive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">120</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Receive the batch under the file name `name`.</span>
+<span class="w">        </span><span class="sd">"""Receive the batch under the file name `name`.</span>
 
 <span class="sd">        This function blocks until the file is ready.</span>
 
@@ -409,18 +409,18 @@ document.write(`
 
 <span class="sd">        Returns:</span>
 <span class="sd">            :class:`aurora.Batch`: Batch under the name `name`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">uuid</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="sd">        """</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">uuid</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span>
         <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_marked</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span> <span class="o">&lt;</span> <span class="n">timeout</span><span class="p">:</span>
                 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="s2">&quot;File was not marked within the timeout.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="s2">"File was not marked within the timeout."</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_receive</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">get_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the URL for the file `name` without downloading it.</span>
+<span class="w">        </span><span class="sd">"""Get the URL for the file `name` without downloading it.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            uuid (str): UUID of the task.</span>
@@ -428,24 +428,24 @@ document.write(`
 
 <span class="sd">        Returns:</span>
 <span class="sd">            str: URL of the file.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">uuid</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="sd">        """</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">uuid</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_url</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write `data` to `name`.</span>
+<span class="w">        </span><span class="sd">"""Write `data` to `name`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            Data (bytes): Data to write.</span>
 <span class="sd">            uuid (str): UUID of the task.</span>
 <span class="sd">            name (str): Name to write to.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">uuid</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="sd">        """</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">uuid</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_write</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mark</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">120</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read `name`.</span>
+<span class="w">        </span><span class="sd">"""Read `name`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            uuid (str): UUID of the task.</span>
@@ -454,18 +454,18 @@ document.write(`
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bytes: Data of `name`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">uuid</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="sd">        """</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">uuid</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span>
         <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_marked</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span> <span class="o">&lt;</span> <span class="n">timeout</span><span class="p">:</span>
                 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="s2">&quot;File was not marked within the timeout.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="s2">"File was not marked within the timeout."</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check whether `name` is available.</span>
+<span class="w">        </span><span class="sd">"""Check whether `name` is available.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            uuid (str): UUID of the task.</span>
@@ -473,24 +473,24 @@ document.write(`
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: Wether `name` is  available.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">uuid</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="sd">        """</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">uuid</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_marked</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Send `batch` under the file name `name` without marking the file.</span>
+<span class="w">        </span><span class="sd">"""Send `batch` under the file name `name` without marking the file.</span>
 
 <span class="sd">        This method should be implemented.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            batch (:class:`aurora.Batch`): Batch to send.</span>
 <span class="sd">            name (str): Name of `batch`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_receive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Receive the batch under the file name `name`.</span>
+<span class="w">        </span><span class="sd">"""Receive the batch under the file name `name`.</span>
 
 <span class="sd">        This function asserts that the file is ready and should be implemented by implementations.</span>
 
@@ -499,72 +499,72 @@ document.write(`
 
 <span class="sd">        Returns:</span>
 <span class="sd">            :class:`aurora.Batch`: Batch under the file name `name`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Send the data `data` under the file name `name` without marking the file.</span>
+<span class="w">        </span><span class="sd">"""Send the data `data` under the file name `name` without marking the file.</span>
 
 <span class="sd">        This method should be implemented.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (bytes): Data to send.</span>
 <span class="sd">            name (str): Name of `data`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read data from `name`.</span>
+<span class="w">        </span><span class="sd">"""Read data from `name`.</span>
 
 <span class="sd">        This function asserts that the file is ready and should be implemented by implementations.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): Name to read.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_mark</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Mark the file `name` as done.</span>
+<span class="w">        </span><span class="sd">"""Mark the file `name` as done.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): File to mark.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_is_marked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check whether the file `name` has been marked.</span>
+<span class="w">        </span><span class="sd">"""Check whether the file `name` has been marked.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): File to check.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: Whether `name` has been marked or not.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert this channel to specification that can be serialised into JSON.</span>
+<span class="w">        </span><span class="sd">"""Convert this channel to specification that can be serialised into JSON.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            dict[str, str]: Specification.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the URL for the file `name`.</span>
+<span class="w">        </span><span class="sd">"""Get the URL for the file `name`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): File name.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            str: URL of the file.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
 
 <div class="viewcode-block" id="BlobStorageChannel">
 <a class="viewcode-back" href="../../../../foundry/api.html#aurora.foundry.common.channel.BlobStorageChannel">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BlobStorageChannel</span><span class="p">(</span><span class="n">CommunicationChannel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A communication channel via a folder in an Azure Blob Storage container.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A communication channel via a folder in an Azure Blob Storage container."""</span>
 
     <span class="c1"># Minimum free space (bytes) required on /dev/shm before using it.</span>
     <span class="n">_SHM_MIN_FREE</span> <span class="o">=</span> <span class="mi">512</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>  <span class="c1"># 512 MiB</span>
@@ -572,43 +572,43 @@ document.write(`
 <div class="viewcode-block" id="BlobStorageChannel.__init__">
 <a class="viewcode-back" href="../../../../foundry/api.html#aurora.foundry.common.channel.BlobStorageChannel.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blob_folder</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate.</span>
+<span class="w">        </span><span class="sd">"""Instantiate.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            blob_folder (str): Folder to use. This must be a full URL that includes a SAS token</span>
 <span class="sd">                with read and write permissions.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">blob_folder</span> <span class="o">=</span> <span class="n">blob_folder</span>
-        <span class="k">if</span> <span class="s2">&quot;?&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">blob_folder</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Given URL does not appear to contain a SAS token.&quot;</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="s2">"?"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">blob_folder</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Given URL does not appear to contain a SAS token."</span><span class="p">)</span></div>
 
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_tmpdir</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a RAM-backed temp directory if available, else `None`.</span>
+<span class="w">        </span><span class="sd">"""Return a RAM-backed temp directory if available, else `None`.</span>
 
 <span class="sd">        Uses `/dev/shm` (Linux tmpfs) when it exists and has at least :attr:`_SHM_MIN_FREE` bytes</span>
 <span class="sd">        free. This avoids disk I/O for the temporary netCDF files used during send/receive. Falls</span>
 <span class="sd">        back to the system default temp directory otherwise (e.g. on macOS or when Docker constrains</span>
 <span class="sd">        `/dev/shm` to 64 MB).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">shm</span> <span class="o">=</span> <span class="s2">&quot;/dev/shm&quot;</span>
+<span class="sd">        """</span>
+        <span class="n">shm</span> <span class="o">=</span> <span class="s2">"/dev/shm"</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">shm</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">shutil</span><span class="o">.</span><span class="n">disk_usage</span><span class="p">(</span><span class="n">shm</span><span class="p">)</span><span class="o">.</span><span class="n">free</span> <span class="o">&gt;=</span> <span class="n">BlobStorageChannel</span><span class="o">.</span><span class="n">_SHM_MIN_FREE</span><span class="p">:</span>
                     <span class="k">return</span> <span class="n">shm</span>
             <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Unable to stat </span><span class="si">%s</span><span class="s2">; falling back to default temp directory.&quot;</span><span class="p">,</span> <span class="n">shm</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Unable to stat </span><span class="si">%s</span><span class="s2">; falling back to default temp directory."</span><span class="p">,</span> <span class="n">shm</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_tempfile</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Yield the path of a temporary file, preferring `/dev/shm`.</span>
+<span class="w">        </span><span class="sd">"""Yield the path of a temporary file, preferring `/dev/shm`.</span>
 
 <span class="sd">        If creating or writing the file on `/dev/shm` fails with `OSError` (e.g. because it</span>
 <span class="sd">        ran out of space), the operation is transparently retried using the default system temp</span>
 <span class="sd">        directory.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">tmp_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tmpdir</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">tmp_dir</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">tf</span><span class="p">:</span>
@@ -617,7 +617,7 @@ document.write(`
         <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">tmp_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span>  <span class="c1"># Already using the default temp dir; nothing to fall back to.</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;OSError on </span><span class="si">%s</span><span class="s2">; falling back to default temp directory.&quot;</span><span class="p">,</span> <span class="n">tmp_dir</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"OSError on </span><span class="si">%s</span><span class="s2">; falling back to default temp directory."</span><span class="p">,</span> <span class="n">tmp_dir</span><span class="p">)</span>
             <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">tf</span><span class="p">:</span>
                 <span class="n">tmp_path</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">name</span>
             <span class="k">yield</span> <span class="n">tmp_path</span>
@@ -631,34 +631,34 @@ document.write(`
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blob_path</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">Spec</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-        <span class="n">class_name</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;BlobStorageChannel&quot;</span><span class="p">]</span>
+        <span class="n">class_name</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"BlobStorageChannel"</span><span class="p">]</span>
         <span class="n">blob_folder</span><span class="p">:</span> <span class="n">HttpUrl</span>  <span class="c1"># TODO: Can we force this to be `https`?</span>
 
-        <span class="k">def</span><span class="w"> </span><span class="nf">construct</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BlobStorageChannel&quot;</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">construct</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"BlobStorageChannel"</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">BlobStorageChannel</span><span class="p">(</span><span class="n">blob_folder</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blob_folder</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_blob_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;For a given file name `name`, get the full path including the SAS token.</span>
+<span class="w">        </span><span class="sd">"""For a given file name `name`, get the full path including the SAS token.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): File name.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            str: Full path including the SAS token.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">url</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">sas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">blob_folder</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">&quot;?&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">url</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">?</span><span class="si">{</span><span class="n">sas</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="sd">        """</span>
+        <span class="n">url</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">sas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">blob_folder</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">"?"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">url</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">'/'</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">'/'</span><span class="p">)</span><span class="si">}</span><span class="s2">?</span><span class="si">{</span><span class="n">sas</span><span class="si">}</span><span class="s2">"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_upload_blob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">blob_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Upload a file to the blob.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Upload a file to the blob."""</span>
         <span class="n">blob_client</span> <span class="o">=</span> <span class="n">BlobClient</span><span class="o">.</span><span class="n">from_blob_url</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_blob_path</span><span class="p">(</span><span class="n">blob_name</span><span class="p">))</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">blob_client</span><span class="o">.</span><span class="n">upload_blob</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_download_blob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blob_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download a blob to a file.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Download a blob to a file."""</span>
         <span class="n">blob_client</span> <span class="o">=</span> <span class="n">BlobClient</span><span class="o">.</span><span class="n">from_blob_url</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_blob_path</span><span class="p">(</span><span class="n">blob_name</span><span class="p">))</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">blob_client</span><span class="o">.</span><span class="n">download_blob</span><span class="p">()</span><span class="o">.</span><span class="n">readall</span><span class="p">()</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
@@ -674,31 +674,31 @@ document.write(`
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tempfile</span><span class="p">()</span> <span class="k">as</span> <span class="n">path</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_upload_blob</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tempfile</span><span class="p">()</span> <span class="k">as</span> <span class="n">path</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_download_blob</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_mark</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">td</span><span class="p">:</span>
-            <span class="n">mark_file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">td</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.finished&quot;</span>
+            <span class="n">mark_file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">td</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.finished"</span>
             <span class="n">mark_file_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">mark_file_path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">&quot;File is available&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_upload_blob</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mark_file_path</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.finished&quot;</span><span class="p">)</span>
+            <span class="n">mark_file_path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">"File is available"</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_upload_blob</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mark_file_path</span><span class="p">),</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.finished"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_is_marked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_blob_path</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.finished&quot;</span><span class="p">))</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_blob_path</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.finished"</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span></div>
 
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">iterate_prediction_files</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">num_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;For a file name `name`, generate `num_steps` variations of `name`: one for every prediction</span>
+<span class="w">    </span><span class="sd">"""For a file name `name`, generate `num_steps` variations of `name`: one for every prediction</span>
 <span class="sd">    step.</span>
 
 <span class="sd">    Args:</span>
@@ -707,10 +707,10 @@ document.write(`
 
 <span class="sd">    Yields:</span>
 <span class="sd">        str: For every prediction, the derived file name.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">name</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_steps</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">03d</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">yield</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">03d</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">"</span>
 </pre></div>
 
                 </article>

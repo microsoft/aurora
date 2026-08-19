@@ -426,14 +426,14 @@ It should be used in conjunction with <code class="docutils literal notranslate"
 <span class="n">tracker</span> <span class="o">=</span> <span class="n">Tracker</span><span class="p">(</span><span class="n">init_lat</span><span class="o">=...</span><span class="p">,</span> <span class="n">init_lon</span><span class="o">=...</span><span class="p">,</span> <span class="n">init_time</span><span class="o">=</span><span class="n">datetime</span><span class="p">(</span><span class="o">...</span><span class="p">))</span>
 
 <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">)</span>
 
 <span class="c1"># Run the tracker for predictions up to two days (8 six-hour steps).</span>
 <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
     <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
         <span class="n">tracker</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Afterwards, the track can be conveniently summarised in a DataFrame:</p>

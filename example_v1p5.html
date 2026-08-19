@@ -448,86 +448,86 @@ document.write(`
 <span class="kn">import</span><span class="w"> </span><span class="nn">cdsapi</span>
 
 <span class="c1"># Data will be downloaded here.</span>
-<span class="n">download_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;~/downloads/era5_v1p5&quot;</span><span class="p">)</span>
+<span class="n">download_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"~/downloads/era5_v1p5"</span><span class="p">)</span>
 
 <span class="n">download_path</span> <span class="o">=</span> <span class="n">download_path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
 <span class="n">download_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="c1"># ----- Surface-level variables (extended set for Aurora 1.5) -----</span>
-<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-surface-level.nc&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">"2023-01-01-surface-level.nc"</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">cdsapi</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
     <span class="n">c</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span>
-        <span class="s2">&quot;reanalysis-era5-single-levels&quot;</span><span class="p">,</span>
+        <span class="s2">"reanalysis-era5-single-levels"</span><span class="p">,</span>
         <span class="p">{</span>
-            <span class="s2">&quot;product_type&quot;</span><span class="p">:</span> <span class="s2">&quot;reanalysis&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="s2">&quot;2m_temperature&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;10m_u_component_of_wind&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;10m_v_component_of_wind&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;mean_sea_level_pressure&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;2m_dewpoint_temperature&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;total_column_water_vapour&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;total_cloud_cover&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;100m_u_component_of_wind&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;100m_v_component_of_wind&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;surface_pressure&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;low_cloud_cover&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;medium_cloud_cover&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;high_cloud_cover&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;skin_temperature&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;soil_temperature_level_1&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;volumetric_soil_water_layer_1&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;sea_ice_cover&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;snow_depth&quot;</span><span class="p">,</span>
+            <span class="s2">"product_type"</span><span class="p">:</span> <span class="s2">"reanalysis"</span><span class="p">,</span>
+            <span class="s2">"variable"</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">"2m_temperature"</span><span class="p">,</span>
+                <span class="s2">"10m_u_component_of_wind"</span><span class="p">,</span>
+                <span class="s2">"10m_v_component_of_wind"</span><span class="p">,</span>
+                <span class="s2">"mean_sea_level_pressure"</span><span class="p">,</span>
+                <span class="s2">"2m_dewpoint_temperature"</span><span class="p">,</span>
+                <span class="s2">"total_column_water_vapour"</span><span class="p">,</span>
+                <span class="s2">"total_cloud_cover"</span><span class="p">,</span>
+                <span class="s2">"100m_u_component_of_wind"</span><span class="p">,</span>
+                <span class="s2">"100m_v_component_of_wind"</span><span class="p">,</span>
+                <span class="s2">"surface_pressure"</span><span class="p">,</span>
+                <span class="s2">"low_cloud_cover"</span><span class="p">,</span>
+                <span class="s2">"medium_cloud_cover"</span><span class="p">,</span>
+                <span class="s2">"high_cloud_cover"</span><span class="p">,</span>
+                <span class="s2">"skin_temperature"</span><span class="p">,</span>
+                <span class="s2">"soil_temperature_level_1"</span><span class="p">,</span>
+                <span class="s2">"volumetric_soil_water_layer_1"</span><span class="p">,</span>
+                <span class="s2">"sea_ice_cover"</span><span class="p">,</span>
+                <span class="s2">"snow_depth"</span><span class="p">,</span>
             <span class="p">],</span>
-            <span class="s2">&quot;year&quot;</span><span class="p">:</span> <span class="s2">&quot;2023&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;month&quot;</span><span class="p">:</span> <span class="s2">&quot;01&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;day&quot;</span><span class="p">:</span> <span class="s2">&quot;01&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;00:00&quot;</span><span class="p">,</span> <span class="s2">&quot;06:00&quot;</span><span class="p">,</span> <span class="s2">&quot;12:00&quot;</span><span class="p">,</span> <span class="s2">&quot;18:00&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;data_format&quot;</span><span class="p">:</span> <span class="s2">&quot;netcdf&quot;</span><span class="p">,</span>
+            <span class="s2">"year"</span><span class="p">:</span> <span class="s2">"2023"</span><span class="p">,</span>
+            <span class="s2">"month"</span><span class="p">:</span> <span class="s2">"01"</span><span class="p">,</span>
+            <span class="s2">"day"</span><span class="p">:</span> <span class="s2">"01"</span><span class="p">,</span>
+            <span class="s2">"time"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"00:00"</span><span class="p">,</span> <span class="s2">"06:00"</span><span class="p">,</span> <span class="s2">"12:00"</span><span class="p">,</span> <span class="s2">"18:00"</span><span class="p">],</span>
+            <span class="s2">"data_format"</span><span class="p">:</span> <span class="s2">"netcdf"</span><span class="p">,</span>
         <span class="p">},</span>
-        <span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-surface-level.nc&quot;</span><span class="p">),</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">"2023-01-01-surface-level.nc"</span><span class="p">),</span>
     <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Surface-level variables downloaded!&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Surface-level variables downloaded!"</span><span class="p">)</span>
 
 <span class="c1"># ----- Atmospheric variables -----</span>
-<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-atmospheric.nc&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">"2023-01-01-atmospheric.nc"</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">cdsapi</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
     <span class="n">c</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span>
-        <span class="s2">&quot;reanalysis-era5-pressure-levels&quot;</span><span class="p">,</span>
+        <span class="s2">"reanalysis-era5-pressure-levels"</span><span class="p">,</span>
         <span class="p">{</span>
-            <span class="s2">&quot;product_type&quot;</span><span class="p">:</span> <span class="s2">&quot;reanalysis&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="s2">&quot;temperature&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;u_component_of_wind&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;v_component_of_wind&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;specific_humidity&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;geopotential&quot;</span><span class="p">,</span>
+            <span class="s2">"product_type"</span><span class="p">:</span> <span class="s2">"reanalysis"</span><span class="p">,</span>
+            <span class="s2">"variable"</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">"temperature"</span><span class="p">,</span>
+                <span class="s2">"u_component_of_wind"</span><span class="p">,</span>
+                <span class="s2">"v_component_of_wind"</span><span class="p">,</span>
+                <span class="s2">"specific_humidity"</span><span class="p">,</span>
+                <span class="s2">"geopotential"</span><span class="p">,</span>
             <span class="p">],</span>
-            <span class="s2">&quot;pressure_level&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="s2">&quot;50&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;100&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;150&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;200&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;250&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;300&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;400&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;500&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;600&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;700&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;850&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;925&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;1000&quot;</span><span class="p">,</span>
+            <span class="s2">"pressure_level"</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">"50"</span><span class="p">,</span>
+                <span class="s2">"100"</span><span class="p">,</span>
+                <span class="s2">"150"</span><span class="p">,</span>
+                <span class="s2">"200"</span><span class="p">,</span>
+                <span class="s2">"250"</span><span class="p">,</span>
+                <span class="s2">"300"</span><span class="p">,</span>
+                <span class="s2">"400"</span><span class="p">,</span>
+                <span class="s2">"500"</span><span class="p">,</span>
+                <span class="s2">"600"</span><span class="p">,</span>
+                <span class="s2">"700"</span><span class="p">,</span>
+                <span class="s2">"850"</span><span class="p">,</span>
+                <span class="s2">"925"</span><span class="p">,</span>
+                <span class="s2">"1000"</span><span class="p">,</span>
             <span class="p">],</span>
-            <span class="s2">&quot;year&quot;</span><span class="p">:</span> <span class="s2">&quot;2023&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;month&quot;</span><span class="p">:</span> <span class="s2">&quot;01&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;day&quot;</span><span class="p">:</span> <span class="s2">&quot;01&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;00:00&quot;</span><span class="p">,</span> <span class="s2">&quot;06:00&quot;</span><span class="p">,</span> <span class="s2">&quot;12:00&quot;</span><span class="p">,</span> <span class="s2">&quot;18:00&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;data_format&quot;</span><span class="p">:</span> <span class="s2">&quot;netcdf&quot;</span><span class="p">,</span>
+            <span class="s2">"year"</span><span class="p">:</span> <span class="s2">"2023"</span><span class="p">,</span>
+            <span class="s2">"month"</span><span class="p">:</span> <span class="s2">"01"</span><span class="p">,</span>
+            <span class="s2">"day"</span><span class="p">:</span> <span class="s2">"01"</span><span class="p">,</span>
+            <span class="s2">"time"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"00:00"</span><span class="p">,</span> <span class="s2">"06:00"</span><span class="p">,</span> <span class="s2">"12:00"</span><span class="p">,</span> <span class="s2">"18:00"</span><span class="p">],</span>
+            <span class="s2">"data_format"</span><span class="p">:</span> <span class="s2">"netcdf"</span><span class="p">,</span>
         <span class="p">},</span>
-        <span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-atmospheric.nc&quot;</span><span class="p">),</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">"2023-01-01-atmospheric.nc"</span><span class="p">),</span>
     <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Atmospheric variables downloaded!&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Atmospheric variables downloaded!"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -543,10 +543,10 @@ alongside the checkpoints on <a class="reference external" href="https://hugging
 
 <span class="c1"># Download the static variables from HuggingFace.</span>
 <span class="n">static_path</span> <span class="o">=</span> <span class="n">hf_hub_download</span><span class="p">(</span>
-    <span class="n">repo_id</span><span class="o">=</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span>
-    <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;aurora-0.25-v1.5-static.pickle&quot;</span><span class="p">,</span>
+    <span class="n">repo_id</span><span class="o">=</span><span class="s2">"microsoft/aurora"</span><span class="p">,</span>
+    <span class="n">filename</span><span class="o">=</span><span class="s2">"aurora-0.25-v1.5-static.pickle"</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Static variables downloaded!&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Static variables downloaded!"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -574,30 +574,30 @@ alongside the checkpoints on <a class="reference external" href="https://hugging
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">Metadata</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.insolation</span><span class="w"> </span><span class="kn">import</span> <span class="n">insolation</span>
 
-<span class="n">surf_vars_ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-surface-level.nc&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;netcdf4&quot;</span><span class="p">)</span>
-<span class="n">atmos_vars_ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;2023-01-01-atmospheric.nc&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;netcdf4&quot;</span><span class="p">)</span>
+<span class="n">surf_vars_ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">"2023-01-01-surface-level.nc"</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">"netcdf4"</span><span class="p">)</span>
+<span class="n">atmos_vars_ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">"2023-01-01-atmospheric.nc"</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">"netcdf4"</span><span class="p">)</span>
 
 <span class="c1"># CDS NetCDF variable name -&gt; Aurora canonical short name.</span>
 <span class="c1"># The CDS API returns variables under short GRIB names.</span>
 <span class="n">surf_name_map</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;t2m&quot;</span><span class="p">:</span> <span class="s2">&quot;2t&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;u10&quot;</span><span class="p">:</span> <span class="s2">&quot;10u&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;v10&quot;</span><span class="p">:</span> <span class="s2">&quot;10v&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;msl&quot;</span><span class="p">:</span> <span class="s2">&quot;msl&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;d2m&quot;</span><span class="p">:</span> <span class="s2">&quot;2d&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tcwv&quot;</span><span class="p">:</span> <span class="s2">&quot;tcwv&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tcc&quot;</span><span class="p">:</span> <span class="s2">&quot;tcc&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;u100&quot;</span><span class="p">:</span> <span class="s2">&quot;100u&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;v100&quot;</span><span class="p">:</span> <span class="s2">&quot;100v&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;sp&quot;</span><span class="p">:</span> <span class="s2">&quot;sp&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;lcc&quot;</span><span class="p">:</span> <span class="s2">&quot;lcc&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;mcc&quot;</span><span class="p">:</span> <span class="s2">&quot;mcc&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;hcc&quot;</span><span class="p">:</span> <span class="s2">&quot;hcc&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;skt&quot;</span><span class="p">:</span> <span class="s2">&quot;skt&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;stl1&quot;</span><span class="p">:</span> <span class="s2">&quot;stl1&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;swvl1&quot;</span><span class="p">:</span> <span class="s2">&quot;swvl1&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;siconc&quot;</span><span class="p">:</span> <span class="s2">&quot;ci&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;sd&quot;</span><span class="p">:</span> <span class="s2">&quot;scaled_sd&quot;</span><span class="p">,</span>
+    <span class="s2">"t2m"</span><span class="p">:</span> <span class="s2">"2t"</span><span class="p">,</span>
+    <span class="s2">"u10"</span><span class="p">:</span> <span class="s2">"10u"</span><span class="p">,</span>
+    <span class="s2">"v10"</span><span class="p">:</span> <span class="s2">"10v"</span><span class="p">,</span>
+    <span class="s2">"msl"</span><span class="p">:</span> <span class="s2">"msl"</span><span class="p">,</span>
+    <span class="s2">"d2m"</span><span class="p">:</span> <span class="s2">"2d"</span><span class="p">,</span>
+    <span class="s2">"tcwv"</span><span class="p">:</span> <span class="s2">"tcwv"</span><span class="p">,</span>
+    <span class="s2">"tcc"</span><span class="p">:</span> <span class="s2">"tcc"</span><span class="p">,</span>
+    <span class="s2">"u100"</span><span class="p">:</span> <span class="s2">"100u"</span><span class="p">,</span>
+    <span class="s2">"v100"</span><span class="p">:</span> <span class="s2">"100v"</span><span class="p">,</span>
+    <span class="s2">"sp"</span><span class="p">:</span> <span class="s2">"sp"</span><span class="p">,</span>
+    <span class="s2">"lcc"</span><span class="p">:</span> <span class="s2">"lcc"</span><span class="p">,</span>
+    <span class="s2">"mcc"</span><span class="p">:</span> <span class="s2">"mcc"</span><span class="p">,</span>
+    <span class="s2">"hcc"</span><span class="p">:</span> <span class="s2">"hcc"</span><span class="p">,</span>
+    <span class="s2">"skt"</span><span class="p">:</span> <span class="s2">"skt"</span><span class="p">,</span>
+    <span class="s2">"stl1"</span><span class="p">:</span> <span class="s2">"stl1"</span><span class="p">,</span>
+    <span class="s2">"swvl1"</span><span class="p">:</span> <span class="s2">"swvl1"</span><span class="p">,</span>
+    <span class="s2">"siconc"</span><span class="p">:</span> <span class="s2">"ci"</span><span class="p">,</span>
+    <span class="s2">"sd"</span><span class="p">:</span> <span class="s2">"scaled_sd"</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="c1"># Build surface variable tensors: select hours 00:00 and 06:00, insert batch dim.</span>
@@ -615,17 +615,17 @@ alongside the checkpoints on <a class="reference external" href="https://hugging
     <span class="p">[</span><span class="n">insolation</span><span class="p">([</span><span class="n">t</span><span class="p">],</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">enforce_2d</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">input_times</span><span class="p">],</span>
     <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;insolation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">sol</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+<span class="n">surf_vars</span><span class="p">[</span><span class="s2">"insolation"</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">sol</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
 
 <span class="c1"># Build atmospheric variable tensors: (1, 2, 13, H, W).</span>
 <span class="n">levels</span> <span class="o">=</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">250</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">700</span><span class="p">,</span> <span class="mi">850</span><span class="p">,</span> <span class="mi">925</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
 <span class="n">atmos_vars</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="k">for</span> <span class="n">nc_name</span><span class="p">,</span> <span class="n">aurora_name</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;q&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">)]:</span>
+<span class="k">for</span> <span class="n">nc_name</span><span class="p">,</span> <span class="n">aurora_name</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">"t"</span><span class="p">,</span> <span class="s2">"t"</span><span class="p">),</span> <span class="p">(</span><span class="s2">"u"</span><span class="p">,</span> <span class="s2">"u"</span><span class="p">),</span> <span class="p">(</span><span class="s2">"v"</span><span class="p">,</span> <span class="s2">"v"</span><span class="p">),</span> <span class="p">(</span><span class="s2">"q"</span><span class="p">,</span> <span class="s2">"q"</span><span class="p">),</span> <span class="p">(</span><span class="s2">"z"</span><span class="p">,</span> <span class="s2">"z"</span><span class="p">)]:</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">atmos_vars_ds</span><span class="p">[</span><span class="n">nc_name</span><span class="p">]</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">pressure_level</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">levels</span><span class="p">))</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">]</span>
     <span class="n">atmos_vars</span><span class="p">[</span><span class="n">aurora_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">nan</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
 
 <span class="c1"># Load static variables from the pickle file.</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">static_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">static_path</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">static_raw</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 <span class="n">static_vars</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">static_raw</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 
@@ -641,17 +641,17 @@ alongside the checkpoints on <a class="reference external" href="https://hugging
     <span class="n">metadata</span><span class="o">=</span><span class="n">Metadata</span><span class="p">(</span>
         <span class="n">lat</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
         <span class="n">lon</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">lon_vals</span><span class="p">),</span>
-        <span class="c1"># Select element 1 (06:00) as the &quot;current&quot; time.</span>
+        <span class="c1"># Select element 1 (06:00) as the "current" time.</span>
         <span class="n">time</span><span class="o">=</span><span class="p">(</span><span class="n">input_times</span><span class="p">[</span><span class="mi">1</span><span class="p">],),</span>
         <span class="n">atmos_levels</span><span class="o">=</span><span class="n">levels</span><span class="p">,</span>
     <span class="p">),</span>
 <span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span>
-    <span class="sa">f</span><span class="s2">&quot;Batch ready: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">)</span><span class="si">}</span><span class="s2"> surf vars, &quot;</span>
-    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">static_vars</span><span class="p">)</span><span class="si">}</span><span class="s2"> static vars, &quot;</span>
-    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">atmos_vars</span><span class="p">)</span><span class="si">}</span><span class="s2"> atmos vars, &quot;</span>
-    <span class="sa">f</span><span class="s2">&quot;shape </span><span class="si">{</span><span class="n">batch</span><span class="o">.</span><span class="n">spatial_shape</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="sa">f</span><span class="s2">"Batch ready: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">)</span><span class="si">}</span><span class="s2"> surf vars, "</span>
+    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">static_vars</span><span class="p">)</span><span class="si">}</span><span class="s2"> static vars, "</span>
+    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">atmos_vars</span><span class="p">)</span><span class="si">}</span><span class="s2"> atmos vars, "</span>
+    <span class="sa">f</span><span class="s2">"shape </span><span class="si">{</span><span class="n">batch</span><span class="o">.</span><span class="n">spatial_shape</span><span class="si">}</span><span class="s2">"</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -668,10 +668,10 @@ alongside the checkpoints on <a class="reference external" href="https://hugging
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuroraV1p5</span><span class="p">,</span> <span class="n">rollout</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">AuroraV1p5</span><span class="p">()</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;microsoft/aurora&quot;</span><span class="p">,</span> <span class="s2">&quot;aurora-0.25-v1.5.ckpt&quot;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">"microsoft/aurora"</span><span class="p">,</span> <span class="s2">"aurora-0.25-v1.5.ckpt"</span><span class="p">)</span>
 
 <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -685,11 +685,11 @@ alongside the checkpoints on <a class="reference external" href="https://hugging
 
 <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
     <span class="n">preds</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+        <span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">fine_lead_times</span><span class="o">=</span><span class="n">fine_lead_times</span><span class="p">)</span>
     <span class="p">]</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generated </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">preds</span><span class="p">)</span><span class="si">}</span><span class="s2"> hourly predictions.&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Generated </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">preds</span><span class="p">)</span><span class="si">}</span><span class="s2"> hourly predictions."</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -718,16 +718,16 @@ alongside the checkpoints on <a class="reference external" href="https://hugging
     <span class="n">pred</span> <span class="o">=</span> <span class="n">preds</span><span class="p">[</span><span class="n">pred_idx</span><span class="p">]</span>
     <span class="n">lead_hours</span> <span class="o">=</span> <span class="n">pred_idx</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># 1-indexed hours</span>
 
-    <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;2t&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">-</span> <span class="mf">273.15</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
-    <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;T+</span><span class="si">{</span><span class="n">lead_hours</span><span class="si">}</span><span class="s2">h</span><span class="se">\n</span><span class="si">{</span><span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">"2t"</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">-</span> <span class="mf">273.15</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">"T+</span><span class="si">{</span><span class="n">lead_hours</span><span class="si">}</span><span class="s2">h</span><span class="se">\n</span><span class="si">{</span><span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">row</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Aurora 1.5 Prediction&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Aurora 1.5 Prediction"</span><span class="p">)</span>
     <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
     <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
 
-    <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">&quot;t2m&quot;</span><span class="p">][</span><span class="n">era5_idx</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">-</span> <span class="mf">273.15</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">surf_vars_ds</span><span class="p">[</span><span class="s2">"t2m"</span><span class="p">][</span><span class="n">era5_idx</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">-</span> <span class="mf">273.15</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">row</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;ERA5&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"ERA5"</span><span class="p">)</span>
     <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
     <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
 

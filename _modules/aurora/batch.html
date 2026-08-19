@@ -355,7 +355,7 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for aurora.batch</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Copyright (c) Microsoft Corporation. Licensed under the MIT license.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Copyright (c) Microsoft Corporation. Licensed under the MIT license."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
@@ -374,14 +374,14 @@ document.write(`
     <span class="n">unnormalise_surf_var</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Metadata&quot;</span><span class="p">,</span> <span class="s2">&quot;Batch&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Metadata"</span><span class="p">,</span> <span class="s2">"Batch"</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="Metadata">
 <a class="viewcode-back" href="../../api.html#aurora.Metadata">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Metadata</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Metadata in a batch.</span>
+<span class="w">    </span><span class="sd">"""Metadata in a batch.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        lat (:class:`torch.Tensor`): Latitudes.</span>
@@ -393,7 +393,7 @@ document.write(`
 <span class="sd">            If equal to `0`, which is the default, then this means that this is not a prediction,</span>
 <span class="sd">            but actual data. This field is automatically populated by the model and used to use a</span>
 <span class="sd">            separate LoRA for every roll-out step. Generally, you are safe to ignore this field.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">lat</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
     <span class="n">lon</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
@@ -403,27 +403,27 @@ document.write(`
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lat</span> <span class="o">&lt;=</span> <span class="mi">90</span><span class="p">)</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lat</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="mi">90</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Latitudes must be in the range [-90, 90].&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Latitudes must be in the range [-90, 90]."</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lon</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lon</span> <span class="o">&lt;</span> <span class="mi">360</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Longitudes must be in the range [0, 360).&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Longitudes must be in the range [0, 360)."</span><span class="p">)</span>
 
         <span class="c1"># Validate vector-valued latitudes and longitudes:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Latitudes must be strictly decreasing.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Latitudes must be strictly decreasing."</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lon</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Longitudes must be strictly increasing.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Longitudes must be strictly increasing."</span><span class="p">)</span>
 
         <span class="c1"># Validate matrix-valued latitudes and longitudes:</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Latitudes must be strictly decreasing along every column.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Latitudes must be strictly decreasing along every column."</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lon</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Longitudes must be strictly increasing along every row.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Longitudes must be strictly increasing along every row."</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;The latitudes and longitudes must either both be vectors or both be matrices.&quot;</span>
+                <span class="s2">"The latitudes and longitudes must either both be vectors or both be matrices."</span>
             <span class="p">)</span></div>
 
 
@@ -432,7 +432,7 @@ document.write(`
 <a class="viewcode-back" href="../../api.html#aurora.Batch">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Batch</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A batch of data.</span>
+<span class="w">    </span><span class="sd">"""A batch of data.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        surf_vars (dict[str, :class:`torch.Tensor`]): Surface-level variables with shape</span>
@@ -441,7 +441,7 @@ document.write(`
 <span class="sd">        atmos_vars (dict[str, :class:`torch.Tensor`]): Atmospheric variables with shape</span>
 <span class="sd">            `(b, t, c, h, w)`.</span>
 <span class="sd">        metadata (:class:`Metadata`): Metadata associated to this batch.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">surf_vars</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
     <span class="n">static_vars</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
@@ -450,7 +450,7 @@ document.write(`
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">spatial_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the spatial shape from an arbitrary surface-level variable.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Get the spatial shape from an arbitrary surface-level variable."""</span>
         <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">surf_vars</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
 
 <div class="viewcode-block" id="Batch.normalise">
@@ -458,8 +458,8 @@ document.write(`
     <span class="k">def</span><span class="w"> </span><span class="nf">normalise</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">surf_stats</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Batch&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalise all variables in the batch.</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Batch"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Normalise all variables in the batch.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            surf_stats (dict[str, tuple[float, float]]): For these surface-level variables, adjust</span>
@@ -467,7 +467,7 @@ document.write(`
 
 <span class="sd">        Returns:</span>
 <span class="sd">            :class:`.Batch`: Normalised batch.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">Batch</span><span class="p">(</span>
             <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span>
                 <span class="n">k</span><span class="p">:</span> <span class="n">normalise_surf_var</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">stats</span><span class="o">=</span><span class="n">surf_stats</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">surf_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
@@ -488,8 +488,8 @@ document.write(`
     <span class="k">def</span><span class="w"> </span><span class="nf">unnormalise</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">surf_stats</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Batch&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Unnormalise all variables in the batch.</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Batch"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Unnormalise all variables in the batch.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            surf_stats (dict[str, tuple[float, float]]): For these surface-level variables, adjust</span>
@@ -497,7 +497,7 @@ document.write(`
 
 <span class="sd">        Returns:</span>
 <span class="sd">            :class:`.Batch`: Unnormalised batch.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">Batch</span><span class="p">(</span>
             <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span>
                 <span class="n">k</span><span class="p">:</span> <span class="n">unnormalise_surf_var</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">stats</span><span class="o">=</span><span class="n">surf_stats</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">surf_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
@@ -515,12 +515,12 @@ document.write(`
 
 <div class="viewcode-block" id="Batch.crop">
 <a class="viewcode-back" href="../../api.html#aurora.Batch.crop">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">crop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Batch&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Crop the variables in the batch to patch size `patch_size`.&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">crop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Batch"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Crop the variables in the batch to patch size `patch_size`."""</span>
         <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spatial_shape</span>
 
         <span class="k">if</span> <span class="n">w</span> <span class="o">%</span> <span class="n">patch_size</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Width of the data must be a multiple of the patch size.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Width of the data must be a multiple of the patch size."</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">h</span> <span class="o">%</span> <span class="n">patch_size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span>
@@ -539,12 +539,12 @@ document.write(`
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;There can at most be one latitude too many, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;but there are </span><span class="si">{</span><span class="n">h</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">patch_size</span><span class="si">}</span><span class="s2"> too many.&quot;</span>
+                <span class="sa">f</span><span class="s2">"There can at most be one latitude too many, "</span>
+                <span class="sa">f</span><span class="s2">"but there are </span><span class="si">{</span><span class="n">h</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">patch_size</span><span class="si">}</span><span class="s2"> too many."</span>
             <span class="p">)</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_fmap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;Batch&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fmap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">"Batch"</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">Batch</span><span class="p">(</span>
             <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">f</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">surf_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
             <span class="n">static_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">f</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
@@ -560,27 +560,27 @@ document.write(`
 
 <div class="viewcode-block" id="Batch.to">
 <a class="viewcode-back" href="../../api.html#aurora.Batch.to">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Batch&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Move the batch to another device.&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Batch"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Move the batch to another device."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fmap</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="Batch.type">
 <a class="viewcode-back" href="../../api.html#aurora.Batch.type">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Batch&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert everything to type `t`.&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Batch"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Convert everything to type `t`."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fmap</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">t</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="Batch.regrid">
 <a class="viewcode-back" href="../../api.html#aurora.Batch.regrid">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">regrid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">res</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Batch&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Regrid the batch to a `res` degrees resolution.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">regrid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">res</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Batch"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Regrid the batch to a `res` degrees resolution.</span>
 
 <span class="sd">        This results in `float32` data on the CPU.</span>
 
 <span class="sd">        This function is not optimised for either speed or accuracy. Use at your own risk.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="mi">180</span> <span class="o">/</span> <span class="n">res</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="mi">360</span> <span class="o">/</span> <span class="n">res</span><span class="p">))</span>
         <span class="n">lat_new</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
@@ -610,50 +610,50 @@ document.write(`
 <div class="viewcode-block" id="Batch.to_netcdf">
 <a class="viewcode-back" href="../../api.html#aurora.Batch.to_netcdf">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_netcdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the batch to a file.</span>
+<span class="w">        </span><span class="sd">"""Write the batch to a file.</span>
 
 <span class="sd">        This requires `xarray` and `netcdf4` to be installed.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
         <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;`xarray` must be installed.&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"`xarray` must be installed."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
         <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span>
             <span class="p">{</span>
                 <span class="o">**</span><span class="p">{</span>
-                    <span class="sa">f</span><span class="s2">&quot;surf_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="p">((</span><span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="s2">&quot;history&quot;</span><span class="p">,</span> <span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;longitude&quot;</span><span class="p">),</span> <span class="n">_np</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+                    <span class="sa">f</span><span class="s2">"surf_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span><span class="p">:</span> <span class="p">((</span><span class="s2">"batch"</span><span class="p">,</span> <span class="s2">"history"</span><span class="p">,</span> <span class="s2">"latitude"</span><span class="p">,</span> <span class="s2">"longitude"</span><span class="p">),</span> <span class="n">_np</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
                     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">surf_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
                 <span class="p">},</span>
                 <span class="o">**</span><span class="p">{</span>
-                    <span class="sa">f</span><span class="s2">&quot;static_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="p">((</span><span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;longitude&quot;</span><span class="p">),</span> <span class="n">_np</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+                    <span class="sa">f</span><span class="s2">"static_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span><span class="p">:</span> <span class="p">((</span><span class="s2">"latitude"</span><span class="p">,</span> <span class="s2">"longitude"</span><span class="p">),</span> <span class="n">_np</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
                     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
                 <span class="p">},</span>
                 <span class="o">**</span><span class="p">{</span>
-                    <span class="sa">f</span><span class="s2">&quot;atmos_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="p">((</span><span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="s2">&quot;history&quot;</span><span class="p">,</span> <span class="s2">&quot;level&quot;</span><span class="p">,</span> <span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;longitude&quot;</span><span class="p">),</span> <span class="n">_np</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+                    <span class="sa">f</span><span class="s2">"atmos_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span><span class="p">:</span> <span class="p">((</span><span class="s2">"batch"</span><span class="p">,</span> <span class="s2">"history"</span><span class="p">,</span> <span class="s2">"level"</span><span class="p">,</span> <span class="s2">"latitude"</span><span class="p">,</span> <span class="s2">"longitude"</span><span class="p">),</span> <span class="n">_np</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
                     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">atmos_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
                 <span class="p">},</span>
             <span class="p">},</span>
             <span class="n">coords</span><span class="o">=</span><span class="p">{</span>
-                <span class="s2">&quot;latitude&quot;</span><span class="p">:</span> <span class="n">_np</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">lat</span><span class="p">),</span>
-                <span class="s2">&quot;longitude&quot;</span><span class="p">:</span> <span class="n">_np</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">lon</span><span class="p">),</span>
-                <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">time</span><span class="p">),</span>
-                <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">atmos_levels</span><span class="p">),</span>
-                <span class="s2">&quot;rollout_step&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">rollout_step</span><span class="p">,</span>
+                <span class="s2">"latitude"</span><span class="p">:</span> <span class="n">_np</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">lat</span><span class="p">),</span>
+                <span class="s2">"longitude"</span><span class="p">:</span> <span class="n">_np</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">lon</span><span class="p">),</span>
+                <span class="s2">"time"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">time</span><span class="p">),</span>
+                <span class="s2">"level"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">atmos_levels</span><span class="p">),</span>
+                <span class="s2">"rollout_step"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">rollout_step</span><span class="p">,</span>
             <span class="p">},</span>
         <span class="p">)</span>
         <span class="c1"># Enable compression and chunking to reduce file size.</span>
         <span class="n">encoding</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">enc</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;zlib&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;complevel&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
+            <span class="n">enc</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"zlib"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"complevel"</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
             <span class="n">dims</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">dims</span>
             <span class="n">chunks</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="k">if</span> <span class="s2">&quot;history&quot;</span> <span class="ow">in</span> <span class="n">dims</span><span class="p">:</span>
-                <span class="n">chunks</span><span class="p">[</span><span class="s2">&quot;history&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="k">if</span> <span class="s2">&quot;level&quot;</span> <span class="ow">in</span> <span class="n">dims</span><span class="p">:</span>
-                <span class="n">chunks</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="s2">"history"</span> <span class="ow">in</span> <span class="n">dims</span><span class="p">:</span>
+                <span class="n">chunks</span><span class="p">[</span><span class="s2">"history"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="s2">"level"</span> <span class="ow">in</span> <span class="n">dims</span><span class="p">:</span>
+                <span class="n">chunks</span><span class="p">[</span><span class="s2">"level"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="k">if</span> <span class="n">chunks</span><span class="p">:</span>
-                <span class="n">enc</span><span class="p">[</span><span class="s2">&quot;chunksizes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">chunks</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">dims</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+                <span class="n">enc</span><span class="p">[</span><span class="s2">"chunksizes"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">chunks</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">dims</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
             <span class="n">encoding</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">enc</span>
         <span class="n">ds</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="n">encoding</span><span class="p">)</span></div>
 
@@ -661,35 +661,35 @@ document.write(`
 <div class="viewcode-block" id="Batch.from_netcdf">
 <a class="viewcode-back" href="../../api.html#aurora.Batch.from_netcdf">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">from_netcdf</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Batch&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a batch from a file.&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_netcdf</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Batch"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Load a batch from a file."""</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
         <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;`xarray` must be installed.&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"`xarray` must be installed."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
-        <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;netcdf4&quot;</span><span class="p">)</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">"netcdf4"</span><span class="p">)</span>
 
         <span class="n">surf_vars</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">static_vars</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">atmos_vars</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;surf_&quot;</span><span class="p">):</span>
-                <span class="n">surf_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">&quot;surf_&quot;</span><span class="p">))</span>
-            <span class="k">elif</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;static_&quot;</span><span class="p">):</span>
-                <span class="n">static_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">&quot;static_&quot;</span><span class="p">))</span>
-            <span class="k">elif</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;atmos_&quot;</span><span class="p">):</span>
-                <span class="n">atmos_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">&quot;atmos_&quot;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"surf_"</span><span class="p">):</span>
+                <span class="n">surf_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">"surf_"</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"static_"</span><span class="p">):</span>
+                <span class="n">static_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">"static_"</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"atmos_"</span><span class="p">):</span>
+                <span class="n">atmos_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">"atmos_"</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">Batch</span><span class="p">(</span>
-            <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;surf_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">surf_vars</span><span class="p">},</span>
-            <span class="n">static_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;static_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">static_vars</span><span class="p">},</span>
-            <span class="n">atmos_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;atmos_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">atmos_vars</span><span class="p">},</span>
+            <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="sa">f</span><span class="s2">"surf_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">surf_vars</span><span class="p">},</span>
+            <span class="n">static_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="sa">f</span><span class="s2">"static_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">static_vars</span><span class="p">},</span>
+            <span class="n">atmos_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="sa">f</span><span class="s2">"atmos_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">atmos_vars</span><span class="p">},</span>
             <span class="n">metadata</span><span class="o">=</span><span class="n">Metadata</span><span class="p">(</span>
                 <span class="n">lat</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
                 <span class="n">lon</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-                <span class="n">time</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;datetime64[s]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span>
+                <span class="n">time</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"datetime64[s]"</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span>
                 <span class="n">atmos_levels</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">level</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
                 <span class="n">rollout_step</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">rollout_step</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
             <span class="p">),</span>
@@ -709,8 +709,8 @@ document.write(`
     <span class="n">lat_new</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">lon_new</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interpolate a variable `v` with latitudes `lat` and longitudes `lon` to new latitudes</span>
-<span class="sd">    `lat_new` and new longitudes `lon_new`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Interpolate a variable `v` with latitudes `lat` and longitudes `lon` to new latitudes</span>
+<span class="sd">    `lat_new` and new longitudes `lon_new`."""</span>
     <span class="c1"># Perform the interpolation in double precision.</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span>
         <span class="n">interpolate_numpy</span><span class="p">(</span>
@@ -730,7 +730,7 @@ document.write(`
     <span class="n">lat_new</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">lon_new</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Like :func:`.interpolate`, but for NumPy tensors.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Like :func:`.interpolate`, but for NumPy tensors."""</span>
 
     <span class="c1"># Implement periodic longitudes in `lon`.</span>
     <span class="k">assert</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
@@ -749,14 +749,14 @@ document.write(`
         <span class="n">rgi</span> <span class="o">=</span> <span class="n">RGI</span><span class="p">(</span>
             <span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">),</span>
             <span class="n">vi</span><span class="p">,</span>
-            <span class="n">method</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="s2">"linear"</span><span class="p">,</span>
             <span class="n">bounds_error</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># Allow out of bounds, for the latitudes.</span>
             <span class="n">fill_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># Extrapolate latitudes if they are out of bounds.</span>
         <span class="p">)</span>
         <span class="n">lat_new_grid</span><span class="p">,</span> <span class="n">lon_new_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span>
             <span class="n">lat_new</span><span class="p">,</span>
             <span class="n">lon_new</span><span class="p">,</span>
-            <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">,</span>
+            <span class="n">indexing</span><span class="o">=</span><span class="s2">"ij"</span><span class="p">,</span>
             <span class="n">sparse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">vs_regridded</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rgi</span><span class="p">((</span><span class="n">lat_new_grid</span><span class="p">,</span> <span class="n">lon_new_grid</span><span class="p">)))</span>

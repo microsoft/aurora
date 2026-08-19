@@ -537,21 +537,21 @@ When you add a new variable, you also need to set the normalisation statistics.<
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.normalisation</span><span class="w"> </span><span class="kn">import</span> <span class="n">locations</span><span class="p">,</span> <span class="n">scales</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">AuroraPretrained</span><span class="p">(</span>
-    <span class="n">surf_vars</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;2t&quot;</span><span class="p">,</span> <span class="s2">&quot;10u&quot;</span><span class="p">,</span> <span class="s2">&quot;10v&quot;</span><span class="p">,</span> <span class="s2">&quot;msl&quot;</span><span class="p">,</span> <span class="s2">&quot;new_surf_var&quot;</span><span class="p">),</span>
-    <span class="n">static_vars</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;lsm&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;slt&quot;</span><span class="p">,</span> <span class="s2">&quot;new_static_var&quot;</span><span class="p">),</span>
-    <span class="n">atmos_vars</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">,</span> <span class="s2">&quot;new_atmos_var&quot;</span><span class="p">),</span>
+    <span class="n">surf_vars</span><span class="o">=</span><span class="p">(</span><span class="s2">"2t"</span><span class="p">,</span> <span class="s2">"10u"</span><span class="p">,</span> <span class="s2">"10v"</span><span class="p">,</span> <span class="s2">"msl"</span><span class="p">,</span> <span class="s2">"new_surf_var"</span><span class="p">),</span>
+    <span class="n">static_vars</span><span class="o">=</span><span class="p">(</span><span class="s2">"lsm"</span><span class="p">,</span> <span class="s2">"z"</span><span class="p">,</span> <span class="s2">"slt"</span><span class="p">,</span> <span class="s2">"new_static_var"</span><span class="p">),</span>
+    <span class="n">atmos_vars</span><span class="o">=</span><span class="p">(</span><span class="s2">"z"</span><span class="p">,</span> <span class="s2">"u"</span><span class="p">,</span> <span class="s2">"v"</span><span class="p">,</span> <span class="s2">"t"</span><span class="p">,</span> <span class="s2">"q"</span><span class="p">,</span> <span class="s2">"new_atmos_var"</span><span class="p">),</span>
 <span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 <span class="c1"># Normalisation means:</span>
-<span class="n">locations</span><span class="p">[</span><span class="s2">&quot;new_surf_var&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
-<span class="n">locations</span><span class="p">[</span><span class="s2">&quot;new_static_var&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
-<span class="n">locations</span><span class="p">[</span><span class="s2">&quot;new_atmos_var&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="n">locations</span><span class="p">[</span><span class="s2">"new_surf_var"</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="n">locations</span><span class="p">[</span><span class="s2">"new_static_var"</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="n">locations</span><span class="p">[</span><span class="s2">"new_atmos_var"</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
 <span class="c1"># Normalisation standard deviations:</span>
-<span class="n">scales</span><span class="p">[</span><span class="s2">&quot;new_surf_var&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
-<span class="n">scales</span><span class="p">[</span><span class="s2">&quot;new_static_var&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
-<span class="n">scales</span><span class="p">[</span><span class="s2">&quot;new_atmos_var&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">scales</span><span class="p">[</span><span class="s2">"new_surf_var"</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">scales</span><span class="p">[</span><span class="s2">"new_static_var"</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">scales</span><span class="p">[</span><span class="s2">"new_atmos_var"</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
 </pre></div>
 </div>
 <p>To more efficiently learn new variables, it is recommended to use a separate learning rate for

@@ -355,7 +355,7 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for aurora.model.aurora</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Copyright (c) Microsoft Corporation. Licensed under the MIT license.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Copyright (c) Microsoft Corporation. Licensed under the MIT license."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
@@ -387,46 +387,46 @@ document.write(`
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.normalisation</span><span class="w"> </span><span class="kn">import</span> <span class="n">log_transform</span><span class="p">,</span> <span class="n">log_untransform</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;Aurora&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;AuroraPretrained&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;AuroraSmallPretrained&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;AuroraSmall&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Aurora12hPretrained&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;AuroraHighRes&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;AuroraAirPollution&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;AuroraWave&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;AuroraV1p5&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;AuroraV1p5Ensemble&quot;</span><span class="p">,</span>
+    <span class="s2">"Aurora"</span><span class="p">,</span>
+    <span class="s2">"AuroraPretrained"</span><span class="p">,</span>
+    <span class="s2">"AuroraSmallPretrained"</span><span class="p">,</span>
+    <span class="s2">"AuroraSmall"</span><span class="p">,</span>
+    <span class="s2">"Aurora12hPretrained"</span><span class="p">,</span>
+    <span class="s2">"AuroraHighRes"</span><span class="p">,</span>
+    <span class="s2">"AuroraAirPollution"</span><span class="p">,</span>
+    <span class="s2">"AuroraWave"</span><span class="p">,</span>
+    <span class="s2">"AuroraV1p5"</span><span class="p">,</span>
+    <span class="s2">"AuroraV1p5Ensemble"</span><span class="p">,</span>
 <span class="p">]</span>
 
 
 <div class="viewcode-block" id="Aurora">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Aurora</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The Aurora model.</span>
+<span class="w">    </span><span class="sd">"""The Aurora model.</span>
 
 <span class="sd">    Defaults to the 1.3 B parameter configuration.</span>
 
 <span class="sd">    Also supports ensemble forecasts.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">default_checkpoint_repo</span> <span class="o">=</span> <span class="s2">&quot;microsoft/aurora&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Name of the HuggingFace repository to load the default checkpoint from.&quot;&quot;&quot;</span>
+    <span class="n">default_checkpoint_repo</span> <span class="o">=</span> <span class="s2">"microsoft/aurora"</span>
+<span class="w">    </span><span class="sd">"""str: Name of the HuggingFace repository to load the default checkpoint from."""</span>
 
-    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-finetuned.ckpt&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Name of the default checkpoint.&quot;&quot;&quot;</span>
+    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">"aurora-0.25-finetuned.ckpt"</span>
+<span class="w">    </span><span class="sd">"""str: Name of the default checkpoint."""</span>
 
-    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">&quot;0be7e57c685dac86b78c4a19a3ab149d13c6a3dd&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: Commit hash of the default checkpoint.&quot;&quot;&quot;</span>
+    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">"0be7e57c685dac86b78c4a19a3ab149d13c6a3dd"</span>
+<span class="w">    </span><span class="sd">"""str: Commit hash of the default checkpoint."""</span>
 
 <div class="viewcode-block" id="Aurora.__init__">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;2t&quot;</span><span class="p">,</span> <span class="s2">&quot;10u&quot;</span><span class="p">,</span> <span class="s2">&quot;10v&quot;</span><span class="p">,</span> <span class="s2">&quot;msl&quot;</span><span class="p">),</span>
-        <span class="n">static_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;lsm&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;slt&quot;</span><span class="p">),</span>
-        <span class="n">atmos_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">),</span>
+        <span class="n">surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"2t"</span><span class="p">,</span> <span class="s2">"10u"</span><span class="p">,</span> <span class="s2">"10v"</span><span class="p">,</span> <span class="s2">"msl"</span><span class="p">),</span>
+        <span class="n">static_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"lsm"</span><span class="p">,</span> <span class="s2">"z"</span><span class="p">,</span> <span class="s2">"slt"</span><span class="p">),</span>
+        <span class="n">atmos_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"z"</span><span class="p">,</span> <span class="s2">"u"</span><span class="p">,</span> <span class="s2">"v"</span><span class="p">,</span> <span class="s2">"t"</span><span class="p">,</span> <span class="s2">"q"</span><span class="p">),</span>
         <span class="n">window_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span>
         <span class="n">encoder_depths</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
         <span class="n">encoder_num_heads</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span>
@@ -448,7 +448,7 @@ document.write(`
         <span class="n">stabilise_level_agg</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">use_lora</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">lora_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span>
-        <span class="n">lora_mode</span><span class="p">:</span> <span class="n">LoRAMode</span> <span class="o">=</span> <span class="s2">&quot;single&quot;</span><span class="p">,</span>
+        <span class="n">lora_mode</span><span class="p">:</span> <span class="n">LoRAMode</span> <span class="o">=</span> <span class="s2">"single"</span><span class="p">,</span>
         <span class="n">surf_stats</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">autocast</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">autocast_dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">,</span>
@@ -470,7 +470,7 @@ document.write(`
         <span class="n">output_only_surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
         <span class="n">output_only_atmos_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct an instance of the model.</span>
+<span class="w">        </span><span class="sd">"""Construct an instance of the model.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            surf_vars (tuple[str, ...], optional): All surface-level variables supported by the</span>
@@ -516,9 +516,9 @@ document.write(`
 <span class="sd">            use_lora (bool, optional): Use LoRA adaptation.</span>
 <span class="sd">            lora_steps (int, optional): Use different LoRA adaptation for the first so-many roll-out</span>
 <span class="sd">                steps.</span>
-<span class="sd">            lora_mode (str, optional): LoRA mode. `&quot;single&quot;` uses the same LoRA for all roll-out</span>
-<span class="sd">                steps, `&quot;from_second&quot;` uses the same LoRA from the second roll-out step on, and</span>
-<span class="sd">                `&quot;all&quot;` uses a different LoRA for every roll-out step. Defaults to `&quot;single&quot;`.</span>
+<span class="sd">            lora_mode (str, optional): LoRA mode. `"single"` uses the same LoRA for all roll-out</span>
+<span class="sd">                steps, `"from_second"` uses the same LoRA from the second roll-out step on, and</span>
+<span class="sd">                `"all"` uses a different LoRA for every roll-out step. Defaults to `"single"`.</span>
 <span class="sd">            surf_stats (dict[str, tuple[float, float]], optional): For these surface-level</span>
 <span class="sd">                variables, adjust the normalisation to the given tuple consisting of a new location</span>
 <span class="sd">                and scale.</span>
@@ -556,7 +556,7 @@ document.write(`
 <span class="sd">                first roll-out step.</span>
 <span class="sd">            clamp_at_first_step (bool, optional): Clamp the positive variables for the first</span>
 <span class="sd">                roll-out step. Should only be used for inference. Defaults to `False`.</span>
-<span class="sd">            simulate_indexing_bug (bool, optional): Simulate an indexing bug that&#39;s present for the</span>
+<span class="sd">            simulate_indexing_bug (bool, optional): Simulate an indexing bug that's present for the</span>
 <span class="sd">                air pollution version of Aurora. This is necessary to obtain numerical equivalence</span>
 <span class="sd">                to the original implementation. Defaults to `False`.</span>
 <span class="sd">            stochastic (bool, optional): If `True`, enable stochastic mode with noise injection.</span>
@@ -571,15 +571,15 @@ document.write(`
 <span class="sd">            rollout_input_clipping (dict[str, dict[str, float]], optional): Per-variable</span>
 <span class="sd">                clipping bounds applied to predictions during autoregressive rollout before they</span>
 <span class="sd">                become the next input. Keys are variable names (must match `surf_vars` or</span>
-<span class="sd">                `atmos_vars`). Values are dicts with optional `&quot;min&quot;` and `&quot;max&quot;` keys.</span>
-<span class="sd">                Example: `{&quot;tcc&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 1}}`. Defaults to `None`.</span>
+<span class="sd">                `atmos_vars`). Values are dicts with optional `"min"` and `"max"` keys.</span>
+<span class="sd">                Example: `{"tcc": {"min": 0, "max": 1}}`. Defaults to `None`.</span>
 <span class="sd">            output_only_surf_vars (tuple[str, ...], optional): Surface-level variables that the</span>
 <span class="sd">                model predicts but that are not present in real input data. These will be</span>
 <span class="sd">                zero-padded in the input batch during rollout. Defaults to `()`.</span>
 <span class="sd">            output_only_atmos_vars (tuple[str, ...], optional): Atmospheric variables that the</span>
 <span class="sd">                model predicts but that are not present in real input data. These will be</span>
 <span class="sd">                zero-padded in the input batch during rollout. Defaults to `()`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">surf_vars</span> <span class="o">=</span> <span class="n">surf_vars</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">static_vars</span> <span class="o">=</span> <span class="n">static_vars</span>
@@ -599,9 +599,9 @@ document.write(`
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">surf_stats</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;The normalisation statics for the following surface-level variables are manually &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;adjusted: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">surf_stats</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="si">}</span><span class="s2">. &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;Please ensure that this is right!&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">"The normalisation statics for the following surface-level variables are manually "</span>
+                <span class="sa">f</span><span class="s2">"adjusted: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">surf_stats</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="si">}</span><span class="s2">. "</span>
+                <span class="sa">f</span><span class="s2">"Please ensure that this is right!"</span><span class="p">,</span>
                 <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
             <span class="p">)</span>
 
@@ -665,9 +665,9 @@ document.write(`
 
         <span class="k">if</span> <span class="n">bf16_mode</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">autocast</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                <span class="s2">&quot;`bf16_mode` was removed, because it caused serious issues for gradient &quot;</span>
-                <span class="s2">&quot;computation. `bf16_mode` now automatically activates `autocast`, which will not &quot;</span>
-                <span class="s2">&quot;save as much memory, but should be much more stable.&quot;</span><span class="p">,</span>
+                <span class="s2">"`bf16_mode` was removed, because it caused serious issues for gradient "</span>
+                <span class="s2">"computation. `bf16_mode` now automatically activates `autocast`, which will not "</span>
+                <span class="s2">"save as much memory, but should be much more stable."</span><span class="p">,</span>
                 <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">autocast</span> <span class="o">=</span> <span class="kc">True</span>
@@ -688,29 +688,29 @@ document.write(`
 <div class="viewcode-block" id="Aurora.reset_noise">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora.reset_noise">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reset_noise</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flush the backbone noise cache.</span>
+<span class="w">        </span><span class="sd">"""Flush the backbone noise cache.</span>
 
-<span class="sd">        See :meth:`Swin3DTransformerBackbone.reset_noise`.&quot;&quot;&quot;</span>
+<span class="sd">        See :meth:`Swin3DTransformerBackbone.reset_noise`."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="o">.</span><span class="n">reset_noise</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="Aurora.set_noise_accumulation">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora.set_noise_accumulation">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_noise_accumulation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enable or disable noise caching in the backbone.</span>
+<span class="w">        </span><span class="sd">"""Enable or disable noise caching in the backbone.</span>
 
 <span class="sd">        See :meth:`Swin3DTransformerBackbone.set_noise_accumulation`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            n (int): Number of steps for noise accumulation. Disables accumulation if `n=0`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="o">.</span><span class="n">set_noise_accumulation</span><span class="p">(</span><span class="n">n</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Aurora.forward">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora.forward">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">lead_times</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward pass.</span>
+<span class="w">        </span><span class="sd">"""Forward pass.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            batch (:class:`aurora.Batch`): Batch to run the model on.</span>
@@ -720,10 +720,10 @@ document.write(`
 
 <span class="sd">        Returns:</span>
 <span class="sd">            :class:`Batch`: Prediction for the batch.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_transform_hook</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
 
-        <span class="c1"># Get the first parameter. We&#39;ll derive the data type and device from this parameter.</span>
+        <span class="c1"># Get the first parameter. We'll derive the data type and device from this parameter.</span>
         <span class="n">p</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
         <span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pre_norm_hook</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
@@ -745,7 +745,7 @@ document.write(`
             <span class="n">static_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">static_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
         <span class="p">)</span>
 
-        <span class="c1"># Apply some transformations before feeding `batch` to the encoder. We&#39;ll later want to</span>
+        <span class="c1"># Apply some transformations before feeding `batch` to the encoder. We'll later want to</span>
         <span class="c1"># refer to the original batch too, so rename the variable.</span>
         <span class="n">transformed_batch</span> <span class="o">=</span> <span class="n">batch</span>
 
@@ -773,8 +773,8 @@ document.write(`
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_lead_time</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">lead_times</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;`variable_lead_time=True` but `lead_times` is `None`. &quot;</span>
-                    <span class="s2">&quot;Please provide a `lead_times` tensor of shape `(batch,)` in hours.&quot;</span>
+                    <span class="s2">"`variable_lead_time=True` but `lead_times` is `None`. "</span>
+                    <span class="s2">"Please provide a `lead_times` tensor of shape `(batch,)` in hours."</span>
                 <span class="p">)</span>
             <span class="n">lead_times</span> <span class="o">=</span> <span class="n">lead_times</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -782,11 +782,11 @@ document.write(`
             <span class="n">lead_times</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">B</span><span class="p">,),</span> <span class="n">lead_hours</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
-            <span class="n">device_type</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span>
+            <span class="n">device_type</span> <span class="o">=</span> <span class="s2">"cuda"</span>
         <span class="k">elif</span> <span class="n">torch</span><span class="o">.</span><span class="n">xpu</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
-            <span class="n">device_type</span> <span class="o">=</span> <span class="s2">&quot;xpu&quot;</span>
+            <span class="n">device_type</span> <span class="o">=</span> <span class="s2">"xpu"</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">device_type</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span>
+            <span class="n">device_type</span> <span class="o">=</span> <span class="s2">"cpu"</span>
         <span class="n">autocast</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autocast</span><span class="p">(</span><span class="n">device_type</span><span class="o">=</span><span class="n">device_type</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">autocast_dtype</span><span class="p">)</span>
         <span class="n">context_encoder</span> <span class="o">=</span> <span class="n">autocast</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">autocast_encoder</span> <span class="k">else</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">nullcontext</span><span class="p">()</span>
         <span class="n">context_backbone</span> <span class="o">=</span> <span class="n">autocast</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">autocast_backbone</span> <span class="k">else</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">nullcontext</span><span class="p">()</span>
@@ -862,48 +862,48 @@ document.write(`
 <div class="viewcode-block" id="Aurora.batch_transform_hook">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora.batch_transform_hook">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">batch_transform_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform the batch right after receiving it and before normalisation.</span>
+<span class="w">        </span><span class="sd">"""Transform the batch right after receiving it and before normalisation.</span>
 
 <span class="sd">        This function should be idempotent.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">batch</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_pre_encoder_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform the batch before it goes through the encoder.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Transform the batch before it goes through the encoder."""</span>
         <span class="k">return</span> <span class="n">batch</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_pre_norm_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform the batch before normalisation.</span>
+<span class="w">        </span><span class="sd">"""Transform the batch before normalisation.</span>
 
 <span class="sd">        This is called automatically in :meth:`forward` right before :meth:`Batch.normalise`. Unlike</span>
 <span class="sd">        :meth:`batch_transform_hook`, this hook is *not* called separately in rollout, so</span>
 <span class="sd">        non-idempotent transforms (e.g. log-scaling) belong here.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">batch</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_post_decoder_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform the prediction right after the decoder.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Transform the prediction right after the decoder."""</span>
         <span class="k">return</span> <span class="n">pred</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_post_unnorm_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform the prediction after un-normalisation, in physical space.</span>
+<span class="w">        </span><span class="sd">"""Transform the prediction after un-normalisation, in physical space.</span>
 
 <span class="sd">        Subclasses can override this to apply post-processing that must operate on un-normalised</span>
 <span class="sd">        (physical) values, such as inverse log-scaling or recomputing prescribed channels.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">pred</span>
 
 <div class="viewcode-block" id="Aurora.apply_rollout_input_clipping">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora.apply_rollout_input_clipping">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">apply_rollout_input_clipping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clamp specified variables according to `rollout_input_clipping`.</span>
+<span class="w">        </span><span class="sd">"""Clamp specified variables according to `rollout_input_clipping`.</span>
 
 <span class="sd">        This is intended to be called during autoregressive rollout *before* feeding a prediction</span>
 <span class="sd">        back as input, so that the unclipped prediction remains available for loss computation</span>
 <span class="sd">        during training. To minimize any other changes to the data flow from models prior to V1p5,</span>
 <span class="sd">        this is not called automatically in :meth:`forward`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">rollout_input_clipping</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">pred</span>
 
@@ -911,8 +911,8 @@ document.write(`
         <span class="n">clipped_atmos</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">atmos_vars</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">bounds</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rollout_input_clipping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">lo</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;min&quot;</span><span class="p">)</span>
-            <span class="n">hi</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max&quot;</span><span class="p">)</span>
+            <span class="n">lo</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"min"</span><span class="p">)</span>
+            <span class="n">hi</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"max"</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">clipped_surf</span><span class="p">:</span>
                 <span class="n">v</span> <span class="o">=</span> <span class="n">clipped_surf</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">lo</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -940,7 +940,7 @@ document.write(`
         <span class="n">revision</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a checkpoint from HuggingFace.</span>
+<span class="w">        </span><span class="sd">"""Load a checkpoint from HuggingFace.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            repo (str, optional): Name of the repository of the form `user/repo`.</span>
@@ -949,7 +949,7 @@ document.write(`
 <span class="sd">            revision (str, optional): Version hash of the Huggingface git repository commit.</span>
 <span class="sd">            strict (bool, optional): Error if the model parameters are not exactly equal to the</span>
 <span class="sd">                parameters in the checkpoint. Defaults to `True`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">repo</span> <span class="o">=</span> <span class="n">repo</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_checkpoint_repo</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_checkpoint_name</span>
         <span class="n">revision</span> <span class="o">=</span> <span class="n">revision</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_checkpoint_revision</span>
@@ -960,13 +960,13 @@ document.write(`
 <div class="viewcode-block" id="Aurora.load_checkpoint_local">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora.load_checkpoint_local">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">load_checkpoint_local</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a checkpoint directly from a file.</span>
+<span class="w">        </span><span class="sd">"""Load a checkpoint directly from a file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            path (str): Path to the checkpoint.</span>
 <span class="sd">            strict (bool, optional): Error if the model parameters are not exactly equal to the</span>
 <span class="sd">                parameters in the checkpoint. Defaults to `True`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Assume that all parameters are either on the CPU or on the GPU.</span>
         <span class="n">device</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span><span class="o">.</span><span class="n">device</span>
         <span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">weights_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -974,33 +974,33 @@ document.write(`
         <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adapt_checkpoint</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
 
         <span class="c1"># Check if the history size is compatible and adjust weights if necessary.</span>
-        <span class="n">current_history_size</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;encoder.surf_token_embeds.weights.2t&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">current_history_size</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s2">"encoder.surf_token_embeds.weights.2t"</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_history_size</span> <span class="o">&gt;</span> <span class="n">current_history_size</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">adapt_checkpoint_max_history_size</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_history_size</span> <span class="o">&lt;</span> <span class="n">current_history_size</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Cannot load checkpoint with `max_history_size` </span><span class="si">{</span><span class="n">current_history_size</span><span class="si">}</span><span class="s2"> &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;into model with `max_history_size` </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_history_size</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="sa">f</span><span class="s2">"Cannot load checkpoint with `max_history_size` </span><span class="si">{</span><span class="n">current_history_size</span><span class="si">}</span><span class="s2"> "</span>
+                <span class="sa">f</span><span class="s2">"into model with `max_history_size` </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_history_size</span><span class="si">}</span><span class="s2">."</span>
             <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_adapt_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adapt an existing checkpoint to make it compatible with the current version of the model.</span>
+<span class="w">        </span><span class="sd">"""Adapt an existing checkpoint to make it compatible with the current version of the model.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            d (dict[str, torch.Tensor]): Checkpoint.</span>
 
 <span class="sd">        Return:</span>
 <span class="sd">            dict[str, torch.Tensor]: Adapted checkpoint.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">_adapt_checkpoint_pretrained</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Aurora.adapt_checkpoint_max_history_size">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora.adapt_checkpoint_max_history_size">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">adapt_checkpoint_max_history_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adapt a checkpoint with smaller `max_history_size` to a model with a larger</span>
+<span class="w">        </span><span class="sd">"""Adapt a checkpoint with smaller `max_history_size` to a model with a larger</span>
 <span class="sd">        `max_history_size` than the current model.</span>
 
 <span class="sd">        If a checkpoint was trained with a larger `max_history_size` than the current model,</span>
@@ -1010,18 +1010,18 @@ document.write(`
 
 <span class="sd">        This implementation copies weights from the checkpoint to the model and fills zeros</span>
 <span class="sd">        for the new history width dimension. It mutates `checkpoint`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">weight</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
             <span class="c1"># We only need to adapt the patch embedding in the encoder.</span>
-            <span class="n">enc_surf_embedding</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;encoder.surf_token_embeds.weights.&quot;</span><span class="p">)</span>
-            <span class="n">enc_atmos_embedding</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;encoder.atmos_token_embeds.weights.&quot;</span><span class="p">)</span>
+            <span class="n">enc_surf_embedding</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"encoder.surf_token_embeds.weights."</span><span class="p">)</span>
+            <span class="n">enc_atmos_embedding</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"encoder.atmos_token_embeds.weights."</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">enc_surf_embedding</span> <span class="ow">or</span> <span class="n">enc_atmos_embedding</span><span class="p">:</span>
-                <span class="c1"># This shouldn&#39;t get called with current logic but leaving here for future proofing</span>
+                <span class="c1"># This shouldn't get called with current logic but leaving here for future proofing</span>
                 <span class="c1"># and in cases where its called outside current context.</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_history_size</span><span class="p">):</span>
                     <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Cannot load checkpoint with `max_history_size` </span><span class="si">{</span><span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;into model with `max_history_size` </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_history_size</span><span class="si">}</span><span class="s2">.&quot;</span>
+                        <span class="sa">f</span><span class="s2">"Cannot load checkpoint with `max_history_size` </span><span class="si">{</span><span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2"> "</span>
+                        <span class="sa">f</span><span class="s2">"into model with `max_history_size` </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_history_size</span><span class="si">}</span><span class="s2">."</span>
                     <span class="p">)</span>
 
                 <span class="c1"># Initialize the new weight tensor.</span>
@@ -1042,16 +1042,16 @@ document.write(`
     <span class="k">def</span><span class="w"> </span><span class="nf">configure_activation_checkpointing</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">module_names</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="s2">&quot;Basic3DDecoderLayer&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;Basic3DEncoderLayer&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;LinearPatchReconstruction&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;Perceiver3DDecoder&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;Perceiver3DEncoder&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;Swin3DTransformerBackbone&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;Swin3DTransformerBlock&quot;</span><span class="p">,</span>
+            <span class="s2">"Basic3DDecoderLayer"</span><span class="p">,</span>
+            <span class="s2">"Basic3DEncoderLayer"</span><span class="p">,</span>
+            <span class="s2">"LinearPatchReconstruction"</span><span class="p">,</span>
+            <span class="s2">"Perceiver3DDecoder"</span><span class="p">,</span>
+            <span class="s2">"Perceiver3DEncoder"</span><span class="p">,</span>
+            <span class="s2">"Swin3DTransformerBackbone"</span><span class="p">,</span>
+            <span class="s2">"Swin3DTransformerBlock"</span><span class="p">,</span>
         <span class="p">),</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure activation checkpointing.</span>
+<span class="w">        </span><span class="sd">"""Configure activation checkpointing.</span>
 
 <span class="sd">        This is required in order to compute gradients without running out of memory.</span>
 
@@ -1062,7 +1062,7 @@ document.write(`
 <span class="sd">        Raises:</span>
 <span class="sd">            RuntimeError: If any module specifies in `module_names` was not found and</span>
 <span class="sd">                thus could not be checkpointed.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">found</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
@@ -1078,8 +1078,8 @@ document.write(`
 
         <span class="k">if</span> <span class="n">found</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="n">module_names</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Could not checkpoint on the following modules: &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">module_names</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">found</span><span class="p">))</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="sa">f</span><span class="s2">"Could not checkpoint on the following modules: "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">module_names</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">found</span><span class="p">))</span><span class="si">}</span><span class="s2">."</span>
             <span class="p">)</span></div>
 </div>
 
@@ -1088,10 +1088,10 @@ document.write(`
 <div class="viewcode-block" id="AuroraPretrained">
 <a class="viewcode-back" href="../../../api.html#aurora.AuroraPretrained">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AuroraPretrained</span><span class="p">(</span><span class="n">Aurora</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pretrained version of Aurora.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Pretrained version of Aurora."""</span>
 
-    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-pretrained.ckpt&quot;</span>
-    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">&quot;0be7e57c685dac86b78c4a19a3ab149d13c6a3dd&quot;</span>
+    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">"aurora-0.25-pretrained.ckpt"</span>
+    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">"0be7e57c685dac86b78c4a19a3ab149d13c6a3dd"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1109,13 +1109,13 @@ document.write(`
 <div class="viewcode-block" id="AuroraSmallPretrained">
 <a class="viewcode-back" href="../../../api.html#aurora.AuroraSmallPretrained">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AuroraSmallPretrained</span><span class="p">(</span><span class="n">Aurora</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Small pretrained version of Aurora.</span>
+<span class="w">    </span><span class="sd">"""Small pretrained version of Aurora.</span>
 
 <span class="sd">    Should only be used for debugging.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-small-pretrained.ckpt&quot;</span>
-    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">&quot;0be7e57c685dac86b78c4a19a3ab149d13c6a3dd&quot;</span>
+    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">"aurora-0.25-small-pretrained.ckpt"</span>
+    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">"0be7e57c685dac86b78c4a19a3ab149d13c6a3dd"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1148,10 +1148,10 @@ document.write(`
 <div class="viewcode-block" id="Aurora12hPretrained">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora12hPretrained">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Aurora12hPretrained</span><span class="p">(</span><span class="n">Aurora</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pretrained version of Aurora with time step 12 hours.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Pretrained version of Aurora with time step 12 hours."""</span>
 
-    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-12h-pretrained.ckpt&quot;</span>
-    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">&quot;15e76e47b65bf4b28fd2246b7b5b951d6e2443b9&quot;</span>
+    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">"aurora-0.25-12h-pretrained.ckpt"</span>
+    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">"15e76e47b65bf4b28fd2246b7b5b951d6e2443b9"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1171,10 +1171,10 @@ document.write(`
 <div class="viewcode-block" id="AuroraHighRes">
 <a class="viewcode-back" href="../../../api.html#aurora.AuroraHighRes">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AuroraHighRes</span><span class="p">(</span><span class="n">Aurora</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;High-resolution version of Aurora.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""High-resolution version of Aurora."""</span>
 
-    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.1-finetuned.ckpt&quot;</span>
-    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">&quot;0be7e57c685dac86b78c4a19a3ab149d13c6a3dd&quot;</span>
+    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">"aurora-0.1-finetuned.ckpt"</span>
+    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">"0be7e57c685dac86b78c4a19a3ab149d13c6a3dd"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1196,42 +1196,42 @@ document.write(`
 <div class="viewcode-block" id="AuroraAirPollution">
 <a class="viewcode-back" href="../../../api.html#aurora.AuroraAirPollution">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AuroraAirPollution</span><span class="p">(</span><span class="n">Aurora</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fine-tuned version of Aurora for air pollution.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Fine-tuned version of Aurora for air pollution."""</span>
 
-    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.4-air-pollution.ckpt&quot;</span>
-    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">&quot;1764d5630a53d3d7a7d169ca335236fc343e4bfc&quot;</span>
+    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">"aurora-0.4-air-pollution.ckpt"</span>
+    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">"1764d5630a53d3d7a7d169ca335236fc343e4bfc"</span>
 
     <span class="n">_predict_difference_history_dim_lookup</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;pm1&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">&quot;pm2p5&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">&quot;pm10&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">&quot;co&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="s2">&quot;tcco&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="s2">&quot;no&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">&quot;tc_no&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">&quot;no2&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">&quot;tcno2&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">&quot;so2&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="s2">&quot;tcso2&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="s2">&quot;go3&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="s2">&quot;gtco3&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">"pm1"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">"pm2p5"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">"pm10"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">"co"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">"tcco"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">"no"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">"tc_no"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">"no2"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">"tcno2"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">"so2"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">"tcso2"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">"go3"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">"gtco3"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">}</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;dict[str, int]: For every variable that we want to predict the difference for, the index</span>
-<span class="sd">    into the history dimension that should be used when predicting the difference.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""dict[str, int]: For every variable that we want to predict the difference for, the index</span>
+<span class="sd">    into the history dimension that should be used when predicting the difference."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="p">(</span><span class="s2">&quot;2t&quot;</span><span class="p">,</span> <span class="s2">&quot;10u&quot;</span><span class="p">,</span> <span class="s2">&quot;10v&quot;</span><span class="p">,</span> <span class="s2">&quot;msl&quot;</span><span class="p">)</span>
-            <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;pm1&quot;</span><span class="p">,</span> <span class="s2">&quot;pm2p5&quot;</span><span class="p">,</span> <span class="s2">&quot;pm10&quot;</span><span class="p">,</span> <span class="s2">&quot;tcco&quot;</span><span class="p">,</span> <span class="s2">&quot;tc_no&quot;</span><span class="p">,</span> <span class="s2">&quot;tcno2&quot;</span><span class="p">,</span> <span class="s2">&quot;gtco3&quot;</span><span class="p">,</span> <span class="s2">&quot;tcso2&quot;</span><span class="p">)</span>
+            <span class="p">(</span><span class="s2">"2t"</span><span class="p">,</span> <span class="s2">"10u"</span><span class="p">,</span> <span class="s2">"10v"</span><span class="p">,</span> <span class="s2">"msl"</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="s2">"pm1"</span><span class="p">,</span> <span class="s2">"pm2p5"</span><span class="p">,</span> <span class="s2">"pm10"</span><span class="p">,</span> <span class="s2">"tcco"</span><span class="p">,</span> <span class="s2">"tc_no"</span><span class="p">,</span> <span class="s2">"tcno2"</span><span class="p">,</span> <span class="s2">"gtco3"</span><span class="p">,</span> <span class="s2">"tcso2"</span><span class="p">)</span>
         <span class="p">),</span>
         <span class="n">static_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="p">(</span><span class="s2">&quot;lsm&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;slt&quot;</span><span class="p">)</span>
-            <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;static_ammonia&quot;</span><span class="p">,</span> <span class="s2">&quot;static_ammonia_log&quot;</span><span class="p">,</span> <span class="s2">&quot;static_co&quot;</span><span class="p">,</span> <span class="s2">&quot;static_co_log&quot;</span><span class="p">)</span>
-            <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;static_nox&quot;</span><span class="p">,</span> <span class="s2">&quot;static_nox_log&quot;</span><span class="p">,</span> <span class="s2">&quot;static_so2&quot;</span><span class="p">,</span> <span class="s2">&quot;static_so2_log&quot;</span><span class="p">)</span>
+            <span class="p">(</span><span class="s2">"lsm"</span><span class="p">,</span> <span class="s2">"z"</span><span class="p">,</span> <span class="s2">"slt"</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="s2">"static_ammonia"</span><span class="p">,</span> <span class="s2">"static_ammonia_log"</span><span class="p">,</span> <span class="s2">"static_co"</span><span class="p">,</span> <span class="s2">"static_co_log"</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="s2">"static_nox"</span><span class="p">,</span> <span class="s2">"static_nox_log"</span><span class="p">,</span> <span class="s2">"static_so2"</span><span class="p">,</span> <span class="s2">"static_so2_log"</span><span class="p">)</span>
         <span class="p">),</span>
-        <span class="n">atmos_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">,</span> <span class="s2">&quot;co&quot;</span><span class="p">,</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="s2">&quot;no2&quot;</span><span class="p">,</span> <span class="s2">&quot;go3&quot;</span><span class="p">,</span> <span class="s2">&quot;so2&quot;</span><span class="p">),</span>
+        <span class="n">atmos_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"z"</span><span class="p">,</span> <span class="s2">"u"</span><span class="p">,</span> <span class="s2">"v"</span><span class="p">,</span> <span class="s2">"t"</span><span class="p">,</span> <span class="s2">"q"</span><span class="p">,</span> <span class="s2">"co"</span><span class="p">,</span> <span class="s2">"no"</span><span class="p">,</span> <span class="s2">"no2"</span><span class="p">,</span> <span class="s2">"go3"</span><span class="p">,</span> <span class="s2">"so2"</span><span class="p">),</span>
         <span class="n">patch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
         <span class="n">timestep</span><span class="p">:</span> <span class="n">timedelta</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">12</span><span class="p">),</span>
         <span class="n">level_condition</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span>
@@ -1239,12 +1239,12 @@ document.write(`
         <span class="p">),</span>
         <span class="n">dynamic_vars</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">atmos_static_vars</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">separate_perceiver</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;co&quot;</span><span class="p">,</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="s2">&quot;no2&quot;</span><span class="p">,</span> <span class="s2">&quot;go3&quot;</span><span class="p">,</span> <span class="s2">&quot;so2&quot;</span><span class="p">),</span>
+        <span class="n">separate_perceiver</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"co"</span><span class="p">,</span> <span class="s2">"no"</span><span class="p">,</span> <span class="s2">"no2"</span><span class="p">,</span> <span class="s2">"go3"</span><span class="p">,</span> <span class="s2">"so2"</span><span class="p">),</span>
         <span class="n">modulation_heads</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">_predict_difference_history_dim_lookup</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
         <span class="n">positive_surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="p">(</span><span class="s2">&quot;pm1&quot;</span><span class="p">,</span> <span class="s2">&quot;pm2p5&quot;</span><span class="p">,</span> <span class="s2">&quot;pm10&quot;</span><span class="p">,</span> <span class="s2">&quot;tcco&quot;</span><span class="p">,</span> <span class="s2">&quot;tc_no&quot;</span><span class="p">,</span> <span class="s2">&quot;tcno2&quot;</span><span class="p">,</span> <span class="s2">&quot;gtco3&quot;</span><span class="p">,</span> <span class="s2">&quot;tcso2&quot;</span><span class="p">)</span>
+            <span class="p">(</span><span class="s2">"pm1"</span><span class="p">,</span> <span class="s2">"pm2p5"</span><span class="p">,</span> <span class="s2">"pm10"</span><span class="p">,</span> <span class="s2">"tcco"</span><span class="p">,</span> <span class="s2">"tc_no"</span><span class="p">,</span> <span class="s2">"tcno2"</span><span class="p">,</span> <span class="s2">"gtco3"</span><span class="p">,</span> <span class="s2">"tcso2"</span><span class="p">)</span>
         <span class="p">),</span>
-        <span class="n">positive_atmos_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;co&quot;</span><span class="p">,</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="s2">&quot;no2&quot;</span><span class="p">,</span> <span class="s2">&quot;go3&quot;</span><span class="p">,</span> <span class="s2">&quot;so2&quot;</span><span class="p">),</span>
+        <span class="n">positive_atmos_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"co"</span><span class="p">,</span> <span class="s2">"no"</span><span class="p">,</span> <span class="s2">"no2"</span><span class="p">,</span> <span class="s2">"go3"</span><span class="p">,</span> <span class="s2">"so2"</span><span class="p">),</span>
         <span class="n">simulate_indexing_bug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -1322,7 +1322,7 @@ document.write(`
             <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">dim_lookup</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">model</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">model</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_mod&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="n">prev</span><span class="p">[</span><span class="n">name</span><span class="p">][:,</span> <span class="n">dim_lookup</span><span class="p">[</span><span class="n">name</span><span class="p">]]</span>
+                <span class="k">return</span> <span class="n">model</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">model</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_mod"</span><span class="p">])</span> <span class="o">*</span> <span class="n">prev</span><span class="p">[</span><span class="n">name</span><span class="p">][:,</span> <span class="n">dim_lookup</span><span class="p">[</span><span class="n">name</span><span class="p">]]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">model</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
 
@@ -1339,11 +1339,11 @@ document.write(`
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_lora</span><span class="p">:</span>
             <span class="n">parts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">level</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">atmos_levels</span><span class="p">):</span>
-                <span class="n">section</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">atmos_vars</span><span class="p">[</span><span class="s2">&quot;so2&quot;</span><span class="p">][</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+                <span class="n">section</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">atmos_vars</span><span class="p">[</span><span class="s2">"so2"</span><span class="p">][</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
                 <span class="k">if</span> <span class="n">level</span> <span class="o">&gt;=</span> <span class="mi">850</span><span class="p">:</span>
                     <span class="n">section</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
                 <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">section</span><span class="p">)</span>
-            <span class="n">pred</span><span class="o">.</span><span class="n">atmos_vars</span><span class="p">[</span><span class="s2">&quot;so2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">parts</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">pred</span><span class="o">.</span><span class="n">atmos_vars</span><span class="p">[</span><span class="s2">"so2"</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">parts</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">3</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">pred</span>
 
@@ -1357,38 +1357,38 @@ document.write(`
 <div class="viewcode-block" id="AuroraWave">
 <a class="viewcode-back" href="../../../api.html#aurora.AuroraWave">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AuroraWave</span><span class="p">(</span><span class="n">Aurora</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Version of Aurora fined-tuned to HRES-WAM ocean wave data.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Version of Aurora fined-tuned to HRES-WAM ocean wave data."""</span>
 
-    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-wave.ckpt&quot;</span>
-    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">&quot;74598e8c65d53a96077c08bb91acdfa5525340c9&quot;</span>
+    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">"aurora-0.25-wave.ckpt"</span>
+    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">"74598e8c65d53a96077c08bb91acdfa5525340c9"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="p">(</span><span class="s2">&quot;2t&quot;</span><span class="p">,</span> <span class="s2">&quot;10u&quot;</span><span class="p">,</span> <span class="s2">&quot;10v&quot;</span><span class="p">,</span> <span class="s2">&quot;msl&quot;</span><span class="p">)</span>
-            <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;swh&quot;</span><span class="p">,</span> <span class="s2">&quot;mwd&quot;</span><span class="p">,</span> <span class="s2">&quot;mwp&quot;</span><span class="p">,</span> <span class="s2">&quot;pp1d&quot;</span><span class="p">,</span> <span class="s2">&quot;shww&quot;</span><span class="p">,</span> <span class="s2">&quot;mdww&quot;</span><span class="p">,</span> <span class="s2">&quot;mpww&quot;</span><span class="p">,</span> <span class="s2">&quot;shts&quot;</span><span class="p">,</span> <span class="s2">&quot;mdts&quot;</span><span class="p">,</span> <span class="s2">&quot;mpts&quot;</span><span class="p">)</span>
-            <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;swh1&quot;</span><span class="p">,</span> <span class="s2">&quot;mwd1&quot;</span><span class="p">,</span> <span class="s2">&quot;mwp1&quot;</span><span class="p">,</span> <span class="s2">&quot;swh2&quot;</span><span class="p">,</span> <span class="s2">&quot;mwd2&quot;</span><span class="p">,</span> <span class="s2">&quot;mwp2&quot;</span><span class="p">,</span> <span class="s2">&quot;wind&quot;</span><span class="p">,</span> <span class="s2">&quot;10u_wave&quot;</span><span class="p">,</span> <span class="s2">&quot;10v_wave&quot;</span><span class="p">)</span>
+            <span class="p">(</span><span class="s2">"2t"</span><span class="p">,</span> <span class="s2">"10u"</span><span class="p">,</span> <span class="s2">"10v"</span><span class="p">,</span> <span class="s2">"msl"</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="s2">"swh"</span><span class="p">,</span> <span class="s2">"mwd"</span><span class="p">,</span> <span class="s2">"mwp"</span><span class="p">,</span> <span class="s2">"pp1d"</span><span class="p">,</span> <span class="s2">"shww"</span><span class="p">,</span> <span class="s2">"mdww"</span><span class="p">,</span> <span class="s2">"mpww"</span><span class="p">,</span> <span class="s2">"shts"</span><span class="p">,</span> <span class="s2">"mdts"</span><span class="p">,</span> <span class="s2">"mpts"</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="s2">"swh1"</span><span class="p">,</span> <span class="s2">"mwd1"</span><span class="p">,</span> <span class="s2">"mwp1"</span><span class="p">,</span> <span class="s2">"swh2"</span><span class="p">,</span> <span class="s2">"mwd2"</span><span class="p">,</span> <span class="s2">"mwp2"</span><span class="p">,</span> <span class="s2">"wind"</span><span class="p">,</span> <span class="s2">"10u_wave"</span><span class="p">,</span> <span class="s2">"10v_wave"</span><span class="p">)</span>
         <span class="p">),</span>
-        <span class="n">static_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;lsm&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;slt&quot;</span><span class="p">,</span> <span class="s2">&quot;wmb&quot;</span><span class="p">,</span> <span class="s2">&quot;lat_mask&quot;</span><span class="p">),</span>
-        <span class="n">lora_mode</span><span class="p">:</span> <span class="n">LoRAMode</span> <span class="o">=</span> <span class="s2">&quot;from_second&quot;</span><span class="p">,</span>
+        <span class="n">static_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"lsm"</span><span class="p">,</span> <span class="s2">"z"</span><span class="p">,</span> <span class="s2">"slt"</span><span class="p">,</span> <span class="s2">"wmb"</span><span class="p">,</span> <span class="s2">"lat_mask"</span><span class="p">),</span>
+        <span class="n">lora_mode</span><span class="p">:</span> <span class="n">LoRAMode</span> <span class="o">=</span> <span class="s2">"from_second"</span><span class="p">,</span>
         <span class="n">stabilise_level_agg</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">density_channel_surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="p">(</span><span class="s2">&quot;swh&quot;</span><span class="p">,</span> <span class="s2">&quot;mwd&quot;</span><span class="p">,</span> <span class="s2">&quot;mwp&quot;</span><span class="p">,</span> <span class="s2">&quot;pp1d&quot;</span><span class="p">,</span> <span class="s2">&quot;shww&quot;</span><span class="p">,</span> <span class="s2">&quot;mdww&quot;</span><span class="p">,</span> <span class="s2">&quot;mpww&quot;</span><span class="p">,</span> <span class="s2">&quot;shts&quot;</span><span class="p">,</span> <span class="s2">&quot;mdts&quot;</span><span class="p">,</span> <span class="s2">&quot;mpts&quot;</span><span class="p">)</span>
-            <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;swh1&quot;</span><span class="p">,</span> <span class="s2">&quot;mwd1&quot;</span><span class="p">,</span> <span class="s2">&quot;mwp1&quot;</span><span class="p">,</span> <span class="s2">&quot;swh2&quot;</span><span class="p">,</span> <span class="s2">&quot;mwd2&quot;</span><span class="p">,</span> <span class="s2">&quot;mwp2&quot;</span><span class="p">,</span> <span class="s2">&quot;wind&quot;</span><span class="p">,</span> <span class="s2">&quot;10u_wave&quot;</span><span class="p">,</span> <span class="s2">&quot;10v_wave&quot;</span><span class="p">)</span>
+            <span class="p">(</span><span class="s2">"swh"</span><span class="p">,</span> <span class="s2">"mwd"</span><span class="p">,</span> <span class="s2">"mwp"</span><span class="p">,</span> <span class="s2">"pp1d"</span><span class="p">,</span> <span class="s2">"shww"</span><span class="p">,</span> <span class="s2">"mdww"</span><span class="p">,</span> <span class="s2">"mpww"</span><span class="p">,</span> <span class="s2">"shts"</span><span class="p">,</span> <span class="s2">"mdts"</span><span class="p">,</span> <span class="s2">"mpts"</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="s2">"swh1"</span><span class="p">,</span> <span class="s2">"mwd1"</span><span class="p">,</span> <span class="s2">"mwp1"</span><span class="p">,</span> <span class="s2">"swh2"</span><span class="p">,</span> <span class="s2">"mwd2"</span><span class="p">,</span> <span class="s2">"mwp2"</span><span class="p">,</span> <span class="s2">"wind"</span><span class="p">,</span> <span class="s2">"10u_wave"</span><span class="p">,</span> <span class="s2">"10v_wave"</span><span class="p">)</span>
         <span class="p">),</span>
-        <span class="n">angle_surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;mwd&quot;</span><span class="p">,</span> <span class="s2">&quot;mdww&quot;</span><span class="p">,</span> <span class="s2">&quot;mdts&quot;</span><span class="p">,</span> <span class="s2">&quot;mwd1&quot;</span><span class="p">,</span> <span class="s2">&quot;mwd2&quot;</span><span class="p">),</span>
+        <span class="n">angle_surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"mwd"</span><span class="p">,</span> <span class="s2">"mdww"</span><span class="p">,</span> <span class="s2">"mdts"</span><span class="p">,</span> <span class="s2">"mwd1"</span><span class="p">,</span> <span class="s2">"mwd2"</span><span class="p">),</span>
         <span class="o">**</span><span class="n">kw_args</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Model the density, sine, and cosine versions of the variables.</span>
         <span class="n">supplemented_surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">surf_vars</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">angle_surf_vars</span><span class="p">:</span>
-                <span class="n">supplemented_surf_vars</span> <span class="o">+=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_sin&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_cos&quot;</span><span class="p">)</span>
+                <span class="n">supplemented_surf_vars</span> <span class="o">+=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_sin"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_cos"</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">supplemented_surf_vars</span> <span class="o">+=</span> <span class="p">(</span><span class="n">name</span><span class="p">,)</span>
             <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">density_channel_surf_vars</span><span class="p">:</span>
-                <span class="n">supplemented_surf_vars</span> <span class="o">+=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_density&quot;</span><span class="p">,)</span>
+                <span class="n">supplemented_surf_vars</span> <span class="o">+=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_density"</span><span class="p">,)</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">surf_vars</span><span class="o">=</span><span class="n">supplemented_surf_vars</span><span class="p">,</span>
@@ -1414,25 +1414,25 @@ document.write(`
 
         <span class="c1"># It is important that these components are split off _before_ normalisation, as they</span>
         <span class="c1"># have specific normalisation statistics.</span>
-        <span class="k">if</span> <span class="s2">&quot;dwi&quot;</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span> <span class="ow">and</span> <span class="s2">&quot;wind&quot;</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">"dwi"</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span> <span class="ow">and</span> <span class="s2">"wind"</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">:</span>
             <span class="c1"># Split into u-component and v-component.</span>
-            <span class="n">u_wave</span> <span class="o">=</span> <span class="o">-</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;wind&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;dwi&quot;</span><span class="p">]))</span>
-            <span class="n">v_wave</span> <span class="o">=</span> <span class="o">-</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;wind&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;dwi&quot;</span><span class="p">]))</span>
+            <span class="n">u_wave</span> <span class="o">=</span> <span class="o">-</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">"wind"</span><span class="p">]</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">"dwi"</span><span class="p">]))</span>
+            <span class="n">v_wave</span> <span class="o">=</span> <span class="o">-</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">"wind"</span><span class="p">]</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">"dwi"</span><span class="p">]))</span>
 
             <span class="c1"># Update batch and remove `dwi`.</span>
-            <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;10u_wave&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">u_wave</span>
-            <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;10v_wave&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_wave</span>
-            <span class="k">del</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;dwi&quot;</span><span class="p">]</span>
+            <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">"10u_wave"</span><span class="p">]</span> <span class="o">=</span> <span class="n">u_wave</span>
+            <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">"10v_wave"</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_wave</span>
+            <span class="k">del</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">"dwi"</span><span class="p">]</span>
 
         <span class="c1"># If the magnitude of a wave is zero (or practically zero), it is absent, so indicate that</span>
         <span class="c1"># with NaNs. Only do this when data is given to the model and not when it is rolled out.</span>
         <span class="k">if</span> <span class="n">batch</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">rollout_step</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">name_sh</span><span class="p">,</span> <span class="n">other_wave_components</span> <span class="ow">in</span> <span class="p">[</span>
-                <span class="p">(</span><span class="s2">&quot;swh&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;mwd&quot;</span><span class="p">,</span> <span class="s2">&quot;mwp&quot;</span><span class="p">,</span> <span class="s2">&quot;pp1d&quot;</span><span class="p">)),</span>
-                <span class="p">(</span><span class="s2">&quot;shww&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;mdww&quot;</span><span class="p">,</span> <span class="s2">&quot;mpww&quot;</span><span class="p">)),</span>
-                <span class="p">(</span><span class="s2">&quot;shts&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;mdts&quot;</span><span class="p">,</span> <span class="s2">&quot;mdts&quot;</span><span class="p">)),</span>
-                <span class="p">(</span><span class="s2">&quot;swh1&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;mwd1&quot;</span><span class="p">,</span> <span class="s2">&quot;mwp1&quot;</span><span class="p">)),</span>
-                <span class="p">(</span><span class="s2">&quot;swh2&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;mwd2&quot;</span><span class="p">,</span> <span class="s2">&quot;mwp2&quot;</span><span class="p">)),</span>
+                <span class="p">(</span><span class="s2">"swh"</span><span class="p">,</span> <span class="p">(</span><span class="s2">"mwd"</span><span class="p">,</span> <span class="s2">"mwp"</span><span class="p">,</span> <span class="s2">"pp1d"</span><span class="p">)),</span>
+                <span class="p">(</span><span class="s2">"shww"</span><span class="p">,</span> <span class="p">(</span><span class="s2">"mdww"</span><span class="p">,</span> <span class="s2">"mpww"</span><span class="p">)),</span>
+                <span class="p">(</span><span class="s2">"shts"</span><span class="p">,</span> <span class="p">(</span><span class="s2">"mdts"</span><span class="p">,</span> <span class="s2">"mdts"</span><span class="p">)),</span>
+                <span class="p">(</span><span class="s2">"swh1"</span><span class="p">,</span> <span class="p">(</span><span class="s2">"mwd1"</span><span class="p">,</span> <span class="s2">"mwp1"</span><span class="p">)),</span>
+                <span class="p">(</span><span class="s2">"swh2"</span><span class="p">,</span> <span class="p">(</span><span class="s2">"mwd2"</span><span class="p">,</span> <span class="s2">"mwp2"</span><span class="p">)),</span>
             <span class="p">]:</span>
                 <span class="n">mask</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">name_sh</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">1e-4</span>
                 <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -1441,7 +1441,7 @@ document.write(`
                         <span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                         <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
                         <span class="c1"># There should be no small values left, except for in wave directions.</span>
-                        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;mwd&quot;</span><span class="p">,</span> <span class="s2">&quot;mdww&quot;</span><span class="p">,</span> <span class="s2">&quot;mdts&quot;</span><span class="p">,</span> <span class="s2">&quot;mwd1&quot;</span><span class="p">,</span> <span class="s2">&quot;mwd2&quot;</span><span class="p">}:</span>
+                        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"mwd"</span><span class="p">,</span> <span class="s2">"mdww"</span><span class="p">,</span> <span class="s2">"mdts"</span><span class="p">,</span> <span class="s2">"mwd1"</span><span class="p">,</span> <span class="s2">"mwd2"</span><span class="p">}:</span>
                             <span class="k">assert</span> <span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">1e-4</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span>
 
         <span class="k">return</span> <span class="n">batch</span></div>
@@ -1452,74 +1452,74 @@ document.write(`
             <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
 
             <span class="c1"># Create a density channel.</span>
-            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">density_channel_surf_vars</span> <span class="ow">and</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_density&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">:</span>
-                <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_density&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">~</span><span class="n">torch</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">density_channel_surf_vars</span> <span class="ow">and</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_density"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">:</span>
+                <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_density"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">~</span><span class="n">torch</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
                 <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
             <span class="c1"># Add sine and cosine values of the angle and remove the original angle variable</span>
-            <span class="n">sin_cos_present</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_sin&quot;</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span> <span class="ow">and</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_cos&quot;</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span>
+            <span class="n">sin_cos_present</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_sin"</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span> <span class="ow">and</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_cos"</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span>
             <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle_surf_vars</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">sin_cos_present</span><span class="p">:</span>
-                <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_sin&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-                <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_cos&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_sin"</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_cos"</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
                 <span class="k">del</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">batch</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_post_decoder_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
-        <span class="n">wmb_mask</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">static_vars</span><span class="p">[</span><span class="s2">&quot;wmb&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">wmb_mask</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">static_vars</span><span class="p">[</span><span class="s2">"wmb"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
 
         <span class="c1"># Undo the sine and cosine components.</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle_surf_vars</span><span class="p">:</span>
-            <span class="k">if</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_sin&quot;</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span> <span class="ow">and</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_cos&quot;</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">:</span>
-                <span class="n">sin</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_sin&quot;</span><span class="p">]</span>
-                <span class="n">cos</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_cos&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_sin"</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span> <span class="ow">and</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_cos"</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">:</span>
+                <span class="n">sin</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_sin"</span><span class="p">]</span>
+                <span class="n">cos</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_cos"</span><span class="p">]</span>
                 <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">sin</span><span class="p">,</span> <span class="n">cos</span><span class="p">))</span> <span class="o">%</span> <span class="mi">360</span>
-                <span class="k">del</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_sin&quot;</span><span class="p">]</span>
-                <span class="k">del</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_cos&quot;</span><span class="p">]</span>
+                <span class="k">del</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_sin"</span><span class="p">]</span>
+                <span class="k">del</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_cos"</span><span class="p">]</span>
 
         <span class="c1"># Undo the density channels. First transform by a sigmoid to get the actual value of the</span>
         <span class="c1"># density channel.</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">density_channel_surf_vars</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">:</span>
-                <span class="n">density</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_density&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="n">wmb_mask</span>
+                <span class="n">density</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_density"</span><span class="p">])</span> <span class="o">*</span> <span class="n">wmb_mask</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">*</span> <span class="n">wmb_mask</span>
                 <span class="n">data</span><span class="p">[</span><span class="n">density</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                 <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
-                <span class="k">del</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_density&quot;</span><span class="p">]</span>
+                <span class="k">del</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_density"</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">pred</span></div>
 
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">AuroraV1p5</span><span class="p">(</span><span class="n">Aurora</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Aurora 1.5 with expanded surface variables, variable lead-time support, and insolation.</span>
+<span class="w">    </span><span class="sd">"""Aurora 1.5 with expanded surface variables, variable lead-time support, and insolation.</span>
 
 <span class="sd">    This variant was trained with an extended set of surface variables (26 total), additional static</span>
 <span class="sd">    fields, and prescribed solar insolation as an input channel. It supports variable lead-time</span>
 <span class="sd">    embeddings, enabling sub-6-hour prediction steps. Seven surface variables are output-only (not</span>
 <span class="sd">    present in the real input data) and are zero-padded during autoregressive rollout.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-v1.5.ckpt&quot;</span>
-    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">&quot;a96afd7ee6d65e3bd2d476f3be798a25a56f2296&quot;</span>
+    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">"aurora-0.25-v1.5.ckpt"</span>
+    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">"a96afd7ee6d65e3bd2d476f3be798a25a56f2296"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="p">(</span><span class="s2">&quot;2t&quot;</span><span class="p">,</span> <span class="s2">&quot;10u&quot;</span><span class="p">,</span> <span class="s2">&quot;10v&quot;</span><span class="p">,</span> <span class="s2">&quot;msl&quot;</span><span class="p">,</span> <span class="s2">&quot;2d&quot;</span><span class="p">,</span> <span class="s2">&quot;tcwv&quot;</span><span class="p">,</span> <span class="s2">&quot;tcc&quot;</span><span class="p">,</span> <span class="s2">&quot;100u&quot;</span><span class="p">,</span> <span class="s2">&quot;100v&quot;</span><span class="p">,</span> <span class="s2">&quot;sp&quot;</span><span class="p">,</span> <span class="s2">&quot;lcc&quot;</span><span class="p">,</span> <span class="s2">&quot;mcc&quot;</span><span class="p">)</span>
-            <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;hcc&quot;</span><span class="p">,</span> <span class="s2">&quot;skt&quot;</span><span class="p">,</span> <span class="s2">&quot;stl1&quot;</span><span class="p">,</span> <span class="s2">&quot;swvl1&quot;</span><span class="p">,</span> <span class="s2">&quot;ci&quot;</span><span class="p">,</span> <span class="s2">&quot;scaled_sd&quot;</span><span class="p">,</span> <span class="s2">&quot;i10fg&quot;</span><span class="p">,</span> <span class="s2">&quot;blh&quot;</span><span class="p">,</span> <span class="s2">&quot;uvb_1h&quot;</span><span class="p">)</span>
-            <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;ssrd_1h&quot;</span><span class="p">,</span> <span class="s2">&quot;ttr_1h&quot;</span><span class="p">,</span> <span class="s2">&quot;scaled_tp_1h&quot;</span><span class="p">,</span> <span class="s2">&quot;scaled_sf_1h&quot;</span><span class="p">,</span> <span class="s2">&quot;insolation&quot;</span><span class="p">)</span>
+            <span class="p">(</span><span class="s2">"2t"</span><span class="p">,</span> <span class="s2">"10u"</span><span class="p">,</span> <span class="s2">"10v"</span><span class="p">,</span> <span class="s2">"msl"</span><span class="p">,</span> <span class="s2">"2d"</span><span class="p">,</span> <span class="s2">"tcwv"</span><span class="p">,</span> <span class="s2">"tcc"</span><span class="p">,</span> <span class="s2">"100u"</span><span class="p">,</span> <span class="s2">"100v"</span><span class="p">,</span> <span class="s2">"sp"</span><span class="p">,</span> <span class="s2">"lcc"</span><span class="p">,</span> <span class="s2">"mcc"</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="s2">"hcc"</span><span class="p">,</span> <span class="s2">"skt"</span><span class="p">,</span> <span class="s2">"stl1"</span><span class="p">,</span> <span class="s2">"swvl1"</span><span class="p">,</span> <span class="s2">"ci"</span><span class="p">,</span> <span class="s2">"scaled_sd"</span><span class="p">,</span> <span class="s2">"i10fg"</span><span class="p">,</span> <span class="s2">"blh"</span><span class="p">,</span> <span class="s2">"uvb_1h"</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="s2">"ssrd_1h"</span><span class="p">,</span> <span class="s2">"ttr_1h"</span><span class="p">,</span> <span class="s2">"scaled_tp_1h"</span><span class="p">,</span> <span class="s2">"scaled_sf_1h"</span><span class="p">,</span> <span class="s2">"insolation"</span><span class="p">)</span>
         <span class="p">),</span>
         <span class="n">static_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="p">(</span><span class="s2">&quot;lsm&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;anor&quot;</span><span class="p">,</span> <span class="s2">&quot;isor&quot;</span><span class="p">,</span> <span class="s2">&quot;cvh&quot;</span><span class="p">,</span> <span class="s2">&quot;cl&quot;</span><span class="p">,</span> <span class="s2">&quot;dl&quot;</span><span class="p">,</span> <span class="s2">&quot;cvl&quot;</span><span class="p">,</span> <span class="s2">&quot;slor&quot;</span><span class="p">,</span> <span class="s2">&quot;slt_0&quot;</span><span class="p">,</span> <span class="s2">&quot;slt_1&quot;</span><span class="p">)</span>
-            <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;slt_2&quot;</span><span class="p">,</span> <span class="s2">&quot;slt_3&quot;</span><span class="p">,</span> <span class="s2">&quot;slt_4&quot;</span><span class="p">,</span> <span class="s2">&quot;slt_5&quot;</span><span class="p">,</span> <span class="s2">&quot;slt_6&quot;</span><span class="p">,</span> <span class="s2">&quot;slt_7&quot;</span><span class="p">,</span> <span class="s2">&quot;sdfor&quot;</span><span class="p">,</span> <span class="s2">&quot;sdor&quot;</span><span class="p">,</span> <span class="s2">&quot;tvh_0&quot;</span><span class="p">)</span>
-            <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;tvh_18&quot;</span><span class="p">,</span> <span class="s2">&quot;tvh_19&quot;</span><span class="p">,</span> <span class="s2">&quot;tvh_3&quot;</span><span class="p">,</span> <span class="s2">&quot;tvh_4&quot;</span><span class="p">,</span> <span class="s2">&quot;tvh_5&quot;</span><span class="p">,</span> <span class="s2">&quot;tvh_6&quot;</span><span class="p">,</span> <span class="s2">&quot;tvl_0&quot;</span><span class="p">,</span> <span class="s2">&quot;tvl_1&quot;</span><span class="p">,</span> <span class="s2">&quot;tvl_10&quot;</span><span class="p">)</span>
-            <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;tvl_11&quot;</span><span class="p">,</span> <span class="s2">&quot;tvl_13&quot;</span><span class="p">,</span> <span class="s2">&quot;tvl_16&quot;</span><span class="p">,</span> <span class="s2">&quot;tvl_17&quot;</span><span class="p">,</span> <span class="s2">&quot;tvl_2&quot;</span><span class="p">,</span> <span class="s2">&quot;tvl_7&quot;</span><span class="p">,</span> <span class="s2">&quot;tvl_9&quot;</span><span class="p">)</span>
+            <span class="p">(</span><span class="s2">"lsm"</span><span class="p">,</span> <span class="s2">"z"</span><span class="p">,</span> <span class="s2">"anor"</span><span class="p">,</span> <span class="s2">"isor"</span><span class="p">,</span> <span class="s2">"cvh"</span><span class="p">,</span> <span class="s2">"cl"</span><span class="p">,</span> <span class="s2">"dl"</span><span class="p">,</span> <span class="s2">"cvl"</span><span class="p">,</span> <span class="s2">"slor"</span><span class="p">,</span> <span class="s2">"slt_0"</span><span class="p">,</span> <span class="s2">"slt_1"</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="s2">"slt_2"</span><span class="p">,</span> <span class="s2">"slt_3"</span><span class="p">,</span> <span class="s2">"slt_4"</span><span class="p">,</span> <span class="s2">"slt_5"</span><span class="p">,</span> <span class="s2">"slt_6"</span><span class="p">,</span> <span class="s2">"slt_7"</span><span class="p">,</span> <span class="s2">"sdfor"</span><span class="p">,</span> <span class="s2">"sdor"</span><span class="p">,</span> <span class="s2">"tvh_0"</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="s2">"tvh_18"</span><span class="p">,</span> <span class="s2">"tvh_19"</span><span class="p">,</span> <span class="s2">"tvh_3"</span><span class="p">,</span> <span class="s2">"tvh_4"</span><span class="p">,</span> <span class="s2">"tvh_5"</span><span class="p">,</span> <span class="s2">"tvh_6"</span><span class="p">,</span> <span class="s2">"tvl_0"</span><span class="p">,</span> <span class="s2">"tvl_1"</span><span class="p">,</span> <span class="s2">"tvl_10"</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="s2">"tvl_11"</span><span class="p">,</span> <span class="s2">"tvl_13"</span><span class="p">,</span> <span class="s2">"tvl_16"</span><span class="p">,</span> <span class="s2">"tvl_17"</span><span class="p">,</span> <span class="s2">"tvl_2"</span><span class="p">,</span> <span class="s2">"tvl_7"</span><span class="p">,</span> <span class="s2">"tvl_9"</span><span class="p">)</span>
         <span class="p">),</span>
-        <span class="n">atmos_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">),</span>
+        <span class="n">atmos_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"z"</span><span class="p">,</span> <span class="s2">"u"</span><span class="p">,</span> <span class="s2">"v"</span><span class="p">,</span> <span class="s2">"t"</span><span class="p">,</span> <span class="s2">"q"</span><span class="p">),</span>
         <span class="n">output_only_surf_vars</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="p">(</span><span class="s2">&quot;i10fg&quot;</span><span class="p">,</span> <span class="s2">&quot;blh&quot;</span><span class="p">,</span> <span class="s2">&quot;uvb_1h&quot;</span><span class="p">,</span> <span class="s2">&quot;ssrd_1h&quot;</span><span class="p">,</span> <span class="s2">&quot;ttr_1h&quot;</span><span class="p">,</span> <span class="s2">&quot;scaled_tp_1h&quot;</span><span class="p">,</span> <span class="s2">&quot;scaled_sf_1h&quot;</span><span class="p">)</span>
+            <span class="p">(</span><span class="s2">"i10fg"</span><span class="p">,</span> <span class="s2">"blh"</span><span class="p">,</span> <span class="s2">"uvb_1h"</span><span class="p">,</span> <span class="s2">"ssrd_1h"</span><span class="p">,</span> <span class="s2">"ttr_1h"</span><span class="p">,</span> <span class="s2">"scaled_tp_1h"</span><span class="p">,</span> <span class="s2">"scaled_sf_1h"</span><span class="p">)</span>
         <span class="p">),</span>
         <span class="n">rollout_input_clipping</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">variable_lead_time</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -1533,22 +1533,22 @@ document.write(`
         <span class="c1"># Define default clipping ranges for rollout inputs, which can be overridden by passing in</span>
         <span class="c1"># `rollout_input_clipping`.</span>
         <span class="n">rollout_input_clipping</span> <span class="o">=</span> <span class="n">rollout_input_clipping</span> <span class="ow">or</span> <span class="p">{}</span>
-        <span class="k">if</span> <span class="s2">&quot;tcwv&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rollout_input_clipping</span><span class="p">:</span>
-            <span class="n">rollout_input_clipping</span><span class="p">[</span><span class="s2">&quot;tcwv&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
-        <span class="k">if</span> <span class="s2">&quot;tcc&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rollout_input_clipping</span><span class="p">:</span>
-            <span class="n">rollout_input_clipping</span><span class="p">[</span><span class="s2">&quot;tcc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>
-        <span class="k">if</span> <span class="s2">&quot;lcc&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rollout_input_clipping</span><span class="p">:</span>
-            <span class="n">rollout_input_clipping</span><span class="p">[</span><span class="s2">&quot;lcc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>
-        <span class="k">if</span> <span class="s2">&quot;mcc&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rollout_input_clipping</span><span class="p">:</span>
-            <span class="n">rollout_input_clipping</span><span class="p">[</span><span class="s2">&quot;mcc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>
-        <span class="k">if</span> <span class="s2">&quot;hcc&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rollout_input_clipping</span><span class="p">:</span>
-            <span class="n">rollout_input_clipping</span><span class="p">[</span><span class="s2">&quot;hcc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>
-        <span class="k">if</span> <span class="s2">&quot;swvl1&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rollout_input_clipping</span><span class="p">:</span>
-            <span class="n">rollout_input_clipping</span><span class="p">[</span><span class="s2">&quot;swvl1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mf">70.0</span><span class="p">}</span>
-        <span class="k">if</span> <span class="s2">&quot;ci&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rollout_input_clipping</span><span class="p">:</span>
-            <span class="n">rollout_input_clipping</span><span class="p">[</span><span class="s2">&quot;ci&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>
-        <span class="k">if</span> <span class="s2">&quot;scaled_sd&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rollout_input_clipping</span><span class="p">:</span>
-            <span class="n">rollout_input_clipping</span><span class="p">[</span><span class="s2">&quot;scaled_sd&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">}</span>
+        <span class="k">if</span> <span class="s2">"tcwv"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rollout_input_clipping</span><span class="p">:</span>
+            <span class="n">rollout_input_clipping</span><span class="p">[</span><span class="s2">"tcwv"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"min"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">"max"</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+        <span class="k">if</span> <span class="s2">"tcc"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rollout_input_clipping</span><span class="p">:</span>
+            <span class="n">rollout_input_clipping</span><span class="p">[</span><span class="s2">"tcc"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"min"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">"max"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>
+        <span class="k">if</span> <span class="s2">"lcc"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rollout_input_clipping</span><span class="p">:</span>
+            <span class="n">rollout_input_clipping</span><span class="p">[</span><span class="s2">"lcc"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"min"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">"max"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>
+        <span class="k">if</span> <span class="s2">"mcc"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rollout_input_clipping</span><span class="p">:</span>
+            <span class="n">rollout_input_clipping</span><span class="p">[</span><span class="s2">"mcc"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"min"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">"max"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>
+        <span class="k">if</span> <span class="s2">"hcc"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rollout_input_clipping</span><span class="p">:</span>
+            <span class="n">rollout_input_clipping</span><span class="p">[</span><span class="s2">"hcc"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"min"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">"max"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>
+        <span class="k">if</span> <span class="s2">"swvl1"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rollout_input_clipping</span><span class="p">:</span>
+            <span class="n">rollout_input_clipping</span><span class="p">[</span><span class="s2">"swvl1"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"min"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">"max"</span><span class="p">:</span> <span class="mf">70.0</span><span class="p">}</span>
+        <span class="k">if</span> <span class="s2">"ci"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rollout_input_clipping</span><span class="p">:</span>
+            <span class="n">rollout_input_clipping</span><span class="p">[</span><span class="s2">"ci"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"min"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">"max"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>
+        <span class="k">if</span> <span class="s2">"scaled_sd"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rollout_input_clipping</span><span class="p">:</span>
+            <span class="n">rollout_input_clipping</span><span class="p">[</span><span class="s2">"scaled_sd"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"min"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">"max"</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">}</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">surf_vars</span><span class="o">=</span><span class="n">surf_vars</span><span class="p">,</span>
@@ -1568,18 +1568,18 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">autocast_backbone</span> <span class="o">=</span> <span class="n">autocast</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">autocast_decoder</span> <span class="o">=</span> <span class="n">autocast</span>
 
-        <span class="c1"># Variable naming scheme assumes that all log-transformed variables start with &quot;scaled_&quot;.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">log_transformed_surf_vars</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">surf_vars</span> <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;scaled_&quot;</span><span class="p">))</span>
+        <span class="c1"># Variable naming scheme assumes that all log-transformed variables start with "scaled_".</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_transformed_surf_vars</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">surf_vars</span> <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"scaled_"</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_pre_encoder_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Zero-pad output-only variables.</span>
+<span class="w">        </span><span class="sd">"""Zero-pad output-only variables.</span>
 
 <span class="sd">        Output-only variables are predicted by the model but are not present in real input data.</span>
 <span class="sd">        They are added as zero tensors so the encoder receives the correct number of channels.</span>
 <span class="sd">        Mutates `batch.surf_vars` / `batch.atmos_vars` in place so that both `batch` and</span>
 <span class="sd">        `transformed_batch` in the caller see the new keys. Zero tensors are added post-</span>
 <span class="sd">        normalization.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_only_surf_vars</span><span class="p">:</span>
             <span class="n">ref</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
             <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span>
@@ -1589,7 +1589,7 @@ document.write(`
         <span class="k">return</span> <span class="n">batch</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_pre_norm_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply log-transform to scaled surface variables before normalisation.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Apply log-transform to scaled surface variables before normalisation."""</span>
         <span class="k">return</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
             <span class="n">batch</span><span class="p">,</span>
             <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span>
@@ -1599,7 +1599,7 @@ document.write(`
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_post_unnorm_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply inverse log-transform and recompute prescribed insolation.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Apply inverse log-transform and recompute prescribed insolation."""</span>
         <span class="n">pred</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
             <span class="n">pred</span><span class="p">,</span>
             <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span>
@@ -1611,8 +1611,8 @@ document.write(`
         <span class="k">return</span> <span class="n">pred</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_update_insolation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Recompute prescribed insolation for the prediction&#39;s valid time.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="s2">&quot;insolation&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Recompute prescribed insolation for the prediction's valid time."""</span>
+        <span class="k">if</span> <span class="s2">"insolation"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">pred</span>
 
         <span class="n">lat_np</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">lat</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
@@ -1624,16 +1624,16 @@ document.write(`
             <span class="n">sol_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sol</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># Shape (H, W)</span>
         <span class="n">sol_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">sol_all</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
-            <span class="n">dtype</span><span class="o">=</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;insolation&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
-            <span class="n">device</span><span class="o">=</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;insolation&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">"insolation"</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">"insolation"</span><span class="p">]</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="c1"># `pred.surf_vars[&quot;insolation&quot;]` has shape (B, 1, H, W)</span>
+        <span class="c1"># `pred.surf_vars["insolation"]` has shape (B, 1, H, W)</span>
         <span class="n">sol_tensor</span> <span class="o">=</span> <span class="n">sol_tensor</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
 
         <span class="k">return</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
             <span class="n">pred</span><span class="p">,</span>
             <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span>
-                <span class="n">k</span><span class="p">:</span> <span class="p">(</span><span class="n">sol_tensor</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;insolation&quot;</span> <span class="k">else</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="n">k</span><span class="p">:</span> <span class="p">(</span><span class="n">sol_tensor</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">"insolation"</span> <span class="k">else</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">surf_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
             <span class="p">},</span>
         <span class="p">)</span>
 
@@ -1648,10 +1648,10 @@ document.write(`
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">AuroraV1p5Ensemble</span><span class="p">(</span><span class="n">AuroraV1p5</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Aurora 1.5 ensemble version with stochastic noise injection.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Aurora 1.5 ensemble version with stochastic noise injection."""</span>
 
-    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">&quot;aurora-0.25-v1.5-ensemble.ckpt&quot;</span>
-    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">&quot;a96afd7ee6d65e3bd2d476f3be798a25a56f2296&quot;</span>
+    <span class="n">default_checkpoint_name</span> <span class="o">=</span> <span class="s2">"aurora-0.25-v1.5-ensemble.ckpt"</span>
+    <span class="n">default_checkpoint_revision</span> <span class="o">=</span> <span class="s2">"a96afd7ee6d65e3bd2d476f3be798a25a56f2296"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>

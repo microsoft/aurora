@@ -355,7 +355,7 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for aurora.foundry.server.mlflow_wrapper</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Copyright (c) Microsoft Corporation. Licensed under the MIT license.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Copyright (c) Microsoft Corporation. Licensed under the MIT license."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -372,10 +372,10 @@ document.write(`
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.foundry.common.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">MLFLOW_ARTIFACTS</span><span class="p">,</span> <span class="n">models</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AuroraModelWrapper&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"AuroraModelWrapper"</span><span class="p">]</span>
 
 <span class="c1"># Need to give the name explicitly here, because the script may be run stand-alone.</span>
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;aurora.foundry.server.score&quot;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"aurora.foundry.server.score"</span><span class="p">)</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">Submission</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
@@ -386,8 +386,8 @@ document.write(`
     <span class="k">class</span><span class="w"> </span><span class="nc">Config</span><span class="p">:</span>
         <span class="n">json_schema_extra</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
             <span class="n">example</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
-                <span class="n">data_folder_uri</span><span class="o">=</span><span class="s2">&quot;https://my.blob.core.windows.net/container/some/path?WRITABLE_SAS&quot;</span><span class="p">,</span>
-                <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;aurora-0.25-small-pretrained&quot;</span><span class="p">,</span>
+                <span class="n">data_folder_uri</span><span class="o">=</span><span class="s2">"https://my.blob.core.windows.net/container/some/path?WRITABLE_SAS"</span><span class="p">,</span>
+                <span class="n">model_name</span><span class="o">=</span><span class="s2">"aurora-0.25-small-pretrained"</span><span class="p">,</span>
                 <span class="n">num_steps</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="p">)</span>
@@ -397,7 +397,7 @@ document.write(`
     <span class="n">task_id</span><span class="p">:</span> <span class="nb">str</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">Config</span><span class="p">:</span>
-        <span class="n">json_schema_extra</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">example</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">task_id</span><span class="o">=</span><span class="s2">&quot;abc-123-def&quot;</span><span class="p">))</span>
+        <span class="n">json_schema_extra</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">example</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">task_id</span><span class="o">=</span><span class="s2">"abc-123-def"</span><span class="p">))</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">TaskInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
@@ -411,12 +411,12 @@ document.write(`
     <span class="k">class</span><span class="w"> </span><span class="nc">Config</span><span class="p">:</span>
         <span class="n">json_schema_extra</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
             <span class="n">example</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
-                <span class="n">task_id</span><span class="o">=</span><span class="s2">&quot;abc-123-def&quot;</span><span class="p">,</span>
+                <span class="n">task_id</span><span class="o">=</span><span class="s2">"abc-123-def"</span><span class="p">,</span>
                 <span class="n">completed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">progress_percentage</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
                 <span class="n">success</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">submitted</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">error_info</span><span class="o">=</span><span class="s2">&quot;Queued&quot;</span><span class="p">,</span>
+                <span class="n">error_info</span><span class="o">=</span><span class="s2">"Queued"</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="p">)</span>
 
@@ -432,11 +432,11 @@ document.write(`
             <span class="n">progress_percentage</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
             <span class="n">success</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">submitted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">status</span><span class="o">=</span><span class="s2">&quot;Unsubmitted&quot;</span><span class="p">,</span>
+            <span class="n">status</span><span class="o">=</span><span class="s2">"Unsubmitted"</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">task_info</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Running&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_info</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">"Running"</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="n">submission</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">submission</span>
@@ -445,13 +445,13 @@ document.write(`
             <span class="n">model_class</span> <span class="o">=</span> <span class="n">models</span><span class="p">[</span><span class="n">submission</span><span class="o">.</span><span class="n">model_name</span><span class="p">]</span>
             <span class="n">model</span> <span class="o">=</span> <span class="n">model_class</span><span class="p">()</span>
 
-            <span class="n">batch</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="n">receive</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_info</span><span class="o">.</span><span class="n">task_id</span><span class="p">,</span> <span class="s2">&quot;input.nc&quot;</span><span class="p">)</span>
+            <span class="n">batch</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="n">receive</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_info</span><span class="o">.</span><span class="n">task_id</span><span class="p">,</span> <span class="s2">"input.nc"</span><span class="p">)</span>
 
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running predictions.&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Running predictions."</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
                 <span class="nb">zip</span><span class="p">(</span>
                     <span class="n">model</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">submission</span><span class="o">.</span><span class="n">num_steps</span><span class="p">),</span>
-                    <span class="n">iterate_prediction_files</span><span class="p">(</span><span class="s2">&quot;prediction.nc&quot;</span><span class="p">,</span> <span class="n">submission</span><span class="o">.</span><span class="n">num_steps</span><span class="p">),</span>
+                    <span class="n">iterate_prediction_files</span><span class="p">(</span><span class="s2">"prediction.nc"</span><span class="p">,</span> <span class="n">submission</span><span class="o">.</span><span class="n">num_steps</span><span class="p">),</span>
                 <span class="p">)</span>
             <span class="p">):</span>
                 <span class="n">channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_info</span><span class="o">.</span><span class="n">task_id</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
@@ -459,11 +459,11 @@ document.write(`
                 <span class="bp">self</span><span class="o">.</span><span class="n">task_info</span><span class="o">.</span><span class="n">progress_percentage</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">submission</span><span class="o">.</span><span class="n">num_steps</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">task_info</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">task_info</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Successfully completed&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task_info</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">"Successfully completed"</span>
 
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">task_info</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">task_info</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Exception: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task_info</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Exception: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
 
         <span class="k">finally</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">task_info</span><span class="o">.</span><span class="n">completed</span> <span class="o">=</span> <span class="kc">True</span>
@@ -472,33 +472,33 @@ document.write(`
 <div class="viewcode-block" id="AuroraModelWrapper">
 <a class="viewcode-back" href="../../../../foundry/api.html#aurora.foundry.server.mlflow_wrapper.AuroraModelWrapper">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AuroraModelWrapper</span><span class="p">(</span><span class="n">mlflow</span><span class="o">.</span><span class="n">pyfunc</span><span class="o">.</span><span class="n">PythonModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A wrapper around an async workflow for making predictions with Aurora.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A wrapper around an async workflow for making predictions with Aurora."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">load_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;aurora&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting `ThreadPoolExecutor`.&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"aurora"</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Starting `ThreadPoolExecutor`."</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">POOL</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">TASKS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Task</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">POOL</span><span class="o">.</span><span class="fm">__enter__</span><span class="p">()</span>
         <span class="n">MLFLOW_ARTIFACTS</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">artifacts</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">model_input</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">model_input</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">model_input</span><span class="p">[</span><span class="s2">"data"</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
 
-        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;submission&quot;</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Creating a new task.&quot;</span><span class="p">)</span>
-            <span class="n">task</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="n">Submission</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"submission"</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Creating a new task."</span><span class="p">)</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="n">Submission</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">[</span><span class="s2">"msg"</span><span class="p">]))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">TASKS</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">task_info</span><span class="o">.</span><span class="n">task_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">task</span>
             <span class="k">return</span> <span class="n">CreationResponse</span><span class="p">(</span><span class="n">task_id</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">task_info</span><span class="o">.</span><span class="n">task_id</span><span class="p">)</span><span class="o">.</span><span class="n">model_dump</span><span class="p">()</span>
 
-        <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;task_info&quot;</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Processing an existing task.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"task_info"</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Processing an existing task."</span><span class="p">)</span>
 
-            <span class="n">task_id</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;task_id&quot;</span><span class="p">]</span>
+            <span class="n">task_id</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">"msg"</span><span class="p">][</span><span class="s2">"task_id"</span><span class="p">]</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">task_id</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Missing `task_id` parameter.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"Missing `task_id` parameter."</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">task_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">TASKS</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Task ID cannot be found.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"Task ID cannot be found."</span><span class="p">)</span>
 
             <span class="n">task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TASKS</span><span class="p">[</span><span class="n">task_id</span><span class="p">]</span>
 
@@ -506,25 +506,25 @@ document.write(`
                 <span class="c1"># Attempt to submit the task if the initial condition is available.</span>
 
                 <span class="n">channel</span> <span class="o">=</span> <span class="n">BlobStorageChannel</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">submission</span><span class="o">.</span><span class="n">data_folder_uri</span><span class="p">))</span>
-                <span class="k">if</span> <span class="n">channel</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">task_id</span><span class="p">,</span> <span class="s2">&quot;input.nc&quot;</span><span class="p">):</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Initial condition was found. Submitting task.&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">channel</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">task_id</span><span class="p">,</span> <span class="s2">"input.nc"</span><span class="p">):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Initial condition was found. Submitting task."</span><span class="p">)</span>
                     <span class="c1"># Send an acknowledgement back to test that the host can write. The client will</span>
                     <span class="c1"># check for this acknowledgement.</span>
-                    <span class="n">channel</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;Acknowledgement of initial condition&quot;</span><span class="p">,</span> <span class="n">task_id</span><span class="p">,</span> <span class="s2">&quot;input.nc.ack&quot;</span><span class="p">)</span>
+                    <span class="n">channel</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">"Acknowledgement of initial condition"</span><span class="p">,</span> <span class="n">task_id</span><span class="p">,</span> <span class="s2">"input.nc.ack"</span><span class="p">)</span>
 
                     <span class="c1"># Queue the task.</span>
                     <span class="n">task</span><span class="o">.</span><span class="n">task_info</span><span class="o">.</span><span class="n">submitted</span> <span class="o">=</span> <span class="kc">True</span>
-                    <span class="n">task</span><span class="o">.</span><span class="n">task_info</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Queued&quot;</span>
+                    <span class="n">task</span><span class="o">.</span><span class="n">task_info</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">"Queued"</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">POOL</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
 
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Initial condition not available. Waiting.&quot;</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Initial condition not available. Waiting."</span><span class="p">)</span>
 
                     <span class="c1"># Wait a little to prevent the client for querying too frequently.</span>
                     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Task still running. Waiting.&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Task still running. Waiting."</span><span class="p">)</span>
 
                 <span class="c1"># Wait a little to prevent the client for querying too frequently. While waiting,</span>
                 <span class="c1"># do check for the task to be completed.</span>
@@ -536,7 +536,7 @@ document.write(`
             <span class="k">return</span> <span class="n">task</span><span class="o">.</span><span class="n">task_info</span><span class="o">.</span><span class="n">model_dump</span><span class="p">()</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown data type: `</span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">`.&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown data type: `</span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">'type'</span><span class="p">]</span><span class="si">}</span><span class="s2">`."</span><span class="p">)</span></div>
 
 </pre></div>
 

@@ -355,7 +355,7 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for aurora.tracker</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Copyright (c) Microsoft Corporation. Licensed under the MIT license.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Copyright (c) Microsoft Corporation. Licensed under the MIT license."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
@@ -366,13 +366,13 @@ document.write(`
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.batch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Batch</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Tracker&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Tracker"</span><span class="p">]</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">NoEyeException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when no eye can be found.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Raised when no eye can be found."""</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_box</span><span class="p">(</span>
@@ -384,7 +384,7 @@ document.write(`
     <span class="n">lon_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">lon_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a square box for a variable.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Get a square box for a variable."""</span>
     <span class="c1"># Make latitude selection.</span>
     <span class="n">lat_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">lat_min</span> <span class="o">&lt;=</span> <span class="n">lats</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lats</span> <span class="o">&lt;=</span> <span class="n">lat_max</span><span class="p">)</span>
     <span class="n">box</span> <span class="o">=</span> <span class="n">variable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">lat_mask</span><span class="p">,</span> <span class="p">:]</span>
@@ -407,7 +407,7 @@ document.write(`
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">havdist</span><span class="p">(</span><span class="n">lat1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lon1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lat2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lon2</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Distance between two latitude-longitude coordinates.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Distance between two latitude-longitude coordinates."""</span>
     <span class="n">lat1</span><span class="p">,</span> <span class="n">lat2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">lat1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">lat2</span><span class="p">)</span>
     <span class="n">lon1</span><span class="p">,</span> <span class="n">lon2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">lon1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">lon2</span><span class="p">)</span>
     <span class="n">rad_earth_km</span> <span class="o">=</span> <span class="mi">6371</span>
@@ -425,7 +425,7 @@ document.write(`
     <span class="n">delta_lon</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
     <span class="n">minimum_cap_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the minimum in `variable` that is closest to `lat` and `lon`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Get the minimum in `variable` that is closest to `lat` and `lon`."""</span>
     <span class="c1"># Create a box centred around the current latitude and longitude.</span>
     <span class="n">lats</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">box</span> <span class="o">=</span> <span class="n">get_box</span><span class="p">(</span>
         <span class="n">variable</span><span class="p">,</span>
@@ -462,10 +462,10 @@ document.write(`
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">extrapolate</span><span class="p">(</span><span class="n">lats</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">lons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Guess an initial latitude and longitude by extrapolating `lats` and `lons`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Guess an initial latitude and longitude by extrapolating `lats` and `lons`."""</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot extrapolate from empty lists.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Cannot extrapolate from empty lists."</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">lats</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lons</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
@@ -480,11 +480,11 @@ document.write(`
 <div class="viewcode-block" id="Tracker">
 <a class="viewcode-back" href="../../api.html#aurora.Tracker">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Tracker</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Simple tropical cyclone tracker.</span>
+<span class="w">    </span><span class="sd">"""Simple tropical cyclone tracker.</span>
 
 <span class="sd">    This algorithm was originally designed and implemented by Anna Allen. This particular</span>
 <span class="sd">    implementation is by Wessel Bruinsma and features various improvements over the original design.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -502,14 +502,14 @@ document.write(`
 <div class="viewcode-block" id="Tracker.results">
 <a class="viewcode-back" href="../../api.html#aurora.Tracker.results">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">results</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Assemble the track into a convenient DataFrame.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Assemble the track into a convenient DataFrame."""</span>
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
             <span class="p">{</span>
-                <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracked_times</span><span class="p">,</span>
-                <span class="s2">&quot;lat&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracked_lats</span><span class="p">,</span>
-                <span class="s2">&quot;lon&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracked_lons</span><span class="p">,</span>
-                <span class="s2">&quot;msl&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracked_msls</span><span class="p">,</span>
-                <span class="s2">&quot;wind&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracked_winds</span><span class="p">,</span>
+                <span class="s2">"time"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracked_times</span><span class="p">,</span>
+                <span class="s2">"lat"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracked_lats</span><span class="p">,</span>
+                <span class="s2">"lon"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracked_lons</span><span class="p">,</span>
+                <span class="s2">"msl"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracked_msls</span><span class="p">,</span>
+                <span class="s2">"wind"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracked_winds</span><span class="p">,</span>
             <span class="p">}</span>
         <span class="p">)</span></div>
 
@@ -517,26 +517,26 @@ document.write(`
 <div class="viewcode-block" id="Tracker.step">
 <a class="viewcode-back" href="../../api.html#aurora.Tracker.step">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Track the next step.</span>
+<span class="w">        </span><span class="sd">"""Track the next step.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            batch (:class:`aurora.Batch`): Prediction.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Check that there is only one prediction. We don&#39;t support batched tracking.</span>
+<span class="sd">        """</span>
+        <span class="c1"># Check that there is only one prediction. We don't support batched tracking.</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">time</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Predictions don&#39;t have batch size one.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"Predictions don't have batch size one."</span><span class="p">)</span>
 
-        <span class="c1"># No need to do tracking on the GPU. It&#39;s cheap.</span>
-        <span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+        <span class="c1"># No need to do tracking on the GPU. It's cheap.</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
 
         <span class="c1"># Extract the relevant variables from the prediction.</span>
         <span class="n">z700_index</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">atmos_levels</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="mi">700</span><span class="p">)</span>
-        <span class="n">z700</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">atmos_vars</span><span class="p">[</span><span class="s2">&quot;z&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">z700_index</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
-        <span class="n">msl</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;msl&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
-        <span class="n">u10</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;10u&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
-        <span class="n">v10</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">&quot;10v&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">z700</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">atmos_vars</span><span class="p">[</span><span class="s2">"z"</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">z700_index</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">msl</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">"msl"</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">u10</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">"10u"</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">v10</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="p">[</span><span class="s2">"10v"</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
         <span class="n">wind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">u10</span> <span class="o">*</span> <span class="n">u10</span> <span class="o">+</span> <span class="n">v10</span> <span class="o">*</span> <span class="n">v10</span><span class="p">)</span>
-        <span class="n">lsm</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">static_vars</span><span class="p">[</span><span class="s2">&quot;lsm&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">lsm</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">static_vars</span><span class="p">[</span><span class="s2">"lsm"</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
         <span class="n">lats</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">lat</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
         <span class="n">lons</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">lon</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
         <span class="n">time</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -547,7 +547,7 @@ document.write(`
         <span class="n">lon</span> <span class="o">=</span> <span class="n">lon</span> <span class="o">%</span> <span class="mi">360</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">is_clear</span><span class="p">(</span><span class="n">lat</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lon</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">delta</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;Is a box centred at `lat` and `lon` with &quot;radius&quot; `delta` clear of land?&quot;&quot;&quot;</span>
+<span class="w">            </span><span class="sd">"""Is a box centred at `lat` and `lon` with "radius" `delta` clear of land?"""</span>
             <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">lsm_box</span> <span class="o">=</span> <span class="n">get_box</span><span class="p">(</span>
                 <span class="n">lsm</span><span class="p">,</span>
                 <span class="n">lats</span><span class="p">,</span>
@@ -559,7 +559,7 @@ document.write(`
             <span class="p">)</span>
             <span class="k">return</span> <span class="n">lsm_box</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.5</span>
 
-        <span class="c1"># Did we &quot;snap&quot; from the guess to a real nearby minimum?</span>
+        <span class="c1"># Did we "snap" from the guess to a real nearby minimum?</span>
         <span class="n">snap</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="c1"># Try MSL with increasingly small boxes.</span>
@@ -581,7 +581,7 @@ document.write(`
                 <span class="k">pass</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">snap</span><span class="p">:</span>
-            <span class="c1"># MSL didn&#39;t work. Try Z700. If it works, try to refine with MSL.</span>
+            <span class="c1"># MSL didn't work. Try Z700. If it works, try to refine with MSL.</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">get_closest_min</span><span class="p">(</span>
                     <span class="n">z700</span><span class="p">,</span>
@@ -615,9 +615,9 @@ document.write(`
         <span class="k">if</span> <span class="ow">not</span> <span class="n">snap</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fails</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tracked_lats</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed at time </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">. Extrapolating in a silly way.&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed at time </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">. Extrapolating in a silly way."</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">NoEyeException</span><span class="p">(</span><span class="s2">&quot;Completely failed at the first step.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">NoEyeException</span><span class="p">(</span><span class="s2">"Completely failed at the first step."</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">tracked_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tracked_lats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
