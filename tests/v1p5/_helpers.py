@@ -26,16 +26,17 @@ def _make_batch(
     surf_vars: tuple[str, ...] = _SURF_VARS,
     static_vars: tuple[str, ...] = _STATIC_VARS,
     atmos_vars: tuple[str, ...] = _ATMOS_VARS,
+    batch_size: int = BATCH,
 ) -> Batch:
     """Create a minimal synthetic batch."""
     return Batch(
-        surf_vars={k: torch.randn(BATCH, HISTORY, H, W) for k in surf_vars},
+        surf_vars={k: torch.randn(batch_size, HISTORY, H, W) for k in surf_vars},
         static_vars={k: torch.randn(H, W) for k in static_vars},
-        atmos_vars={k: torch.randn(BATCH, HISTORY, N_LEVELS, H, W) for k in atmos_vars},
+        atmos_vars={k: torch.randn(batch_size, HISTORY, N_LEVELS, H, W) for k in atmos_vars},
         metadata=Metadata(
             lat=torch.linspace(90, -90, H),
             lon=torch.linspace(0, 360, W + 1)[:-1],
-            time=(datetime(2023, 6, 15, 12, 0),),
+            time=(datetime(2023, 6, 15, 12, 0),) * batch_size,
             atmos_levels=(100, 250, 500, 850),
         ),
     )
