@@ -26,7 +26,7 @@ from aurora.model.decoder import Perceiver3DDecoder
 from aurora.model.encoder import Perceiver3DEncoder
 from aurora.model.lora import LoRAMode
 from aurora.model.perceiver import PerceiverAttention
-from aurora.model.swin3d import Swin3DTransformerBackbone, WindowAttention
+from aurora.model.swin3d import NoiseGenerator, Swin3DTransformerBackbone, WindowAttention
 from aurora.normalisation import log_transform, log_untransform
 
 __all__ = [
@@ -323,6 +323,9 @@ class Aurora(torch.nn.Module):
                 if isinstance(m, (WindowAttention, PerceiverAttention)):
                     m.use_fp16_safe_attention = True
 
+        # Warn only once when `generator` is passed to `forward` of a non-stochastic model.
+        self._generator_ignored_warned = False
+
     def reset_noise(self) -> None:
         """Flush the backbone noise cache.
 
@@ -339,7 +342,13 @@ class Aurora(torch.nn.Module):
         """
         self.backbone.set_noise_accumulation(n)
 
-    def forward(self, batch: Batch, lead_times: Optional[torch.Tensor] = None) -> Batch:
+    def forward(
+        self,
+        batch: Batch,
+        lead_times: Optional[torch.Tensor] = None,
+        *,
+        generator: NoiseGenerator = None,
+    ) -> Batch:
         """Forward pass.
 
         Args:
@@ -347,10 +356,34 @@ class Aurora(torch.nn.Module):
             lead_times (:class:`torch.Tensor`, optional): Per-sample lead times of shape
                 `(batch,)` in hours. Required when the model was configured with
                 `variable_lead_time=True`. Ignored otherwise.
+            generator (:class:`torch.Generator` or tuple of :class:`torch.Generator` or `None`,
+                optional): Source of randomness for the noise injection in stochastic mode. A
+                single generator drives one stream for the whole batch. A tuple must contain one
+                entry per batch element (ensemble member), in the current order of the batch
+                dimension; every element then draws from its own stream, so the noise sequence of
+                a given member does not depend on the batch composition. Tuple entries may be
+                `None` to fall back to the global RNG for that member, and passing the same
+                generator object in several slots makes those members share one stream. Because
+                the two modes draw with different shapes, a single generator and a tuple are not
+                interchangeable. Generators must live on the same device as the model, and they
+                advance on every forward pass. To reproduce a run, re-seed the generators (e.g.
+                with `manual_seed`) *and* call :meth:`reset_noise`, so that noise cached by noise
+                accumulation in a previous run cannot contaminate the reproduced sequence. When
+                the model is not stochastic, this argument is ignored with a warning. Defaults to
+                `None`, which draws from the global RNG (the previous behaviour).
 
         Returns:
             :class:`Batch`: Prediction for the batch.
         """
+        if generator is not None and not self.backbone.stochastic:
+            if not self._generator_ignored_warned:
+                warnings.warn(
+                    "`generator` is ignored because stochastic noise is disabled.",
+                    stacklevel=2,
+                )
+                self._generator_ignored_warned = True
+            generator = None
+
         batch = self.batch_transform_hook(batch)
 
         # Get the first parameter. We'll derive the data type and device from this parameter.
@@ -433,6 +466,7 @@ class Aurora(torch.nn.Module):
                 lead_times=lead_times,
                 patch_res=patch_res,
                 rollout_step=batch.metadata.rollout_step,
+                generator=generator,
             )
         with context_decoder:
             pred = self.decoder(
