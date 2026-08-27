@@ -311,13 +311,13 @@ class Batch:
         )
 
 
-def _tile_batch(batch: Batch, n: int) -> Batch:
+def tile_batch(batch: Batch, n: int) -> Batch:
     """Tile `batch` along the batch dimension `n` times.
 
     Not part of the public `Batch` API. Used only by `aurora.Aurora.forward` and
     `aurora.rollout.rollout` to run `n` ensemble members as a single fused computation. The
     tiled batch dimension is an internal implementation detail and must be undone with
-    `_split_batch` before any result derived from it is returned to a caller.
+    `split_batch` before any result derived from it is returned to a caller.
     """
     return dataclasses.replace(
         batch,
@@ -327,8 +327,8 @@ def _tile_batch(batch: Batch, n: int) -> Batch:
     )
 
 
-def _split_batch(batch: Batch, n: int) -> list[Batch]:
-    """Undo `_tile_batch`, splitting a tiled batch back into `n` standard-shaped batches."""
+def split_batch(batch: Batch, n: int) -> list[Batch]:
+    """Undo `tile_batch`, splitting a tiled batch back into `n` standard-shaped batches."""
     b = next(iter(batch.surf_vars.values())).shape[0] // n
     time = batch.metadata.time
     return [

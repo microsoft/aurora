@@ -6,7 +6,7 @@ from typing import Generator, Optional, Sequence
 
 import torch
 
-from aurora.batch import Batch, _split_batch, _tile_batch
+from aurora.batch import Batch, split_batch, tile_batch
 from aurora.model.aurora import Aurora
 
 __all__ = ["rollout", "rollout_ensemble"]
@@ -154,6 +154,7 @@ def rollout_ensemble(
     model: Aurora,
     batch: Batch,
     steps: int,
+    num_ensemble_members: int,
     fine_lead_times: Optional[Sequence[float]] = None,
     use_noise_accumulation: bool = True,
     apply_rollout_input_clipping: bool = True,
@@ -168,12 +169,11 @@ def rollout_ensemble(
             `Batch`\\ s after every (sub-)step, one per ensemble member; see
             :meth:`aurora.Aurora.forward_ensemble`.
     """
-    num_ensemble_members = model.num_ensemble_members
 
     # Tile the batch once up front, then temporarily disable further expansion so it isn't
     # repeated by `_forward_impl` on every step. The tiled representation is kept purely internal
     # to this loop: every `pred` yielded to the caller is split back into standard-shaped batches.
-    batch = _tile_batch(batch, num_ensemble_members)
+    batch = tile_batch(batch, num_ensemble_members)
     model.num_ensemble_members = 1
     try:
         for pred in rollout(
@@ -184,7 +184,7 @@ def rollout_ensemble(
             use_noise_accumulation=use_noise_accumulation,
             apply_rollout_input_clipping=apply_rollout_input_clipping,
         ):
-            yield _split_batch(pred, num_ensemble_members)
+            yield split_batch(pred, num_ensemble_members)
     finally:
         # Restore the model's ensemble configuration, whether the roll-out ran to completion or
         # was abandoned early.
