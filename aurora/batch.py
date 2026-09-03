@@ -316,12 +316,12 @@ class Batch:
 
         if len(self.metadata.time) != b:
             raise ValueError(
-                f"`Metadata.time` has length {len(self.metadata.time)}, but the batch size "
+                f"`time` has length {len(self.metadata.time)}, but the batch size "
                 f"is {b}. `time` must contain exactly one entry per batch element."
             )
         if len(self.metadata.atmos_levels) != c:
             raise ValueError(
-                f"`Metadata.atmos_levels` has length {len(self.metadata.atmos_levels)}, but the "
+                f"`atmos_levels` has length {len(self.metadata.atmos_levels)}, but the "
                 f"atmospheric variables have {c} pressure levels. These must be equal."
             )
 
