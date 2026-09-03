@@ -75,5 +75,5 @@ def test_batch_rejects_atmos_levels_mismatch(test_input_output: tuple[Batch, Sav
     bad_metadata = dataclasses.replace(
         batch.metadata, atmos_levels=batch.metadata.atmos_levels[:-1]
     )
-    with pytest.raises(ValueError, match=r"`Metadata\.atmos_levels`"):
+    with pytest.raises(ValueError, match=r"`atmos_levels`"):
         dataclasses.replace(batch, metadata=bad_metadata)
