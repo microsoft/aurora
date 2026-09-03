@@ -311,8 +311,8 @@ class Batch:
         )
 
     def __post_init__(self):
-        b = next(iter(self.surf_vars.values())).shape[0]  # first dim of (b, t, h, w)
-        c = next(iter(self.atmos_vars.values())).shape[-3]  # pressure-level dim of (b, t, c, h, w)
+        b = next(iter(self.surf_vars.values())).shape[0]  # First dim. of (b, t, h, w)
+        c = next(iter(self.atmos_vars.values())).shape[-3]  # Pressure-level dim. of (b, t, c, h, w)
 
         if len(self.metadata.time) != b:
             raise ValueError(
