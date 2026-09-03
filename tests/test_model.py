@@ -41,7 +41,7 @@ def test_aurora_small(aurora_small: Aurora, test_input_output: tuple[Batch, Save
         k: v.repeat(2, axis=0) for k, v in test_output["atmos_vars"].items()
     }
     test_metadata = cast(SavedMetadata, dict(test_output["metadata"]))
-    test_metadata["time"] = test_metadata["time"] * 2  # list * 2, not tuple
+    test_metadata["time"] = test_metadata["time"] * 2  # Repeat list to double length
     test_output["metadata"] = test_metadata
 
     with torch.inference_mode():
