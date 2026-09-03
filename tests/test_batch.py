@@ -66,7 +66,7 @@ def test_batch_rejects_metadata_time_length_mismatch(
 ) -> None:
     batch, _ = test_input_output
     bad_metadata = dataclasses.replace(batch.metadata, time=batch.metadata.time * 2)
-    with pytest.raises(ValueError, match=r"`Metadata\.time`"):
+    with pytest.raises(ValueError, match=r"`time`"):
         dataclasses.replace(batch, metadata=bad_metadata)
 
 
