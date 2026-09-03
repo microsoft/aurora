@@ -10,7 +10,7 @@ import pytest
 import torch
 import torch.distributed as dist
 
-from tests.conftest import SavedBatch
+from tests.conftest import SavedBatch, SavedMetadata
 
 from aurora import Aurora, AuroraSmallPretrained, Batch
 
@@ -28,16 +28,21 @@ def test_aurora_small(aurora_small: Aurora, test_input_output: tuple[Batch, Save
     batch, test_output = test_input_output
 
     # Run the test with batch size two.
+    batch_metadata = dataclasses.replace(batch.metadata, time=batch.metadata.time * 2)
     batch = dataclasses.replace(
         batch,
         surf_vars={k: v.repeat(2, 1, 1, 1) for k, v in batch.surf_vars.items()},
         atmos_vars={k: v.repeat(2, 1, 1, 1, 1) for k, v in batch.atmos_vars.items()},
+        metadata=batch_metadata,
     )
     test_output = cast(SavedBatch, dict(test_output))  #  Copy before mutating.
     test_output["surf_vars"] = {k: v.repeat(2, axis=0) for k, v in test_output["surf_vars"].items()}
     test_output["atmos_vars"] = {
         k: v.repeat(2, axis=0) for k, v in test_output["atmos_vars"].items()
     }
+    test_metadata = cast(SavedMetadata, dict(test_output["metadata"]))
+    test_metadata["time"] = test_metadata["time"] * 2  # Repeat list to double length
+    test_output["metadata"] = test_metadata
 
     with torch.inference_mode():
         pred = aurora_small.forward(batch)
