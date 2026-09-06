@@ -449,3 +449,26 @@ When using `rollout` with `fine_lead_times`, noise accumulation is enabled by de
 smoother intra-step transitions while using independent effective noise between main steps,
 matching the training regimen. Set `use_noise_accumulation=False` to draw independent
 noise at each sub-step instead, though this is not recommended.
+
+### Internal Ensembling
+
+You can avoid running the model multiple times to generate different ensemble outputs.
+In Aurora 1.5 you can run the model only once, but the forward pass must operate on
+batch in which the data is tiled.
+This is entirely optional and consumes more memory, but may result in faster inference
+on some hardware.
+Functions `aurora.batch.tile_batch` and `aurora.batch.split_batch` expose this logic:
+the former modifies a `aurora.batch.Batch` to support a single forward pass, and the
+latter unpacks a tiled batch into a list of batches.
+
+In the rollout scenario, you can avoid using these functions and just use `rollout_ensemble`:
+
+```python
+from aurora import rollout_ensemble
+
+with torch.inference_mode():
+    preds = [
+        [member.to("cpu") for member in members]
+        for members in rollout_ensemble(model, batch, steps=10, num_ensemble_members=4)
+    ]
+```
