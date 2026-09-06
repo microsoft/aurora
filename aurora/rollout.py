@@ -171,6 +171,13 @@ def rollout_ensemble(
         list[:class:`aurora.Batch`]: After every (sub-)step, one prediction per ensemble member,
             each with the batch size of `batch`.
     """
+    if num_ensemble_members < 1:
+        raise ValueError(
+            f"`num_ensemble_members` must be at least `1`, but is `{num_ensemble_members}`."
+        )
+    if not model.backbone.stochastic:
+        raise ValueError("`rollout_ensemble` requires a stochastic model.")
+
     batch = tile_batch(batch, num_ensemble_members)
     for pred in rollout(
         model,
