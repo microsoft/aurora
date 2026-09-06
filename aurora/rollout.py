@@ -171,23 +171,13 @@ def rollout_ensemble(
         list[:class:`aurora.Batch`]: After every (sub-)step, one prediction per ensemble member,
             each with the batch size of `batch`.
     """
-
-    # Tile the batch once up front, then temporarily disable further expansion so it isn't
-    # repeated by `_forward_impl` on every step. The tiled representation is kept purely internal
-    # to this loop: every `pred` yielded to the caller is split back into standard-shaped batches.
     batch = tile_batch(batch, num_ensemble_members)
-    model.num_ensemble_members = 1
-    try:
-        for pred in rollout(
-            model,
-            batch,
-            steps,
-            fine_lead_times=fine_lead_times,
-            use_noise_accumulation=use_noise_accumulation,
-            apply_rollout_input_clipping=apply_rollout_input_clipping,
-        ):
-            yield split_batch(pred, num_ensemble_members)
-    finally:
-        # Restore the model's ensemble configuration, whether the roll-out ran to completion or
-        # was abandoned early.
-        model.num_ensemble_members = num_ensemble_members
+    for pred in rollout(
+        model,
+        batch,
+        steps,
+        fine_lead_times=fine_lead_times,
+        use_noise_accumulation=use_noise_accumulation,
+        apply_rollout_input_clipping=apply_rollout_input_clipping,
+    ):
+        yield split_batch(pred, num_ensemble_members)
