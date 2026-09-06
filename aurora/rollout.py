@@ -159,15 +159,17 @@ def rollout_ensemble(
     use_noise_accumulation: bool = True,
     apply_rollout_input_clipping: bool = True,
 ) -> Generator[list[Batch], None, None]:
-    """Like `rollout`, but produces `model.num_ensemble_members` ensemble members internally on
-    every step, as a single fused pass, instead of `rollout` yielding one `Batch` per step.
+    """Perform a roll-out for `num_ensemble_members` ensemble members simultaneously.
 
-    All arguments are identical to `rollout`; see there for details.
+    The members are computed in one pass by repeating `batch` along the batch dimension, so every
+    member receives independent noise. All other arguments are as for :func:`rollout`.
+
+    Args:
+        num_ensemble_members (int): Number of ensemble members.
 
     Yields:
-        list[:class:`aurora.Batch`]: A list of `model.num_ensemble_members` standard-shaped
-            `Batch`\\ s after every (sub-)step, one per ensemble member; see
-            :meth:`aurora.Aurora.forward_ensemble`.
+        list[:class:`aurora.Batch`]: After every (sub-)step, one prediction per ensemble member,
+            each with the batch size of `batch`.
     """
 
     # Tile the batch once up front, then temporarily disable further expansion so it isn't
