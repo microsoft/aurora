@@ -7,6 +7,7 @@ and the `rollout_ensemble` utility).
 import warnings
 from datetime import datetime
 
+import pytest
 import torch
 
 from ._helpers import _OUTPUT_ONLY_SURF, _SURF_VARS, _make_batch, _make_small_v1p5
@@ -151,17 +152,13 @@ def test_rollout_ensemble_yields_list_of_standard_shaped_batches_across_steps():
                 assert v.shape[0] == b
 
 
-def test_rollout_ensemble_num_ensemble_members_one_still_works():
+def test_rollout_ensemble_num_ensemble_members_one_raises():
     model = _make_small_v1p5()
     model.eval()
     surf_vars = tuple(v for v in _SURF_VARS if v not in _OUTPUT_ONLY_SURF)
     batch = _make_batch(surf_vars=surf_vars)
     b = next(iter(batch.surf_vars.values())).shape[0]
 
-    with torch.inference_mode():
-        preds = list(rollout_ensemble(model, batch, steps=2, num_ensemble_members=1))
-
-    for step_pred in preds:
-        assert len(step_pred) == 1
-        for v in step_pred[0].surf_vars.values():
-            assert v.shape[0] == b
+    with pytest.raises(ValueError):
+        with torch.inference_mode():
+            preds = list(rollout_ensemble(model, batch, steps=2, num_ensemble_members=1))
