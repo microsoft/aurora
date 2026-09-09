@@ -4,7 +4,7 @@ import dataclasses
 from datetime import datetime
 from functools import partial
 from pathlib import Path
-from typing import Callable, List
+from typing import Callable, Iterable, List
 
 import numpy as np
 import torch
@@ -85,6 +85,52 @@ class Batch:
     static_vars: dict[str, torch.Tensor]
     atmos_vars: dict[str, torch.Tensor]
     metadata: Metadata
+
+    def __post_init__(self):
+        surf = tuple(self.surf_vars.values())
+        static = tuple(self.static_vars.values())
+        atmos = tuple(self.atmos_vars.values())
+
+        # Every variable must describe the same grid. Compare the last two dimensions rather than
+        # the full shape: the static variables are `(h, w)` here but are expanded to `(b, t, h, w)`
+        # inside the model, and the decoder constructs a batch before the history dimension is
+        # inserted.
+        spatial_shape = _consistent(
+            (tuple(v.shape[-2:]) for v in surf + static + atmos if v.dim() >= 2),
+            "spatial shape",
+            "surface-level, static and atmospheric variables",
+        )
+
+        # The history dimension is only present on fully shaped variables, so check it only where
+        # it exists.
+        _consistent(
+            [v.shape[1] for v in surf if v.dim() == 4]
+            + [v.shape[1] for v in atmos if v.dim() == 5],
+            "history size",
+            "surface-level and atmospheric variables",
+        )
+
+        if spatial_shape is not None:
+            self._check_lat_lon(*spatial_shape)
+
+    def _check_lat_lon(self, h: int, w: int) -> None:
+        """Check that the latitudes and longitudes describe an `h` by `w` grid."""
+        lat, lon = self.metadata.lat, self.metadata.lon
+
+        # :meth:`Metadata.__post_init__` has already checked that the latitudes and longitudes are
+        # either both vectors or both matrices.
+        if lat.dim() == 1:
+            if lat.shape[0] != h or lon.shape[0] != w:
+                raise ValueError(
+                    f"The latitudes and longitudes describe a grid of shape "
+                    f"{(lat.shape[0], lon.shape[0])}, but the variables have spatial shape "
+                    f"{(h, w)}."
+                )
+        elif tuple(lat.shape) != (h, w) or tuple(lon.shape) != (h, w):
+            raise ValueError(
+                f"The latitude and longitude matrices have shapes {tuple(lat.shape)} and "
+                f"{tuple(lon.shape)}, but the variables have spatial shape {(h, w)}."
+            )
 
     @property
     def spatial_shape(self) -> tuple[int, int]:
@@ -309,6 +355,25 @@ class Batch:
                 rollout_step=int(ds.rollout_step.values),
             ),
         )
+
+
+def _consistent(values: Iterable, what: str, of_what: str) -> object | None:
+    """Check that `values` are all equal.
+
+    Args:
+        values (iterable): Values to compare.
+        what (str): Description of the values, used in the error message.
+        of_what (str): Description of where the values came from, used in the error message.
+
+    Returns:
+        object or None: The common value, or `None` if `values` is empty.
+    """
+    unique = set(values)
+    if len(unique) > 1:
+        raise ValueError(
+            f"The {of_what} must all have the same {what}, but found {sorted(unique)}."
+        )
+    return unique.pop() if unique else None
 
 
 def _np(x: torch.Tensor) -> np.ndarray:
