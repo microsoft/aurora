@@ -4,7 +4,7 @@ import dataclasses
 from datetime import datetime
 from functools import partial
 from pathlib import Path
-from typing import Callable, List
+from typing import Callable, Iterable, List
 
 import numpy as np
 import torch
@@ -87,33 +87,38 @@ class Batch:
     metadata: Metadata
 
     def __post_init__(self):
-        # All surface-level and atmospheric variables must agree on the batch dimension, and
-        # `metadata.time` must give exactly one time per batch element. The encoder relies on
-        # this when it adds the absolute time embedding, `(B, L, D) + (B, 1, D)`: if
-        # `len(metadata.time)` differs from `B`, that addition silently broadcasts the batch
-        # dimension to `len(metadata.time)`, and the failure only surfaces later as an
-        # `IndexError` in the decoder or, worse, as predictions of the wrong shape.
-        batch_sizes = {
-            v.shape[0]
-            for vs in (self.surf_vars, self.atmos_vars)
-            for v in vs.values()
-            if v.dim() > 0
-        }
-
-        if len(batch_sizes) > 1:
+        # The encoder adds the absolute time embedding as `(B, L, D) + (B, 1, D)` and the
+        # pressure encoding as `(B, C, L, D) + (1, len(atmos_levels), 1, D)`. In both cases, a
+        # length that disagrees with the data silently broadcasts rather than failing: the batch
+        # or level dimension is inflated to the length of the metadata, so the model happily
+        # returns predictions of the wrong shape. Check both up front instead.
+        batch_size = _consistent_size(
+            (*self.surf_vars.values(), *self.atmos_vars.values()),
+            dim=0,
+            what="batch size",
+            of_what="surface-level and atmospheric variables",
+        )
+        if batch_size is not None and len(self.metadata.time) != batch_size:
             raise ValueError(
-                "The surface-level and atmospheric variables must all have the same batch "
-                f"size, but found sizes {sorted(batch_sizes)}."
+                f"The number of times in the metadata ({len(self.metadata.time)}) must "
+                f"equal the batch size of the surface-level and atmospheric variables "
+                f"({batch_size})."
             )
 
-        if batch_sizes:
-            (batch_size,) = batch_sizes
-            if len(self.metadata.time) != batch_size:
-                raise ValueError(
-                    f"The number of times in the metadata ({len(self.metadata.time)}) must "
-                    f"equal the batch size of the surface-level and atmospheric variables "
-                    f"({batch_size})."
-                )
+        # The atmospheric variables are `(b, t, c, h, w)`, but the decoder briefly constructs a
+        # batch without the history dimension, so count the level dimension from the end.
+        level_size = _consistent_size(
+            self.atmos_vars.values(),
+            dim=-3,
+            what="number of pressure levels",
+            of_what="atmospheric variables",
+        )
+        if level_size is not None and len(self.metadata.atmos_levels) != level_size:
+            raise ValueError(
+                f"The number of pressure levels in the metadata "
+                f"({len(self.metadata.atmos_levels)}) must equal the number of pressure levels "
+                f"of the atmospheric variables ({level_size})."
+            )
 
     @property
     def spatial_shape(self) -> tuple[int, int]:
@@ -338,6 +343,31 @@ class Batch:
                 rollout_step=int(ds.rollout_step.values),
             ),
         )
+
+
+def _consistent_size(
+    tensors: Iterable[torch.Tensor],
+    dim: int,
+    what: str,
+    of_what: str,
+) -> int | None:
+    """Get the size of dimension `dim` of `tensors`, checking that they all agree.
+
+    Args:
+        tensors (iterable of :class:`torch.Tensor`): Tensors to check.
+        dim (int): Dimension to take the size of. May be negative, in which case it counts from
+            the end. Tensors with too few dimensions are skipped.
+        what (str): Description of the size, used in the error message.
+        of_what (str): Description of `tensors`, used in the error message.
+
+    Returns:
+        int or None: The common size, or `None` if no tensor has dimension `dim`.
+    """
+    min_dim = dim + 1 if dim >= 0 else -dim
+    sizes = {v.shape[dim] for v in tensors if v.dim() >= min_dim}
+    if len(sizes) > 1:
+        raise ValueError(f"The {of_what} must all have the same {what}, but found {sorted(sizes)}.")
+    return sizes.pop() if sizes else None
 
 
 def _np(x: torch.Tensor) -> np.ndarray:

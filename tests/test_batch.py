@@ -63,16 +63,25 @@ def test_save_load(test_input_output: tuple[Batch, SavedBatch], tmp_path: Path) 
     assert batch.metadata.rollout_step == batch_loaded.metadata.rollout_step
 
 
-def _batch(batch_size: int, n_times: int) -> Batch:
+_LEVELS = (100, 250, 500, 850)
+
+
+def _batch(
+    batch_size: int,
+    n_times: int,
+    n_levels: int = len(_LEVELS),
+    n_atmos_levels: int | None = None,
+) -> Batch:
+    n_atmos_levels = n_levels if n_atmos_levels is None else n_atmos_levels
     return Batch(
         surf_vars={"2t": torch.randn(batch_size, 2, 17, 32)},
         static_vars={"lsm": torch.randn(17, 32)},
-        atmos_vars={"z": torch.randn(batch_size, 2, 4, 17, 32)},
+        atmos_vars={"z": torch.randn(batch_size, 2, n_levels, 17, 32)},
         metadata=Metadata(
             lat=torch.linspace(90, -90, 17),
             lon=torch.linspace(0, 360, 33)[:-1],
             time=tuple(datetime(2020, 6, 1, 12, 0) for _ in range(n_times)),
-            atmos_levels=(100, 250, 500, 850),
+            atmos_levels=_LEVELS[:n_atmos_levels],
         ),
     )
 
@@ -98,8 +107,40 @@ def test_inconsistent_batch_sizes_between_variables() -> None:
         dataclasses.replace(batch, atmos_vars={"z": torch.randn(3, 2, 4, 17, 32)})
 
 
+@pytest.mark.parametrize("n_levels", [1, 2, 4])
+def test_matching_levels_and_atmos_levels(n_levels: int) -> None:
+    # One pressure level per level of the atmospheric variables is the documented contract.
+    batch = _batch(1, 1, n_levels=n_levels)
+    assert len(batch.metadata.atmos_levels) == n_levels
+
+
+@pytest.mark.parametrize("n_levels, n_atmos_levels", [(1, 4), (4, 1), (4, 2), (2, 4)])
+def test_mismatching_levels_and_atmos_levels(n_levels: int, n_atmos_levels: int) -> None:
+    # Without this check, the pressure encoding in the encoder silently broadcasts the level
+    # dimension to `len(metadata.atmos_levels)`: one level of data with four pressure levels
+    # returns four levels, three of them fabricated, and four levels of data with one pressure
+    # level silently discards three.
+    with pytest.raises(ValueError, match="number of pressure levels in the metadata"):
+        _batch(1, 1, n_levels=n_levels, n_atmos_levels=n_atmos_levels)
+
+
+def test_inconsistent_levels_between_atmos_variables() -> None:
+    batch = _batch(1, 1)
+    with pytest.raises(ValueError, match="same number of pressure levels"):
+        dataclasses.replace(
+            batch,
+            atmos_vars={
+                "z": torch.randn(1, 2, 4, 17, 32),
+                "t": torch.randn(1, 2, 3, 17, 32),
+            },
+        )
+
+
 def test_derived_batches_stay_valid(test_input_output: tuple[Batch, SavedBatch]) -> None:
     # The operations that construct new batches must not trip the validation.
     batch, _ = test_input_output
     for derived in (batch.to("cpu"), batch.crop(4), batch.regrid(0.45)):
         assert len(derived.metadata.time) == next(iter(derived.surf_vars.values())).shape[0]
+        assert (
+            len(derived.metadata.atmos_levels) == next(iter(derived.atmos_vars.values())).shape[-3]
+        )
