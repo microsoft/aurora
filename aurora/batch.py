@@ -86,6 +86,35 @@ class Batch:
     atmos_vars: dict[str, torch.Tensor]
     metadata: Metadata
 
+    def __post_init__(self):
+        # All surface-level and atmospheric variables must agree on the batch dimension, and
+        # `metadata.time` must give exactly one time per batch element. The encoder relies on
+        # this when it adds the absolute time embedding, `(B, L, D) + (B, 1, D)`: if
+        # `len(metadata.time)` differs from `B`, that addition silently broadcasts the batch
+        # dimension to `len(metadata.time)`, and the failure only surfaces later as an
+        # `IndexError` in the decoder or, worse, as predictions of the wrong shape.
+        batch_sizes = {
+            v.shape[0]
+            for vs in (self.surf_vars, self.atmos_vars)
+            for v in vs.values()
+            if v.dim() > 0
+        }
+
+        if len(batch_sizes) > 1:
+            raise ValueError(
+                "The surface-level and atmospheric variables must all have the same batch "
+                f"size, but found sizes {sorted(batch_sizes)}."
+            )
+
+        if batch_sizes:
+            (batch_size,) = batch_sizes
+            if len(self.metadata.time) != batch_size:
+                raise ValueError(
+                    f"The number of times in the metadata ({len(self.metadata.time)}) must "
+                    f"equal the batch size of the surface-level and atmospheric variables "
+                    f"({batch_size})."
+                )
+
     @property
     def spatial_shape(self) -> tuple[int, int]:
         """Get the spatial shape from an arbitrary surface-level variable."""

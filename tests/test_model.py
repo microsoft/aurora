@@ -27,11 +27,13 @@ def aurora_small() -> Aurora:
 def test_aurora_small(aurora_small: Aurora, test_input_output: tuple[Batch, SavedBatch]) -> None:
     batch, test_output = test_input_output
 
-    # Run the test with batch size two.
+    # Run the test with batch size two. `metadata.time` gives the time for every batch element,
+    # so it must be repeated along with the data.
     batch = dataclasses.replace(
         batch,
         surf_vars={k: v.repeat(2, 1, 1, 1) for k, v in batch.surf_vars.items()},
         atmos_vars={k: v.repeat(2, 1, 1, 1, 1) for k, v in batch.atmos_vars.items()},
+        metadata=dataclasses.replace(batch.metadata, time=batch.metadata.time * 2),
     )
     test_output = cast(SavedBatch, dict(test_output))  #  Copy before mutating.
     test_output["surf_vars"] = {k: v.repeat(2, axis=0) for k, v in test_output["surf_vars"].items()}
