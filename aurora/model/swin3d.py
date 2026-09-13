@@ -26,12 +26,9 @@ from aurora.model.util import (
     maybe_adjust_windows,
 )
 
-__all__ = ["Swin3DTransformerBackbone"]
+__all__ = ["Swin3DTransformerBackbone", "NoiseGenerator"]
 
 NoiseGenerator = torch.Generator | tuple[torch.Generator | None, ...] | None
-"""Source of randomness for noise injection in stochastic mode: a single generator driving one
-stream for the whole batch, a tuple with one generator per batch element, or `None` for the
-global RNG."""
 
 
 class MLP(nn.Module):
@@ -927,12 +924,6 @@ class Swin3DTransformerBackbone(nn.Module):
 
         Call this to clear all cached noise tensors, e.g. at the beginning of a new forecast issue
         time. After reset, the next forward call starts building the cache afresh.
-
-        To reproduce a run that controls the noise with `generator` (see :meth:`forward`), re-seed
-        the generators *and* call this method: cached noise left over from a previous run would
-        otherwise contaminate the reproduced sequence. The same applies after changing the order or
-        composition of the ensemble members that a tuple of generators corresponds to, which cannot
-        be detected from the noise tensors themselves.
         """
 
         if self.stochastic:
@@ -957,35 +948,6 @@ class Swin3DTransformerBackbone(nn.Module):
             self._noise_cache_size = max(n, 0)
             self._accumulate_noise = self._noise_cache_size > 0
 
-    def _validate_generator(
-        self, generator: NoiseGenerator, batch_size: int, device: torch.device
-    ) -> None:
-        """Validate `generator` against the batch before any randomness is consumed.
-
-        Checking the tuple length and every device up front ensures that no generator has already
-        advanced when an error is raised for a later batch element.
-        """
-        if not isinstance(generator, tuple):
-            return
-        if len(generator) != batch_size:
-            raise ValueError(
-                f"Expected {batch_size} generators (one per batch element), got {len(generator)}."
-            )
-        for i, g in enumerate(generator):
-            if g is None:
-                continue
-            # Like PyTorch, treat an index-less device (e.g. `cuda`) as compatible with an
-            # indexed one (e.g. `cuda:0`); only compare indices when both are explicit.
-            if g.device.type != device.type or (
-                g.device.index is not None
-                and device.index is not None
-                and g.device.index != device.index
-            ):
-                raise ValueError(
-                    f"Generator for batch element {i} is on device `{g.device}`, but noise is "
-                    f"generated on device `{device}`."
-                )
-
     def _sample_noise(
         self,
         shape: tuple[int, ...],
@@ -993,15 +955,7 @@ class Swin3DTransformerBackbone(nn.Module):
         dtype: torch.dtype,
         generator: NoiseGenerator = None,
     ) -> torch.Tensor:
-        """Draw one noise sample of shape `(B, L, D)`.
-
-        A single generator produces the whole sample in one draw, so its stream depends on the
-        batch size. A tuple of generators instead produces one `(L, D)` draw per batch element, so
-        the sequence of draws for a given element does not depend on the batch composition. `None`,
-        or a `None` entry in a tuple, falls back to the global RNG. Because the two modes consume
-        a generator with differently shaped draws, a single generator and a tuple are not
-        interchangeable.
-        """
+        """Draw noise of shape `shape`, one draw per batch element if `generator` is a tuple."""
         if isinstance(generator, tuple):
             return torch.stack(
                 [torch.randn(shape[1:], device=device, dtype=dtype, generator=g) for g in generator]
@@ -1039,10 +993,8 @@ class Swin3DTransformerBackbone(nn.Module):
             lead_times (torch.Tensor): Lead times of shape `(batch,)` in hours.
             rollout_step (int): Roll-out step.
             patch_res (tuple[int, int, int]): Patch resolution of the form `(C, H, W)`.
-            generator (torch.Generator or tuple[torch.Generator | None, ...], optional): Source of
-                randomness for noise injection in stochastic mode. See :meth:`_sample_noise` and
-                :meth:`Aurora.forward` for the semantics. Only used when the model is stochastic.
-                Defaults to `None`, which draws from the global RNG.
+            generator (torch.Generator or tuple[torch.Generator | None, ...], optional): Generator
+                for the noise in stochastic mode. See :meth:`Aurora.forward`. Defaults to `None`.
 
         Returns:
             torch.Tensor: Output tokens of shape `(B, L, D)`.
@@ -1064,21 +1016,18 @@ class Swin3DTransformerBackbone(nn.Module):
 
         if self.stochastic:
             noise_shape = x.shape[:-1] + (self.embed_dim,)
-            self._validate_generator(generator, x.shape[0], x.device)
+            if isinstance(generator, tuple) and len(generator) != x.shape[0]:
+                raise ValueError(
+                    f"Expected one generator per batch element, but got `{len(generator)}` "
+                    f"generators for a batch of size `{x.shape[0]}`."
+                )
             noise = self._sample_noise(noise_shape, x.device, x.dtype, generator)
             if self._accumulate_noise:
-                # A shape (e.g. different batch size), device, or dtype change invalidates the
-                # cache.
-                cached = self._noise_cache[0] if self._noise_cache else None
-                if cached is not None and (
-                    cached.shape != noise.shape
-                    or cached.device != noise.device
-                    or cached.dtype != noise.dtype
-                ):
+                # Shape change (e.g. different batch size) invalidates the cache.
+                if self._noise_cache and self._noise_cache[0].shape != noise.shape:
                     warnings.warn(
-                        f"Cached noise of shape {cached.shape} ({cached.dtype} on "
-                        f"{cached.device}) is incompatible with new noise of shape {noise.shape} "
-                        f"({noise.dtype} on {noise.device}); clearing noise cache.",
+                        f"Noise shape changed from {self._noise_cache[0].shape} to "
+                        f"{noise.shape}; clearing noise cache.",
                         stacklevel=2,
                     )
                     self._noise_cache.clear()

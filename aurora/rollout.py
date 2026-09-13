@@ -93,12 +93,8 @@ def rollout(
             with clipping and the user wants to preserve the raw model predictions for analysis.
             Default: `True`.
         generator (:class:`torch.Generator` or tuple of :class:`torch.Generator` or `None`,
-            optional): Source of randomness for the noise injection of stochastic models, passed
-            to every `forward` call of the roll-out. See :meth:`aurora.Aurora.forward` for the
-            semantics. The generators advance on every (sub-)step, and a tuple corresponds to the
-            order of the batch dimension throughout the roll-out. To reproduce a roll-out, re-seed
-            the generators and call `model.reset_noise()` before starting. Default: `None`, which
-            draws from the global RNG.
+            optional): Generator for the noise in stochastic mode, passed to every forward pass.
+            See :meth:`aurora.Aurora.forward`. Default: `None`.
 
     Yields:
         :class:`aurora.Batch`: The prediction after every (sub-)step.
