@@ -26,7 +26,7 @@ from aurora.model.decoder import Perceiver3DDecoder
 from aurora.model.encoder import Perceiver3DEncoder
 from aurora.model.lora import LoRAMode
 from aurora.model.perceiver import PerceiverAttention
-from aurora.model.swin3d import Swin3DTransformerBackbone, WindowAttention
+from aurora.model.swin3d import NoiseGenerator, Swin3DTransformerBackbone, WindowAttention
 from aurora.normalisation import log_transform, log_untransform
 
 __all__ = [
@@ -339,7 +339,13 @@ class Aurora(torch.nn.Module):
         """
         self.backbone.set_noise_accumulation(n)
 
-    def forward(self, batch: Batch, lead_times: Optional[torch.Tensor] = None) -> Batch:
+    def forward(
+        self,
+        batch: Batch,
+        lead_times: Optional[torch.Tensor] = None,
+        *,
+        generator: NoiseGenerator = None,
+    ) -> Batch:
         """Forward pass.
 
         Args:
@@ -347,6 +353,13 @@ class Aurora(torch.nn.Module):
             lead_times (:class:`torch.Tensor`, optional): Per-sample lead times of shape
                 `(batch,)` in hours. Required when the model was configured with
                 `variable_lead_time=True`. Ignored otherwise.
+            generator (:class:`torch.Generator` or tuple of :class:`torch.Generator` or `None`,
+                optional): Generator for the noise in stochastic mode. A single generator is used
+                for the whole batch. A tuple gives one generator per batch element, so that the
+                noise of an element does not depend on the other elements in the batch; entries can
+                be `None` to use the global RNG. Generators must be on the device of the model. To
+                reproduce a run, re-seed the generators and call :meth:`reset_noise`. Ignored when
+                the model is not stochastic. Defaults to `None`, which uses the global RNG.
 
         Returns:
             :class:`Batch`: Prediction for the batch.
@@ -433,6 +446,7 @@ class Aurora(torch.nn.Module):
                 lead_times=lead_times,
                 patch_res=patch_res,
                 rollout_step=batch.metadata.rollout_step,
+                generator=generator,
             )
         with context_decoder:
             pred = self.decoder(

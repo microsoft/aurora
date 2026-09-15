@@ -26,7 +26,9 @@ from aurora.model.util import (
     maybe_adjust_windows,
 )
 
-__all__ = ["Swin3DTransformerBackbone"]
+__all__ = ["Swin3DTransformerBackbone", "NoiseGenerator"]
+
+NoiseGenerator = torch.Generator | tuple[torch.Generator | None, ...] | None
 
 
 class MLP(nn.Module):
@@ -946,6 +948,25 @@ class Swin3DTransformerBackbone(nn.Module):
             self._noise_cache_size = max(n, 0)
             self._accumulate_noise = self._noise_cache_size > 0
 
+    def _sample_noise(
+        self,
+        shape: tuple[int, ...],
+        device: torch.device,
+        dtype: torch.dtype,
+        generator: NoiseGenerator = None,
+    ) -> torch.Tensor:
+        """Draw noise of shape `shape`, one draw per batch element if `generator` is a tuple."""
+        if isinstance(generator, tuple):
+            if len(generator) != shape[0]:
+                raise ValueError(
+                    f"Expected one generator per batch element, but got `{len(generator)}` "
+                    f"generators for a batch of size `{shape[0]}`."
+                )
+            return torch.stack(
+                [torch.randn(shape[1:], device=device, dtype=dtype, generator=g) for g in generator]
+            )
+        return torch.randn(shape, device=device, dtype=dtype, generator=generator)
+
     def get_encoder_specs(
         self, patch_res: tuple[int, int, int]
     ) -> tuple[list[tuple[int, int, int]], list[tuple[int, int, int]]]:
@@ -968,6 +989,7 @@ class Swin3DTransformerBackbone(nn.Module):
         lead_times: torch.Tensor,
         rollout_step: int,
         patch_res: tuple[int, int, int],
+        generator: NoiseGenerator = None,
     ) -> torch.Tensor:
         """Run the backbone.
 
@@ -976,6 +998,8 @@ class Swin3DTransformerBackbone(nn.Module):
             lead_times (torch.Tensor): Lead times of shape `(batch,)` in hours.
             rollout_step (int): Roll-out step.
             patch_res (tuple[int, int, int]): Patch resolution of the form `(C, H, W)`.
+            generator (torch.Generator or tuple[torch.Generator | None, ...], optional): Generator
+                for the noise in stochastic mode. See :meth:`Aurora.forward`. Defaults to `None`.
 
         Returns:
             torch.Tensor: Output tokens of shape `(B, L, D)`.
@@ -997,7 +1021,7 @@ class Swin3DTransformerBackbone(nn.Module):
 
         if self.stochastic:
             noise_shape = x.shape[:-1] + (self.embed_dim,)
-            noise = torch.randn(noise_shape, device=x.device, dtype=x.dtype)
+            noise = self._sample_noise(noise_shape, x.device, x.dtype, generator)
             if self._accumulate_noise:
                 # Shape change (e.g. different batch size) invalidates the cache.
                 if self._noise_cache and self._noise_cache[0].shape != noise.shape:
@@ -1014,7 +1038,7 @@ class Swin3DTransformerBackbone(nn.Module):
                 # Fill any remaining slots so the cache is always exactly N entries.
                 while len(self._noise_cache) < self._noise_cache_size:
                     self._noise_cache.append(
-                        torch.randn(noise_shape, device=x.device, dtype=x.dtype)
+                        self._sample_noise(noise_shape, x.device, x.dtype, generator)
                     )
                 effective_noise = torch.stack(self._noise_cache).sum(dim=0) / (
                     self._noise_cache_size**0.5

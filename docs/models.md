@@ -449,3 +449,32 @@ When using `rollout` with `fine_lead_times`, noise accumulation is enabled by de
 smoother intra-step transitions while using independent effective noise between main steps,
 matching the training regimen. Set `use_noise_accumulation=False` to draw independent
 noise at each sub-step instead, though this is not recommended.
+
+### Reproducible Noise
+
+By default, the noise is drawn from the global RNG. To control the noise, pass a `torch.Generator`
+on the device of the model to `Aurora.forward` or `rollout`:
+
+```python
+device = next(model.parameters()).device
+generator = torch.Generator(device=device).manual_seed(42)
+
+with torch.inference_mode():
+    preds = [pred.to("cpu") for pred in rollout(model, batch, steps=4, generator=generator)]
+```
+
+When generating multiple ensemble members simultaneously by using a batch size, pass a tuple with
+one generator per batch element to control the noise of every member separately. The noise of a
+member then does not depend on the other members in the batch. Entries can be `None` to use the
+global RNG for that member.
+
+```python
+# `batch` contains three ensemble members.
+generators = tuple(torch.Generator(device=device).manual_seed(seed) for seed in (1, 2, 3))
+
+with torch.inference_mode():
+    preds = [pred.to("cpu") for pred in rollout(model, batch, steps=4, generator=generators)]
+```
+
+To reproduce a run, re-seed the generators and call `model.reset_noise()`, which clears noise
+cached by noise accumulation.
