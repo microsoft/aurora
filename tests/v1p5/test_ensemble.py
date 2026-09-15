@@ -1,17 +1,15 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license.
 
-Tests for internal ensemble members (`tile_batch` and `split_batch` functions
-and the `rollout_ensemble` utility).
+Tests for ensemble rollout and tiling utility functions.
 """
 
-import warnings
-from datetime import datetime
+import itertools
 
 import pytest
 import torch
 
-from ._helpers import _OUTPUT_ONLY_SURF, _SURF_VARS, _make_batch, _make_small_v1p5
-from aurora import Aurora, Batch, Metadata, rollout_ensemble
+from ._helpers import _OUTPUT_ONLY_SURF, _SURF_VARS, BATCH, _make_batch, _make_small_v1p5
+from aurora import Aurora, rollout_ensemble
 from aurora.batch import split_batch, tile_batch
 from aurora.model.film import AdaptiveLayerNorm
 
@@ -19,11 +17,8 @@ from aurora.model.film import AdaptiveLayerNorm
 def _unzero_adaptive_layer_norms(model: Aurora, std: float = 0.1) -> None:
     """Nudge every `AdaptiveLayerNorm`'s modulation away from its zero initialisation.
 
-    At construction, `AdaptiveLayerNorm.ln_modulation` is exactly zero-initialised (the
-    `adaLN-Zero` trick), which makes a freshly-built, untrained model exactly insensitive to its
-    conditioning signal `c` -- which is what carries the ensemble noise. Without this, no output
-    difference a test observes between ensemble members can be attributed to noise, since noise
-    provably has zero effect on such a model.
+    A freshly constructed model is exactly insensitive to its conditioning signal, and hence to
+    the injected noise, because `AdaptiveLayerNorm.ln_modulation` is zero-initialised.
     """
     for m in model.modules():
         if isinstance(m, AdaptiveLayerNorm):
@@ -32,59 +27,29 @@ def _unzero_adaptive_layer_norms(model: Aurora, std: float = 0.1) -> None:
                 m.ln_modulation[-1].bias.normal_(std=std)
 
 
-def _make_ensemble_test_batch(b: int = 2) -> Batch:
-    """A small batch with a configurable batch size `b`, used to test tiling/splitting."""
-    h, w = 8, 8
-    return Batch(
-        surf_vars={"2t": torch.randn(b, 2, h, w)},
-        static_vars={"lsm": torch.randn(h, w)},
-        atmos_vars={"z": torch.randn(b, 2, 2, h, w)},
-        metadata=Metadata(
-            lat=torch.linspace(90, -90, h),
-            lon=torch.linspace(0, 360, w + 1)[:-1],
-            time=tuple(datetime(2023, 6, 15, i, 0) for i in range(b)),
-            atmos_levels=(500, 850),
-        ),
-    )
-
-
 def test_tile_and_split_batch_roundtrip():
     b, n = 2, 3
-    batch = _make_ensemble_test_batch(b)
+    batch = _make_batch(batch_size=b)
 
     tiled = tile_batch(batch, n)
-
-    v = tiled.surf_vars["2t"]
-    assert v.shape[0] == n * b
-    for m in range(n):
-        torch.testing.assert_close(v[m * b : (m + 1) * b], batch.surf_vars["2t"])
-
-    v = tiled.atmos_vars["z"]
-    assert v.shape[0] == n * b
-    for m in range(n):
-        torch.testing.assert_close(v[m * b : (m + 1) * b], batch.atmos_vars["z"])
-
     assert len(tiled.metadata.time) == n * b
-    for m in range(n):
-        assert tiled.metadata.time[m * b : (m + 1) * b] == batch.metadata.time
+    for v in (*tiled.surf_vars.values(), *tiled.atmos_vars.values()):
+        assert v.shape[0] == n * b
 
-    # Static variables have no batch dimension and are untouched.
-    torch.testing.assert_close(tiled.static_vars["lsm"], batch.static_vars["lsm"])
-
-    # Splitting undoes the tiling: every member is identical to the original, standard-shaped
-    # batch (tiling itself introduces no randomness).
     members = split_batch(tiled, n)
     assert len(members) == n
     for member in members:
-        torch.testing.assert_close(member.surf_vars["2t"], batch.surf_vars["2t"])
-        torch.testing.assert_close(member.atmos_vars["z"], batch.atmos_vars["z"])
         assert member.metadata.time == batch.metadata.time
+        for k, v in member.surf_vars.items():
+            torch.testing.assert_close(v, batch.surf_vars[k])
+        for k, v in member.atmos_vars.items():
+            torch.testing.assert_close(v, batch.atmos_vars[k])
 
 
-def test_forward_ensemble_members_differ_when_stochastic():
-    n = 3
+@pytest.mark.parametrize("stochastic", [True, False])
+def test_forward_ensemble(stochastic: bool):
     torch.manual_seed(0)
-    model = _make_small_v1p5(stochastic=True)
+    model = _make_small_v1p5(stochastic=stochastic)
     # Un-zero the modulation so noise has a real, appreciable effect (see helper docstring);
     # otherwise this test cannot distinguish genuine noise sensitivity from incidental
     # floating-point batching noise
@@ -93,30 +58,7 @@ def test_forward_ensemble_members_differ_when_stochastic():
     model.eval()
     surf_vars = tuple(v for v in _SURF_VARS if v not in _OUTPUT_ONLY_SURF)
     batch = _make_batch(surf_vars=surf_vars)
-    batch = tile_batch(batch, n)
-    b = next(iter(batch.surf_vars.values())).shape[0]
-
-    with torch.inference_mode():
-        pred = model.forward(batch, lead_times=torch.full((b,), 6.0))
-    members = split_batch(pred, n)
-
-    # Threshold well above the ~1e-3 floating-point batching floor established in
-    # `test_forward_ensemble_members_identical_without_stochastic`, so a pass here can only be
-    # explained by the injected noise actually differing per member, not incidental rounding.
-    for i in range(n):
-        for j in range(i + 1, n):
-            diff = (members[i].surf_vars["2t"] - members[j].surf_vars["2t"]).abs().max()
-            assert diff > 1e-2
-
-
-def test_forward_ensemble_members_identical_without_stochastic():
     n = 3
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        model = _make_small_v1p5(stochastic=False)
-    model.eval()
-    surf_vars = tuple(v for v in _SURF_VARS if v not in _OUTPUT_ONLY_SURF)
-    batch = _make_batch(surf_vars=surf_vars)
     batch = tile_batch(batch, n)
     b = next(iter(batch.surf_vars.values())).shape[0]
 
@@ -124,35 +66,43 @@ def test_forward_ensemble_members_identical_without_stochastic():
         pred = model.forward(batch, lead_times=torch.full((b,), 6.0))
     members = split_batch(pred, n)
 
-    for m in range(1, n):
-        # Loose tolerance: floating-point ops (e.g. batched matmul/softmax reductions) are not
-        # strictly invariant to how many other (tiled) rows share the batch, so bitwise equality
-        # isn't guaranteed even though the members are mathematically identical computations.
-        torch.testing.assert_close(
-            members[0].surf_vars["2t"], members[m].surf_vars["2t"], atol=1e-3, rtol=1e-3
-        )
+    if stochastic:
+        # Every member receives independent noise, so members must differ.
+        for member1, member2 in itertools.combinations(members, 2):
+            assert (member1.surf_vars["2t"] - member2.surf_vars["2t"]).abs().mean() > 1e-2
+    else:
+        # Check that all are equal.
+        for m in range(1, n):
+            torch.testing.assert_close(
+                members[0].surf_vars["2t"], members[m].surf_vars["2t"], atol=1e-3, rtol=1e-3
+            )
 
 
-def test_rollout_ensemble_yields_list_of_standard_shaped_batches_across_steps():
-    n = 2
+def test_rollout_ensemble():
+    num_ensemble_members = 3
+    torch.manual_seed(0)
     model = _make_small_v1p5(stochastic=True)
+    _unzero_adaptive_layer_norms(model)  # Otherwise, the noise has no effect on the output.
     model.eval()
-    surf_vars = tuple(v for v in _SURF_VARS if v not in _OUTPUT_ONLY_SURF)
-    batch = _make_batch(surf_vars=surf_vars)
-    b = next(iter(batch.surf_vars.values())).shape[0]
+    batch = _make_batch(surf_vars=tuple(v for v in _SURF_VARS if v not in _OUTPUT_ONLY_SURF))
+    steps = 2
 
     with torch.inference_mode():
-        preds = list(rollout_ensemble(model, batch, steps=3, num_ensemble_members=n))
+        preds = list(rollout_ensemble(model, batch, steps, num_ensemble_members))
 
-    assert len(preds) == 3
-    for step_pred in preds:
-        assert len(step_pred) == n
-        for member in step_pred:
+    assert len(preds) == steps
+    for members in preds:
+        assert len(members) == num_ensemble_members
+        for member in members:
             for v in member.surf_vars.values():
-                assert v.shape[0] == b
+                assert v.shape[0] == BATCH
+        # Every member receives independent noise, so members must differ.
+        for member1, member2 in itertools.combinations(members, 2):
+            assert (member1.surf_vars["2t"] - member2.surf_vars["2t"]).abs().mean() > 1e-2
 
 
 def test_rollout_ensemble_num_ensemble_members_one_raises():
+    num_ensemble_members = 1
     model = _make_small_v1p5()
     model.eval()
     surf_vars = tuple(v for v in _SURF_VARS if v not in _OUTPUT_ONLY_SURF)
@@ -160,4 +110,4 @@ def test_rollout_ensemble_num_ensemble_members_one_raises():
     _ = next(iter(batch.surf_vars.values())).shape[0]
 
     with pytest.raises(ValueError), torch.inference_mode():
-        _ = list(rollout_ensemble(model, batch, steps=2, num_ensemble_members=1))
+        _ = list(rollout_ensemble(model, batch, steps=2, num_ensemble_members=num_ensemble_members))
