@@ -1,6 +1,6 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
-from aurora.batch import Batch, Metadata
+from aurora.batch import Batch, Metadata, split_batch, tile_batch
 from aurora.insolation import insolation
 from aurora.model.aurora import (
     Aurora,
@@ -30,6 +30,8 @@ __all__ = [
     "AuroraV1p5Ensemble",
     "Batch",
     "Metadata",
+    "tile_batch",
+    "split_batch",
     "insolation",
     "rollout",
     "rollout_ensemble",

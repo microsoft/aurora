@@ -17,7 +17,7 @@ from aurora.normalisation import (
     unnormalise_surf_var,
 )
 
-__all__ = ["Metadata", "Batch"]
+__all__ = ["Metadata", "Batch", "tile_batch", "split_batch"]
 
 
 @dataclasses.dataclass
@@ -314,10 +314,15 @@ class Batch:
 def tile_batch(batch: Batch, n: int) -> Batch:
     """Tile `batch` along the batch dimension `n` times.
 
-    Not part of the public `Batch` API. Used only by `aurora.Aurora.forward` and
-    `aurora.rollout.rollout` to run `n` ensemble members as a single fused computation. The
-    tiled batch dimension is an internal implementation detail and must be undone with
-    `split_batch` before any result derived from it is returned to a caller.
+    Used to run `n` ensemble members as a single fused computation.
+    Results derived from the tiling should be undone with `split_batch`.
+
+    Args:
+        batch (:class:`aurora.Batch`): The batch to tile.
+        n (int): Number of times to tile.
+
+    Returns:
+        :class:`aurora.Batch`: `batch` tiled `n` times along the batch dimension.
     """
     return dataclasses.replace(
         batch,
@@ -328,7 +333,15 @@ def tile_batch(batch: Batch, n: int) -> Batch:
 
 
 def split_batch(batch: Batch, n: int) -> list[Batch]:
-    """Undo `tile_batch`, splitting a tiled batch back into `n` standard-shaped batches."""
+    """Undo `tile_batch`, splitting a tiled batch back into `n` standard-shaped batches.
+
+    Args:
+        batch (:class:`aurora.Batch`): The tiled batch to split.
+        n (int): Number of batches `batch` was tiled into.
+
+    Returns:
+        list[:class:`aurora.Batch`]: `batch` split into `n` standard-shaped batches.
+    """
     b = next(iter(batch.surf_vars.values())).shape[0] // n
     time = batch.metadata.time
     return [
