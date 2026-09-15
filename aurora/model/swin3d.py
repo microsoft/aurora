@@ -957,6 +957,11 @@ class Swin3DTransformerBackbone(nn.Module):
     ) -> torch.Tensor:
         """Draw noise of shape `shape`, one draw per batch element if `generator` is a tuple."""
         if isinstance(generator, tuple):
+            if len(generator) != shape[0]:
+                raise ValueError(
+                    f"Expected one generator per batch element, but got `{len(generator)}` "
+                    f"generators for a batch of size `{shape[0]}`."
+                )
             return torch.stack(
                 [torch.randn(shape[1:], device=device, dtype=dtype, generator=g) for g in generator]
             )
@@ -1016,11 +1021,6 @@ class Swin3DTransformerBackbone(nn.Module):
 
         if self.stochastic:
             noise_shape = x.shape[:-1] + (self.embed_dim,)
-            if isinstance(generator, tuple) and len(generator) != x.shape[0]:
-                raise ValueError(
-                    f"Expected one generator per batch element, but got `{len(generator)}` "
-                    f"generators for a batch of size `{x.shape[0]}`."
-                )
             noise = self._sample_noise(noise_shape, x.device, x.dtype, generator)
             if self._accumulate_noise:
                 # Shape change (e.g. different batch size) invalidates the cache.
