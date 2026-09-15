@@ -9,10 +9,15 @@ Batch
 .. autoclass:: aurora.Metadata
     :members:
 
+.. autofunction:: aurora.tile_batch
+
+.. autofunction:: aurora.split_batch
+
 Roll-Outs
 ---------
-.. autoclass:: aurora.rollout
-    :members:
+.. autofunction:: aurora.rollout
+
+.. autofunction:: aurora.rollout_ensemble
 
 Tropical Cyclone Tracking
 -------------------------

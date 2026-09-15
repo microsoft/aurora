@@ -17,7 +17,7 @@ from aurora.normalisation import (
     unnormalise_surf_var,
 )
 
-__all__ = ["Metadata", "Batch"]
+__all__ = ["Metadata", "Batch", "tile_batch", "split_batch"]
 
 
 @dataclasses.dataclass
@@ -324,6 +324,50 @@ class Batch:
                 f"`atmos_levels` has length {len(self.metadata.atmos_levels)}, but the "
                 f"atmospheric variables have {c} pressure levels. These must be equal."
             )
+
+
+def tile_batch(batch: Batch, n: int) -> Batch:
+    """Tile `batch` along the batch dimension `n` times.
+
+    Used to run `n` ensemble members as a single fused computation.
+    Results derived from the tiling should be undone with `split_batch`.
+
+    Args:
+        batch (:class:`aurora.Batch`): The batch to tile.
+        n (int): Number of times to tile.
+
+    Returns:
+        :class:`aurora.Batch`: `batch` tiled `n` times along the batch dimension.
+    """
+    return dataclasses.replace(
+        batch,
+        surf_vars={k: v.repeat(n, *([1] * (v.dim() - 1))) for k, v in batch.surf_vars.items()},
+        atmos_vars={k: v.repeat(n, *([1] * (v.dim() - 1))) for k, v in batch.atmos_vars.items()},
+        metadata=dataclasses.replace(batch.metadata, time=batch.metadata.time * n),
+    )
+
+
+def split_batch(batch: Batch, n: int) -> list[Batch]:
+    """Undo `tile_batch`, splitting a tiled batch back into `n` standard-shaped batches.
+
+    Args:
+        batch (:class:`aurora.Batch`): The tiled batch to split.
+        n (int): Number of batches `batch` was tiled into.
+
+    Returns:
+        list[:class:`aurora.Batch`]: `batch` split into `n` standard-shaped batches.
+    """
+    b = next(iter(batch.surf_vars.values())).shape[0] // n
+    time = batch.metadata.time
+    return [
+        dataclasses.replace(
+            batch,
+            surf_vars={k: v[m * b : (m + 1) * b] for k, v in batch.surf_vars.items()},
+            atmos_vars={k: v[m * b : (m + 1) * b] for k, v in batch.atmos_vars.items()},
+            metadata=dataclasses.replace(batch.metadata, time=time[m * b : (m + 1) * b]),
+        )
+        for m in range(n)
+    ]
 
 
 def _np(x: torch.Tensor) -> np.ndarray:
