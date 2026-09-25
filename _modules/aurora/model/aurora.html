@@ -383,7 +383,7 @@ document.write(`
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.encoder</span><span class="w"> </span><span class="kn">import</span> <span class="n">Perceiver3DEncoder</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.lora</span><span class="w"> </span><span class="kn">import</span> <span class="n">LoRAMode</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.perceiver</span><span class="w"> </span><span class="kn">import</span> <span class="n">PerceiverAttention</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.swin3d</span><span class="w"> </span><span class="kn">import</span> <span class="n">Swin3DTransformerBackbone</span><span class="p">,</span> <span class="n">WindowAttention</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.swin3d</span><span class="w"> </span><span class="kn">import</span> <span class="n">NoiseGenerator</span><span class="p">,</span> <span class="n">Swin3DTransformerBackbone</span><span class="p">,</span> <span class="n">WindowAttention</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.normalisation</span><span class="w"> </span><span class="kn">import</span> <span class="n">log_transform</span><span class="p">,</span> <span class="n">log_untransform</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
@@ -709,7 +709,13 @@ document.write(`
 
 <div class="viewcode-block" id="Aurora.forward">
 <a class="viewcode-back" href="../../../api.html#aurora.Aurora.forward">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">lead_times</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span>
+        <span class="n">lead_times</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">NoiseGenerator</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Forward pass.</span>
 
 <span class="sd">        Args:</span>
@@ -717,6 +723,13 @@ document.write(`
 <span class="sd">            lead_times (:class:`torch.Tensor`, optional): Per-sample lead times of shape</span>
 <span class="sd">                `(batch,)` in hours. Required when the model was configured with</span>
 <span class="sd">                `variable_lead_time=True`. Ignored otherwise.</span>
+<span class="sd">            generator (:class:`torch.Generator` or tuple of :class:`torch.Generator` or `None`,</span>
+<span class="sd">                optional): Generator for the noise in stochastic mode. A single generator is used</span>
+<span class="sd">                for the whole batch. A tuple gives one generator per batch element, so that the</span>
+<span class="sd">                noise of an element does not depend on the other elements in the batch; entries can</span>
+<span class="sd">                be `None` to use the global RNG. Generators must be on the device of the model. To</span>
+<span class="sd">                reproduce a run, re-seed the generators and call :meth:`reset_noise`. Ignored when</span>
+<span class="sd">                the model is not stochastic. Defaults to `None`, which uses the global RNG.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            :class:`Batch`: Prediction for the batch.</span>
@@ -803,6 +816,7 @@ document.write(`
                 <span class="n">lead_times</span><span class="o">=</span><span class="n">lead_times</span><span class="p">,</span>
                 <span class="n">patch_res</span><span class="o">=</span><span class="n">patch_res</span><span class="p">,</span>
                 <span class="n">rollout_step</span><span class="o">=</span><span class="n">batch</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">rollout_step</span><span class="p">,</span>
+                <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">with</span> <span class="n">context_decoder</span><span class="p">:</span>
             <span class="n">pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span>

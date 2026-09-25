@@ -456,6 +456,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id22">Usage</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id23">Recommended Use</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#noise-accumulation">Noise Accumulation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reproducible-noise">Reproducible Noise</a></li>
 </ul>
 </li>
 </ul>
@@ -1001,6 +1002,31 @@ smoother intra-step transitions while using independent effective noise between 
 matching the training regimen. Set <code class="docutils literal notranslate"><span class="pre">use_noise_accumulation=False</span></code> to draw independent
 noise at each sub-step instead, though this is not recommended.</p>
 </section>
+<section id="reproducible-noise">
+<h3>Reproducible Noise<a class="headerlink" href="#reproducible-noise" title="Link to this heading">#</a></h3>
+<p>By default, the noise is drawn from the global RNG. To control the noise, pass a <code class="docutils literal notranslate"><span class="pre">torch.Generator</span></code>
+on the device of the model to <code class="docutils literal notranslate"><span class="pre">Aurora.forward</span></code> or <code class="docutils literal notranslate"><span class="pre">rollout</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">device</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span><span class="o">.</span><span class="n">device</span>
+<span class="n">generator</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Generator</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="p">[</span><span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p>When generating multiple ensemble members simultaneously by using a batch size, pass a tuple with
+one generator per batch element to control the noise of every member separately. The noise of a
+member then does not depend on the other members in the batch. Entries can be <code class="docutils literal notranslate"><span class="pre">None</span></code> to use the
+global RNG for that member.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># `batch` contains three ensemble members.</span>
+<span class="n">generators</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Generator</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span> <span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="p">[</span><span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="n">generators</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p>To reproduce a run, re-seed the generators and call <code class="docutils literal notranslate"><span class="pre">model.reset_noise()</span></code>, which clears noise
+cached by noise accumulation.</p>
+</section>
 </section>
 </section>
 
@@ -1123,6 +1149,7 @@ noise at each sub-step instead, though this is not recommended.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id22">Usage</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id23">Recommended Use</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#noise-accumulation">Noise Accumulation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reproducible-noise">Reproducible Noise</a></li>
 </ul>
 </li>
 </ul>

@@ -365,6 +365,7 @@ document.write(`
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.batch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Batch</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.swin3d</span><span class="w"> </span><span class="kn">import</span> <span class="n">NoiseGenerator</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"rollout"</span><span class="p">]</span>
 
@@ -407,6 +408,7 @@ document.write(`
     <span class="n">fine_lead_times</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">use_noise_accumulation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">apply_rollout_input_clipping</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">generator</span><span class="p">:</span> <span class="n">NoiseGenerator</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Batch</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Perform a roll-out to make long-term predictions.</span>
 
@@ -449,6 +451,9 @@ document.write(`
 <span class="sd">            back into the model during roll-out, but may be undesirable if the model was not trained</span>
 <span class="sd">            with clipping and the user wants to preserve the raw model predictions for analysis.</span>
 <span class="sd">            Default: `True`.</span>
+<span class="sd">        generator (:class:`torch.Generator` or tuple of :class:`torch.Generator` or `None`,</span>
+<span class="sd">            optional): Generator for the noise in stochastic mode, passed to every forward pass.</span>
+<span class="sd">            See :meth:`aurora.Aurora.forward`. Default: `None`.</span>
 
 <span class="sd">    Yields:</span>
 <span class="sd">        :class:`aurora.Batch`: The prediction after every (sub-)step.</span>
@@ -487,7 +492,7 @@ document.write(`
             <span class="c1"># Inner loop: iterate over sub-step lead times.</span>
             <span class="k">for</span> <span class="n">lt_hours</span> <span class="ow">in</span> <span class="n">fine_lead_times</span><span class="p">:</span>
                 <span class="n">sub_lead_times</span> <span class="o">=</span> <span class="n">_make_lead_time_tensor</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">lt_hours</span><span class="p">)</span>
-                <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">lead_times</span><span class="o">=</span><span class="n">sub_lead_times</span><span class="p">)</span>
+                <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">lead_times</span><span class="o">=</span><span class="n">sub_lead_times</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">)</span>
 
                 <span class="k">yield</span> <span class="n">pred</span>
 
@@ -496,7 +501,7 @@ document.write(`
                 <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">apply_rollout_input_clipping</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
             <span class="n">batch</span> <span class="o">=</span> <span class="n">_advance_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">lead_times</span><span class="o">=</span><span class="n">base_lead_times</span><span class="p">)</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">lead_times</span><span class="o">=</span><span class="n">base_lead_times</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">)</span>
 
             <span class="k">yield</span> <span class="n">pred</span>
 
