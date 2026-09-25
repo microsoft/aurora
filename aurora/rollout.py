@@ -8,6 +8,7 @@ import torch
 
 from aurora.batch import Batch
 from aurora.model.aurora import Aurora
+from aurora.model.swin3d import NoiseGenerator
 
 __all__ = ["rollout"]
 
@@ -48,6 +49,7 @@ def rollout(
     fine_lead_times: Optional[Sequence[float]] = None,
     use_noise_accumulation: bool = True,
     apply_rollout_input_clipping: bool = True,
+    generator: NoiseGenerator = None,
 ) -> Generator[Batch, None, None]:
     """Perform a roll-out to make long-term predictions.
 
@@ -90,6 +92,9 @@ def rollout(
             back into the model during roll-out, but may be undesirable if the model was not trained
             with clipping and the user wants to preserve the raw model predictions for analysis.
             Default: `True`.
+        generator (:class:`torch.Generator` or tuple of :class:`torch.Generator` or `None`,
+            optional): Generator for the noise in stochastic mode, passed to every forward pass.
+            See :meth:`aurora.Aurora.forward`. Default: `None`.
 
     Yields:
         :class:`aurora.Batch`: The prediction after every (sub-)step.
@@ -128,7 +133,7 @@ def rollout(
             # Inner loop: iterate over sub-step lead times.
             for lt_hours in fine_lead_times:
                 sub_lead_times = _make_lead_time_tensor(batch, lt_hours)
-                pred = model.forward(batch, lead_times=sub_lead_times)
+                pred = model.forward(batch, lead_times=sub_lead_times, generator=generator)
 
                 yield pred
 
@@ -137,7 +142,7 @@ def rollout(
                 pred = model.apply_rollout_input_clipping(pred)
             batch = _advance_batch(batch, pred)
         else:
-            pred = model.forward(batch, lead_times=base_lead_times)
+            pred = model.forward(batch, lead_times=base_lead_times, generator=generator)
 
             yield pred
 
