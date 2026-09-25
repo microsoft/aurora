@@ -4,6 +4,7 @@ Tests for the `generator` argument of `Aurora.forward` and `rollout`.
 """
 
 from typing import Any, Callable, Sequence
+from unittest.mock import patch
 
 import pytest
 import torch
@@ -29,10 +30,8 @@ def _record_noise(model: AuroraV1p5, run: Callable[[], Any]) -> list[torch.Tenso
         recorded.append(sample_noise(*args))
         return recorded[-1]
 
-    model.backbone._sample_noise = record
-    with torch.inference_mode():
+    with torch.inference_mode(), patch.object(model.backbone, "_sample_noise", record):
         run()
-    model.backbone._sample_noise = sample_noise
     return recorded
 
 

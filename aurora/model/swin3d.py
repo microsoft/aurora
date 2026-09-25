@@ -9,7 +9,7 @@ Code adapted from
 import itertools
 import warnings
 from functools import lru_cache
-from typing import Optional
+from typing import Optional, TypeAlias
 
 import torch
 import torch.nn as nn
@@ -28,7 +28,7 @@ from aurora.model.util import (
 
 __all__ = ["Swin3DTransformerBackbone", "NoiseGenerator"]
 
-NoiseGenerator = torch.Generator | tuple[torch.Generator | None, ...] | None
+NoiseGenerator: TypeAlias = torch.Generator | tuple[torch.Generator | None, ...] | None
 
 
 class MLP(nn.Module):
