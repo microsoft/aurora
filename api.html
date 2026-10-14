@@ -415,10 +415,13 @@ document.write(`
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Metadata"><code class="docutils literal notranslate"><span class="pre">Metadata</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.tile_batch"><code class="docutils literal notranslate"><span class="pre">tile_batch()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.split_batch"><code class="docutils literal notranslate"><span class="pre">split_batch()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#roll-outs">Roll-Outs</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.rollout"><code class="docutils literal notranslate"><span class="pre">rollout</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.rollout"><code class="docutils literal notranslate"><span class="pre">rollout()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.rollout_ensemble"><code class="docutils literal notranslate"><span class="pre">rollout_ensemble()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tropical-cyclone-tracking">Tropical Cyclone Tracking</a><ul class="nav section-nav flex-column">
@@ -614,12 +617,57 @@ separate LoRA for every roll-out step. Generally, you are safe to ignore this fi
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="aurora.tile_batch">
+<span class="sig-prename descclassname"><span class="pre">aurora.</span></span><span class="sig-name descname"><span class="pre">tile_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#aurora.Batch" title="aurora.batch.Batch"><span class="pre">Batch</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#aurora.Batch" title="aurora.batch.Batch"><span class="pre">Batch</span></a></span></span><a class="reference internal" href="_modules/aurora/batch.html#tile_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora.tile_batch" title="Link to this definition">#</a></dt>
+<dd><p>Tile <cite>batch</cite> along the batch dimension <cite>n</cite> times.</p>
+<p>Use <cite>split_batch</cite> to split the tiled batch, or a prediction for it, back into <cite>n</cite> batches.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch</strong> (<a class="reference internal" href="#aurora.Batch" title="aurora.Batch"><code class="xref py py-class docutils literal notranslate"><span class="pre">aurora.Batch</span></code></a>) – The batch to tile.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of times to tile.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><cite>batch</cite> tiled <cite>n</cite> times along the batch dimension.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#aurora.Batch" title="aurora.Batch"><code class="xref py py-class docutils literal notranslate"><span class="pre">aurora.Batch</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="aurora.split_batch">
+<span class="sig-prename descclassname"><span class="pre">aurora.</span></span><span class="sig-name descname"><span class="pre">split_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#aurora.Batch" title="aurora.batch.Batch"><span class="pre">Batch</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#aurora.Batch" title="aurora.batch.Batch"><span class="pre">Batch</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/aurora/batch.html#split_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora.split_batch" title="Link to this definition">#</a></dt>
+<dd><p>Split <cite>batch</cite> into <cite>n</cite> equally sized batches along the batch dimension.</p>
+<p>This undoes <cite>tile_batch</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch</strong> (<a class="reference internal" href="#aurora.Batch" title="aurora.Batch"><code class="xref py py-class docutils literal notranslate"><span class="pre">aurora.Batch</span></code></a>) – The batch to split.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of batches to split into.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><cite>batch</cite> split into <cite>n</cite> equally sized batches.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#aurora.Batch" title="aurora.Batch"><code class="xref py py-class docutils literal notranslate"><span class="pre">aurora.Batch</span></code></a>]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the batch size of <cite>batch</cite> is not divisible by <cite>n</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="roll-outs">
 <h2>Roll-Outs<a class="headerlink" href="#roll-outs" title="Link to this heading">#</a></h2>
-<dl class="py class">
+<dl class="py function">
 <dt class="sig sig-object py" id="aurora.rollout">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">aurora.</span></span><span class="sig-name descname"><span class="pre">rollout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#aurora.Aurora" title="aurora.model.aurora.Aurora"><span class="pre">Aurora</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#aurora.Batch" title="aurora.batch.Batch"><span class="pre">Batch</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fine_lead_times</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_noise_accumulation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_rollout_input_clipping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Generator</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Generator</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora/rollout.html#rollout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora.rollout" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">aurora.</span></span><span class="sig-name descname"><span class="pre">rollout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#aurora.Aurora" title="aurora.model.aurora.Aurora"><span class="pre">Aurora</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#aurora.Batch" title="aurora.batch.Batch"><span class="pre">Batch</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fine_lead_times</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_noise_accumulation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_rollout_input_clipping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Generator</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Generator</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#aurora.Batch" title="aurora.batch.Batch"><span class="pre">Batch</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/aurora/rollout.html#rollout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora.rollout" title="Link to this definition">#</a></dt>
 <dd><p>Perform a roll-out to make long-term predictions.</p>
 <p>For Aurora models prior to Aurora 1.5, the rollout is straightforward: iteratively make a
 prediction based on inputs, then feed that prediction back as the new input for the next step.
@@ -672,6 +720,39 @@ Default: <cite>True</cite>.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Yields<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#aurora.Batch" title="aurora.Batch"><code class="xref py py-class docutils literal notranslate"><span class="pre">aurora.Batch</span></code></a> – The prediction after every (sub-)step.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="aurora.rollout_ensemble">
+<span class="sig-prename descclassname"><span class="pre">aurora.</span></span><span class="sig-name descname"><span class="pre">rollout_ensemble</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#aurora.Aurora" title="aurora.model.aurora.Aurora"><span class="pre">Aurora</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#aurora.Batch" title="aurora.batch.Batch"><span class="pre">Batch</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_ensemble_members</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fine_lead_times</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_noise_accumulation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_rollout_input_clipping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Generator</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Generator</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#aurora.Batch" title="aurora.batch.Batch"><span class="pre">Batch</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/aurora/rollout.html#rollout_ensemble"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora.rollout_ensemble" title="Link to this definition">#</a></dt>
+<dd><p>Perform a roll-out for <cite>num_ensemble_members</cite> ensemble members simultaneously.</p>
+<p>The members are computed in one pass by repeating <cite>batch</cite> along the batch dimension, so every
+member receives independent noise. All other arguments are as for <a class="reference internal" href="#aurora.rollout" title="aurora.rollout"><code class="xref py py-func docutils literal notranslate"><span class="pre">rollout()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>num_ensemble_members</strong> (<em>int</em>) – Number of ensemble members.</p>
+</dd>
+</dl>
+<dl>
+<dt>:param generator (<code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Generator</span></code> or tuple of <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Generator</span></code> or <cite>None</cite>: optional): Generator for the noise, as for <a class="reference internal" href="#aurora.rollout" title="aurora.rollout"><code class="xref py py-func docutils literal notranslate"><span class="pre">rollout()</span></code></a>. A tuple gives one</dt><dd><p>generator per element of the tiled batch, which is <cite>batch</cite> repeated
+<cite>num_ensemble_members</cite> times. Defaults to <cite>None</cite>.</p>
+</dd>
+<dt>:param<span class="classifier">optional): Generator for the noise, as for <a class="reference internal" href="#aurora.rollout" title="aurora.rollout"><code class="xref py py-func docutils literal notranslate"><span class="pre">rollout()</span></code></a>. A tuple gives one</span></dt><dd><p>generator per element of the tiled batch, which is <cite>batch</cite> repeated
+<cite>num_ensemble_members</cite> times. Defaults to <cite>None</cite>.</p>
+</dd>
+</dl>
+<dl class="field-list">
+<dt class="field-odd">Yields<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#aurora.Batch" title="aurora.Batch"><code class="xref py py-class docutils literal notranslate"><span class="pre">aurora.Batch</span></code></a>] –</p>
+<dl class="simple">
+<dt>After every (sub-)step, one prediction per ensemble member,</dt><dd><p>each with the batch size of <cite>batch</cite>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If <cite>num_ensemble_members</cite> is less than <cite>1</cite> or if <cite>model</cite> is not stochastic.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1260,10 +1341,13 @@ parameters in the checkpoint. Defaults to <cite>True</cite>.</p></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.Metadata"><code class="docutils literal notranslate"><span class="pre">Metadata</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.tile_batch"><code class="docutils literal notranslate"><span class="pre">tile_batch()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.split_batch"><code class="docutils literal notranslate"><span class="pre">split_batch()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#roll-outs">Roll-Outs</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.rollout"><code class="docutils literal notranslate"><span class="pre">rollout</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.rollout"><code class="docutils literal notranslate"><span class="pre">rollout()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aurora.rollout_ensemble"><code class="docutils literal notranslate"><span class="pre">rollout_ensemble()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tropical-cyclone-tracking">Tropical Cyclone Tracking</a><ul class="nav section-nav flex-column">

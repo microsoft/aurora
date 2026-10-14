@@ -363,11 +363,11 @@ document.write(`
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">aurora.batch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Batch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">aurora.batch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">split_batch</span><span class="p">,</span> <span class="n">tile_batch</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.aurora</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aurora</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora.model.swin3d</span><span class="w"> </span><span class="kn">import</span> <span class="n">NoiseGenerator</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"rollout"</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"rollout"</span><span class="p">,</span> <span class="s2">"rollout_ensemble"</span><span class="p">]</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_make_lead_time_tensor</span><span class="p">(</span><span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">lead_time_hours</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
@@ -512,6 +512,58 @@ document.write(`
     <span class="c1"># Disable noise accumulation after roll-out is complete, in case the model will be used for</span>
     <span class="c1"># normal inference or training afterwards.</span>
     <span class="n">model</span><span class="o">.</span><span class="n">set_noise_accumulation</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="rollout_ensemble">
+<a class="viewcode-back" href="../../api.html#aurora.rollout_ensemble">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">rollout_ensemble</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">Aurora</span><span class="p">,</span>
+    <span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span>
+    <span class="n">steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">num_ensemble_members</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">fine_lead_times</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">use_noise_accumulation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">apply_rollout_input_clipping</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">generator</span><span class="p">:</span> <span class="n">NoiseGenerator</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">Batch</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Perform a roll-out for `num_ensemble_members` ensemble members simultaneously.</span>
+
+<span class="sd">    The members are computed in one pass by repeating `batch` along the batch dimension, so every</span>
+<span class="sd">    member receives independent noise. All other arguments are as for :func:`rollout`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        num_ensemble_members (int): Number of ensemble members.</span>
+<span class="sd">        generator (:class:`torch.Generator` or tuple of :class:`torch.Generator` or `None`,</span>
+<span class="sd">            optional): Generator for the noise, as for :func:`rollout`. A tuple gives one</span>
+<span class="sd">            generator per element of the tiled batch, which is `batch` repeated</span>
+<span class="sd">            `num_ensemble_members` times. Defaults to `None`.</span>
+
+<span class="sd">    Yields:</span>
+<span class="sd">        list[:class:`aurora.Batch`]: After every (sub-)step, one prediction per ensemble member,</span>
+<span class="sd">            each with the batch size of `batch`.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If `num_ensemble_members` is less than `1` or if `model` is not stochastic.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">num_ensemble_members</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"`num_ensemble_members` must be at least `1`, but is `</span><span class="si">{</span><span class="n">num_ensemble_members</span><span class="si">}</span><span class="s2">`."</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">model</span><span class="o">.</span><span class="n">backbone</span><span class="o">.</span><span class="n">stochastic</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"`rollout_ensemble` requires a stochastic model."</span><span class="p">)</span>
+
+    <span class="n">batch</span> <span class="o">=</span> <span class="n">tile_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">num_ensemble_members</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">rollout</span><span class="p">(</span>
+        <span class="n">model</span><span class="p">,</span>
+        <span class="n">batch</span><span class="p">,</span>
+        <span class="n">steps</span><span class="p">,</span>
+        <span class="n">fine_lead_times</span><span class="o">=</span><span class="n">fine_lead_times</span><span class="p">,</span>
+        <span class="n">use_noise_accumulation</span><span class="o">=</span><span class="n">use_noise_accumulation</span><span class="p">,</span>
+        <span class="n">apply_rollout_input_clipping</span><span class="o">=</span><span class="n">apply_rollout_input_clipping</span><span class="p">,</span>
+        <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">yield</span> <span class="n">split_batch</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">num_ensemble_members</span><span class="p">)</span></div>
 
 </pre></div>
 

@@ -374,7 +374,7 @@ document.write(`
     <span class="n">unnormalise_surf_var</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Metadata"</span><span class="p">,</span> <span class="s2">"Batch"</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Metadata"</span><span class="p">,</span> <span class="s2">"Batch"</span><span class="p">,</span> <span class="s2">"tile_batch"</span><span class="p">,</span> <span class="s2">"split_batch"</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="Metadata">
@@ -710,6 +710,63 @@ document.write(`
                 <span class="sa">f</span><span class="s2">"`atmos_levels` has length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">atmos_levels</span><span class="p">)</span><span class="si">}</span><span class="s2">, but the "</span>
                 <span class="sa">f</span><span class="s2">"atmospheric variables have </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2"> pressure levels. These must be equal."</span>
             <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="tile_batch">
+<a class="viewcode-back" href="../../api.html#aurora.tile_batch">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">tile_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Batch</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Tile `batch` along the batch dimension `n` times.</span>
+
+<span class="sd">    Use `split_batch` to split the tiled batch, or a prediction for it, back into `n` batches.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        batch (:class:`aurora.Batch`): The batch to tile.</span>
+<span class="sd">        n (int): Number of times to tile.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        :class:`aurora.Batch`: `batch` tiled `n` times along the batch dimension.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+        <span class="n">batch</span><span class="p">,</span>
+        <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="o">*</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+        <span class="n">atmos_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="o">*</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">atmos_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+        <span class="n">metadata</span><span class="o">=</span><span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">batch</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">time</span> <span class="o">*</span> <span class="n">n</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="split_batch">
+<a class="viewcode-back" href="../../api.html#aurora.split_batch">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">split_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">:</span> <span class="n">Batch</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Batch</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Split `batch` into `n` equally sized batches along the batch dimension.</span>
+
+<span class="sd">    This undoes `tile_batch`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        batch (:class:`aurora.Batch`): The batch to split.</span>
+<span class="sd">        n (int): Number of batches to split into.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list[:class:`aurora.Batch`]: `batch` split into `n` equally sized batches.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If the batch size of `batch` is not divisible by `n`.</span>
+<span class="sd">    """</span>
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">b</span><span class="p">,</span> <span class="n">remainder</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">remainder</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Batch size `</span><span class="si">{</span><span class="n">batch_size</span><span class="si">}</span><span class="s2">` must be divisible by `n = </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">`."</span><span class="p">)</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">time</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+            <span class="n">batch</span><span class="p">,</span>
+            <span class="n">surf_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="n">m</span> <span class="o">*</span> <span class="n">b</span> <span class="p">:</span> <span class="p">(</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">b</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">surf_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+            <span class="n">atmos_vars</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="n">m</span> <span class="o">*</span> <span class="n">b</span> <span class="p">:</span> <span class="p">(</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">b</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">atmos_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">[</span><span class="n">m</span> <span class="o">*</span> <span class="n">b</span> <span class="p">:</span> <span class="p">(</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">b</span><span class="p">]),</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="p">]</span></div>
 
 
 
