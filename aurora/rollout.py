@@ -6,11 +6,11 @@ from typing import Generator, Optional, Sequence
 
 import torch
 
-from aurora.batch import Batch
+from aurora.batch import Batch, split_batch, tile_batch
 from aurora.model.aurora import Aurora
 from aurora.model.swin3d import NoiseGenerator
 
-__all__ = ["rollout"]
+__all__ = ["rollout", "rollout_ensemble"]
 
 
 def _make_lead_time_tensor(batch: Batch, lead_time_hours: float) -> torch.Tensor:
@@ -153,3 +153,52 @@ def rollout(
     # Disable noise accumulation after roll-out is complete, in case the model will be used for
     # normal inference or training afterwards.
     model.set_noise_accumulation(n=0)
+
+
+def rollout_ensemble(
+    model: Aurora,
+    batch: Batch,
+    steps: int,
+    num_ensemble_members: int,
+    fine_lead_times: Optional[Sequence[float]] = None,
+    use_noise_accumulation: bool = True,
+    apply_rollout_input_clipping: bool = True,
+    generator: NoiseGenerator = None,
+) -> Generator[list[Batch], None, None]:
+    """Perform a roll-out for `num_ensemble_members` ensemble members simultaneously.
+
+    The members are computed in one pass by repeating `batch` along the batch dimension, so every
+    member receives independent noise. All other arguments are as for :func:`rollout`.
+
+    Args:
+        num_ensemble_members (int): Number of ensemble members.
+        generator (:class:`torch.Generator` or tuple of :class:`torch.Generator` or `None`,
+            optional): Generator for the noise, as for :func:`rollout`. A tuple gives one
+            generator per element of the tiled batch, which is `batch` repeated
+            `num_ensemble_members` times. Defaults to `None`.
+
+    Yields:
+        list[:class:`aurora.Batch`]: After every (sub-)step, one prediction per ensemble member,
+            each with the batch size of `batch`.
+
+    Raises:
+        ValueError: If `num_ensemble_members` is less than `1` or if `model` is not stochastic.
+    """
+    if num_ensemble_members < 1:
+        raise ValueError(
+            f"`num_ensemble_members` must be at least `1`, but is `{num_ensemble_members}`."
+        )
+    if not model.backbone.stochastic:
+        raise ValueError("`rollout_ensemble` requires a stochastic model.")
+
+    batch = tile_batch(batch, num_ensemble_members)
+    for pred in rollout(
+        model,
+        batch,
+        steps,
+        fine_lead_times=fine_lead_times,
+        use_noise_accumulation=use_noise_accumulation,
+        apply_rollout_input_clipping=apply_rollout_input_clipping,
+        generator=generator,
+    ):
+        yield split_batch(pred, num_ensemble_members)

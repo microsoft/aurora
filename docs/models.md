@@ -450,6 +450,28 @@ smoother intra-step transitions while using independent effective noise between 
 matching the training regimen. Set `use_noise_accumulation=False` to draw independent
 noise at each sub-step instead, though this is not recommended.
 
+(internal-ensembling)=
+### Internal Ensembling
+
+For a stochastic model, such as `AuroraV1p5Ensemble`, you can use `rollout_ensemble` to
+generate an autoregressive forecast with multiple ensemble members at once:
+
+```python
+from aurora import rollout_ensemble
+
+with torch.inference_mode():
+    preds = [
+        [member.to("cpu") for member in members]
+        for members in rollout_ensemble(model, batch, steps=10, num_ensemble_members=4)
+    ]
+```
+
+Alternatively, you can produce an ensemble forecast by calling `rollout` multiple times, once for
+every ensemble member. `rollout_ensemble` can be faster, at the cost of requiring more memory.
+
+Internally, `rollout_ensemble` uses `aurora.tile_batch` and `aurora.split_batch`. You can also use
+these functions to run multiple ensemble members in a single forward pass.
+
 ### Reproducible Noise
 
 By default, the noise is drawn from the global RNG. To control the noise, pass a `torch.Generator`
