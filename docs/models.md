@@ -471,6 +471,7 @@ every ensemble member. `rollout_ensemble` can be faster, at the cost of requirin
 
 Internally, `rollout_ensemble` uses `aurora.tile_batch` and `aurora.split_batch`. You can also use
 these functions to run multiple ensemble members in a single forward pass.
+
 ### Reproducible Noise
 
 By default, the noise is drawn from the global RNG. To control the noise, pass a `torch.Generator`
