@@ -163,6 +163,7 @@ def rollout_ensemble(
     fine_lead_times: Optional[Sequence[float]] = None,
     use_noise_accumulation: bool = True,
     apply_rollout_input_clipping: bool = True,
+    generator: NoiseGenerator = None,
 ) -> Generator[list[Batch], None, None]:
     """Perform a roll-out for `num_ensemble_members` ensemble members simultaneously.
 
@@ -171,10 +172,17 @@ def rollout_ensemble(
 
     Args:
         num_ensemble_members (int): Number of ensemble members.
+        generator (:class:`torch.Generator` or tuple of :class:`torch.Generator` or `None`,
+            optional): Generator for the noise, as for :func:`rollout`. A tuple gives one
+            generator per element of the tiled batch, which is `batch` repeated
+            `num_ensemble_members` times. Defaults to `None`.
 
     Yields:
         list[:class:`aurora.Batch`]: After every (sub-)step, one prediction per ensemble member,
             each with the batch size of `batch`.
+
+    Raises:
+        ValueError: If `num_ensemble_members` is less than `1` or if `model` is not stochastic.
     """
     if num_ensemble_members < 1:
         raise ValueError(
@@ -191,5 +199,6 @@ def rollout_ensemble(
         fine_lead_times=fine_lead_times,
         use_noise_accumulation=use_noise_accumulation,
         apply_rollout_input_clipping=apply_rollout_input_clipping,
+        generator=generator,
     ):
         yield split_batch(pred, num_ensemble_members)
