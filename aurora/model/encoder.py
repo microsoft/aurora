@@ -289,7 +289,6 @@ class Perceiver3DEncoder(nn.Module):
         lat, lon = batch.metadata.lat, batch.metadata.lon
         check_lat_lon_dtype(lat, lon)
         lat, lon = lat.to(dtype=torch.float32), lon.to(dtype=torch.float32)
-        assert lat.shape[0] == H and lon.shape[-1] == W
 
         # Patch embed the surface level.
         x_surf = rearrange(x_surf, "b t v h w -> b v t h w")

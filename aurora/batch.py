@@ -4,7 +4,7 @@ import dataclasses
 from datetime import datetime
 from functools import partial
 from pathlib import Path
-from typing import Callable, List
+from typing import Callable, Iterable, List
 
 import numpy as np
 import torch
@@ -85,6 +85,53 @@ class Batch:
     static_vars: dict[str, torch.Tensor]
     atmos_vars: dict[str, torch.Tensor]
     metadata: Metadata
+
+    def __post_init__(self):
+        b = next(iter(self.surf_vars.values())).shape[0]  # First dim. of (b, t, h, w)
+        c = next(iter(self.atmos_vars.values())).shape[2]  # Pressure-level dim. of (b, t, c, h, w)
+
+        if len(self.metadata.time) != b:
+            raise ValueError(
+                f"`time` has length {len(self.metadata.time)}, but the batch size "
+                f"is {b}. `time` must contain exactly one entry per batch element."
+            )
+        if len(self.metadata.atmos_levels) != c:
+            raise ValueError(
+                f"`atmos_levels` has length {len(self.metadata.atmos_levels)}, but the "
+                f"atmospheric variables have {c} pressure levels. These must be equal."
+            )
+
+        all_vars = [*self.surf_vars.values(), *self.static_vars.values(), *self.atmos_vars.values()]
+
+        # The model expands the static variables to `(b, t, h, w)`, so compare only the last two
+        # dimensions.
+        _assert_all_equal((tuple(v.shape[-2:]) for v in all_vars), "spatial shape", "variables")
+        _assert_all_equal(
+            (v.shape[1] for v in [*self.surf_vars.values(), *self.atmos_vars.values()]),
+            "history size",
+            "surface-level and atmospheric variables",
+        )
+
+        self._check_lat_lon(*self.spatial_shape)
+
+    def _check_lat_lon(self, h: int, w: int) -> None:
+        """Check that the latitudes and longitudes describe an `h` by `w` grid."""
+        lat, lon = self.metadata.lat, self.metadata.lon
+
+        # `Metadata.__post_init__` has already checked that the latitudes and longitudes are either
+        # both vectors or both matrices.
+        if lat.dim() == 1:
+            if lat.shape[0] != h or lon.shape[0] != w:
+                raise ValueError(
+                    f"The latitudes and longitudes describe a grid of shape "
+                    f"`{(lat.shape[0], lon.shape[0])}`, but the variables have spatial shape "
+                    f"`{(h, w)}`."
+                )
+        elif tuple(lat.shape) != (h, w) or tuple(lon.shape) != (h, w):
+            raise ValueError(
+                f"The latitude and longitude matrices have shapes `{tuple(lat.shape)}` and "
+                f"`{tuple(lon.shape)}`, but the variables have spatial shape `{(h, w)}`."
+            )
 
     @property
     def spatial_shape(self) -> tuple[int, int]:
@@ -310,21 +357,6 @@ class Batch:
             ),
         )
 
-    def __post_init__(self):
-        b = next(iter(self.surf_vars.values())).shape[0]  # First dim. of (b, t, h, w)
-        c = next(iter(self.atmos_vars.values())).shape[-3]  # Pressure-level dim. of (b, t, c, h, w)
-
-        if len(self.metadata.time) != b:
-            raise ValueError(
-                f"`time` has length {len(self.metadata.time)}, but the batch size "
-                f"is {b}. `time` must contain exactly one entry per batch element."
-            )
-        if len(self.metadata.atmos_levels) != c:
-            raise ValueError(
-                f"`atmos_levels` has length {len(self.metadata.atmos_levels)}, but the "
-                f"atmospheric variables have {c} pressure levels. These must be equal."
-            )
-
 
 def tile_batch(batch: Batch, n: int) -> Batch:
     """Tile `batch` along the batch dimension `n` times.
@@ -375,6 +407,15 @@ def split_batch(batch: Batch, n: int) -> list[Batch]:
         )
         for m in range(n)
     ]
+
+
+def _assert_all_equal(values: Iterable, what: str, of_what: str) -> None:
+    """Assert that all `values` are equal."""
+    unique = set(values)
+    if len(unique) > 1:
+        raise AssertionError(
+            f"The {of_what} must all have the same {what}, but found `{sorted(unique)}`."
+        )
 
 
 def _np(x: torch.Tensor) -> np.ndarray:

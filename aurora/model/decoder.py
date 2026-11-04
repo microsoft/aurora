@@ -268,9 +268,9 @@ class Perceiver3DDecoder(nn.Module):
         )
 
         return Batch(
-            {v: surf_preds[:, i] for i, v in enumerate(surf_vars)},
+            {v: surf_preds[:, i, None] for i, v in enumerate(surf_vars)},
             batch.static_vars,
-            {v: atmos_preds[:, i] for i, v in enumerate(atmos_vars)},
+            {v: atmos_preds[:, i, None] for i, v in enumerate(atmos_vars)},
             Metadata(
                 lat=lat,
                 lon=lon,

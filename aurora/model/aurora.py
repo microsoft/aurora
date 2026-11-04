@@ -462,13 +462,6 @@ class Aurora(torch.nn.Module):
             static_vars={k: v[0, 0] for k, v in batch.static_vars.items()},
         )
 
-        # Insert history dimension in prediction. The time should already be right.
-        pred = dataclasses.replace(
-            pred,
-            surf_vars={k: v[:, None] for k, v in pred.surf_vars.items()},
-            atmos_vars={k: v[:, None] for k, v in pred.atmos_vars.items()},
-        )
-
         pred = self._post_decoder_hook(batch, pred)
 
         # Clamp positive variables.

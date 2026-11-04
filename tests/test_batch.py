@@ -1,14 +1,16 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
 import dataclasses
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
 import pytest
+import torch
 
 from tests.conftest import SavedBatch
 
-from aurora import Batch
+from aurora import Batch, Metadata
 
 
 def test_interpolation(test_input_output: tuple[Batch, SavedBatch]) -> None:
@@ -77,3 +79,41 @@ def test_batch_rejects_atmos_levels_mismatch(test_input_output: tuple[Batch, Sav
     )
     with pytest.raises(ValueError, match=r"`atmos_levels`"):
         dataclasses.replace(batch, metadata=bad_metadata)
+
+
+def _batch(n_lat: int = 17, n_lon: int = 32, matrix: bool = False) -> Batch:
+    lat = torch.linspace(90, -90, n_lat)
+    lon = torch.linspace(0, 360, n_lon + 1)[:-1]
+    if matrix:
+        lat, lon = lat[:, None].expand(n_lat, n_lon), lon[None, :].expand(n_lat, n_lon)
+    return Batch(
+        surf_vars={"2t": torch.randn(1, 2, 17, 32)},
+        static_vars={"lsm": torch.randn(17, 32)},
+        atmos_vars={"z": torch.randn(1, 2, 4, 17, 32)},
+        metadata=Metadata(
+            lat=lat,
+            lon=lon,
+            time=(datetime(2020, 6, 1, 12, 0),),
+            atmos_levels=(100, 250, 500, 850),
+        ),
+    )
+
+
+@pytest.mark.parametrize("n_lat, n_lon, matrix", [(18, 32, False), (17, 33, False), (18, 32, True)])
+def test_mismatching_lat_lon(n_lat: int, n_lon: int, matrix: bool) -> None:
+    with pytest.raises(ValueError, match="but the variables have spatial shape"):
+        _batch(n_lat, n_lon, matrix)
+
+
+def test_matrix_lat_lon_is_accepted() -> None:
+    _batch(matrix=True)
+
+
+def test_inconsistent_spatial_shape_between_variables() -> None:
+    with pytest.raises(AssertionError, match="same spatial shape"):
+        dataclasses.replace(_batch(), static_vars={"lsm": torch.randn(9, 32)})
+
+
+def test_inconsistent_history_between_variables() -> None:
+    with pytest.raises(AssertionError, match="same history size"):
+        dataclasses.replace(_batch(), atmos_vars={"z": torch.randn(1, 3, 4, 17, 32)})
