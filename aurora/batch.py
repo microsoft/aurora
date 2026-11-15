@@ -2,7 +2,6 @@
 
 import dataclasses
 from datetime import datetime
-from functools import partial
 from pathlib import Path
 from typing import Callable, List
 
@@ -198,21 +197,16 @@ class Batch:
     def regrid(self, res: float) -> "Batch":
         """Regrid the batch to a `res` degrees resolution.
 
-        This results in `float32` data on the CPU.
-
-        This function is not optimised for either speed or accuracy. Use at your own risk.
+        Bilinearly interpolates rectilinear fields on CPU or CUDA, wrapping longitudes and
+        extrapolating latitudes at the poles. The output fields are `float32`.
         """
 
         shape = (round(180 / res) + 1, round(360 / res))
-        lat_new = torch.from_numpy(np.linspace(90, -90, shape[0]))
-        lon_new = torch.from_numpy(np.linspace(0, 360, shape[1], endpoint=False))
-        interpolate_res = partial(
-            interpolate,
-            lat=self.metadata.lat,
-            lon=self.metadata.lon,
-            lat_new=lat_new,
-            lon_new=lon_new,
+        lat_new = torch.from_numpy(np.linspace(90, -90, shape[0])).to(self.metadata.lat.device)
+        lon_new = torch.from_numpy(np.linspace(0, 360, shape[1], endpoint=False)).to(
+            self.metadata.lon.device
         )
+        interpolate_res = _interpolator(self.metadata.lat, self.metadata.lon, lat_new, lon_new)
 
         return Batch(
             surf_vars={k: interpolate_res(v) for k, v in self.surf_vars.items()},
@@ -390,16 +384,56 @@ def interpolate(
 ) -> torch.Tensor:
     """Interpolate a variable `v` with latitudes `lat` and longitudes `lon` to new latitudes
     `lat_new` and new longitudes `lon_new`."""
-    # Perform the interpolation in double precision.
-    return torch.from_numpy(
-        interpolate_numpy(
-            v.double().numpy(),
-            lat.double().numpy(),
-            lon.double().numpy(),
-            lat_new.double().numpy(),
-            lon_new.double().numpy(),
+    return _interpolator(lat, lon, lat_new, lon_new)(v)
+
+
+def _interpolator(
+    lat: torch.Tensor, lon: torch.Tensor, lat_new: torch.Tensor, lon_new: torch.Tensor
+) -> Callable[[torch.Tensor], torch.Tensor]:
+    """Compute the source indices and weights once for all fields on the grid."""
+    if lat.ndim != 1 or lon.ndim != 1 or not lat.numel() or not lon.numel():
+        raise ValueError("Expected non-empty latitude and longitude vectors.")
+
+    def brackets(
+        grid: torch.Tensor, target: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        target = target.to(grid)
+        if grid.numel() == 1:
+            idx = torch.zeros_like(target, dtype=torch.long)
+            return idx, idx, torch.zeros_like(target)
+        hi = torch.searchsorted(grid.contiguous(), target.contiguous(), right=True).clamp(
+            1, grid.numel() - 1
         )
-    ).float()
+        lo = hi - 1
+        return lo, hi, (target - grid[lo]) / (grid[hi] - grid[lo])
+
+    lat, lon = lat.double(), lon.double()
+    descending = bool(lat[0] > lat[-1])
+    if descending:
+        lat = lat.flip(0)
+    if not (torch.all(lat[1:] > lat[:-1]) and torch.all(lon[1:] > lon[:-1])):
+        raise ValueError("Expected strictly monotonic latitudes and increasing longitudes.")
+    y0, y1, wy = brackets(lat, lat_new)
+    if descending:
+        y0, y1 = lat.numel() - 1 - y0, lat.numel() - 1 - y1
+    # Extend the coordinates across the seam and map the neighbors back to the original columns.
+    x0, x1, wx = brackets(torch.cat((lon[-1:] - 360, lon, lon[:1] + 360)), lon_new)
+    x0, x1 = (x0 - 1) % lon.numel(), (x1 - 1) % lon.numel()
+
+    def apply(v: torch.Tensor) -> torch.Tensor:
+        if v.shape[-2:] != (lat.numel(), lon.numel()):
+            raise ValueError("Field shape does not match the latitude and longitude vectors.")
+        y_weight = wy.to(v.device)[:, None]
+        x_weight = wx.to(v.device)
+        rows = (1 - y_weight) * v.index_select(-2, y0.to(v.device)) + y_weight * v.index_select(
+            -2, y1.to(v.device)
+        )
+        return (
+            (1 - x_weight) * rows.index_select(-1, x0.to(v.device))
+            + x_weight * rows.index_select(-1, x1.to(v.device))
+        ).float()
+
+    return apply
 
 
 def interpolate_numpy(
