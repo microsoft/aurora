@@ -1,14 +1,68 @@
 """Copyright (c) Microsoft Corporation. Licensed under the MIT license."""
 
 import dataclasses
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
 import pytest
+import torch
 
 from tests.conftest import SavedBatch
 
-from aurora import Batch
+from aurora import Batch, Metadata
+from aurora.batch import interpolate_numpy
+
+
+@pytest.mark.parametrize(
+    "device",
+    [
+        "cpu",
+        pytest.param(
+            "cuda", marks=pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA required")
+        ),
+    ],
+)
+def test_regrid_irregular_grid_and_gradients(device: str) -> None:
+    # The poles need extrapolation and longitude zero falls between the last and first columns.
+    lat = torch.tensor([75.0, 0.0, -60.0], device=device)
+    lon = torch.tensor([30.0, 103.0, 238.0, 305.0], device=device)
+    field = torch.arange(12.0, device=device).reshape(4, 3).T.requires_grad_()
+    masked = field.detach().clone()
+    masked[0, 1] = float("nan")
+    batch = Batch(
+        surf_vars={"2t": field[None, None]},
+        static_vars={"z": field, "masked": masked},
+        atmos_vars={"t": torch.stack((field, 2 * field))[None, None]},
+        metadata=Metadata(lat=lat, lon=lon, time=(datetime(2023, 1, 1),), atmos_levels=(500, 850)),
+    )
+    result = batch.regrid(45)
+    assert result.metadata.lat.device == field.device
+    assert result.metadata.lon.device == field.device
+    coords = [
+        c.cpu().double().numpy() for c in (lat, lon, result.metadata.lat, result.metadata.lon)
+    ]
+    for inputs, outputs in (
+        (batch.surf_vars, result.surf_vars),
+        (batch.static_vars, result.static_vars),
+        (batch.atmos_vars, result.atmos_vars),
+    ):
+        for key, value in inputs.items():
+            expected = interpolate_numpy(value.detach().cpu().double().numpy(), *coords)
+            assert outputs[key].device == field.device
+            assert outputs[key].dtype == torch.float32
+            np.testing.assert_allclose(outputs[key].detach().cpu(), expected, rtol=1e-6, atol=1e-6)
+
+    # Each interpolated basis field is a column of the linear interpolation operator.
+    basis = np.eye(field.numel()).reshape(-1, *field.shape)
+    weights = torch.arange(40.0, device=device).reshape(5, 8)
+    (result.static_vars["z"] * weights).sum().backward()
+    expected_grad = (
+        interpolate_numpy(basis, *coords).reshape(field.numel(), -1) @ weights.cpu().numpy().ravel()
+    )
+    np.testing.assert_allclose(
+        field.grad.cpu(), expected_grad.reshape(field.shape), rtol=1e-6, atol=1e-5
+    )
 
 
 def test_interpolation(test_input_output: tuple[Batch, SavedBatch]) -> None:
